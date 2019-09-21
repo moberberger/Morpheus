@@ -6,58 +6,57 @@ using System.Text;
 namespace Morpheus
 {
     /// <summary>
-    /// An optimized Priority Queue that maintains internal data structures allowing more efficient operations
-    /// than <see cref="CPriorityQueue&lt;T>"/> without introducing external dependencies on the data type stored
-    /// like <see cref="CPriorityQueueOptimized&lt;T>"/> does.
+    /// An optimized Priority Queue that maintains internal data structures allowing more
+    /// efficient operations than <see cref="PriorityQueue&lt;T> "/> without introducing
+    /// external dependencies on the data type stored like
+    /// <see cref="PriorityQueueOptimized&lt;T> "/> does.
     /// 
-    /// This class requires more than twice the memory overhead of the <see cref="CPriorityQueue&lt;T>"/> class, so
-    /// it should only be used if the faster operations will be relied upon.
+    /// This class requires more than twice the memory overhead of the
+    /// <see cref="PriorityQueue&lt;T> "/> class, so it should only be used if the faster
+    /// operations will be relied upon.
     /// </summary>
     /// <typeparam name="T">The Type of the data stored in the queue</typeparam>
     /// <remarks>
-    /// This version of the <see cref="CPriorityQueue&lt;T>"/> maintains a separate dictionary that allows quick
-    /// lookup of the index within the binary heap for an object. This provides rapid access to a few other
-    /// operations of the data structure.
+    /// This version of the <see cref="PriorityQueue&lt;T> "/> maintains a separate dictionary
+    /// that allows quick lookup of the index within the binary heap for an object. This
+    /// provides rapid access to a few other operations of the data structure.
     /// 
-    /// Operation       Big-O       Improvement on CPriorityQueue
-    /// -------------------------------------------------------------
-    /// Add             lg(N)
-    /// RemoveAny       lg(N)       *
-    /// RemoveFront     lg(N)
-    /// PeekFront       1
-    /// Sort            N*lg(N)
-    /// Find/Contains   1           *
-    /// UpdateKey       lg(N)       *
-    /// Count           1
-    /// Enumerate       N*lg(N)
+    /// Operation Big-O Improvement on CPriorityQueue
+    /// ------------------------------------------------------------- Add lg(N) RemoveAny lg(N)
+    /// * RemoveFront lg(N) PeekFront 1 Sort N*lg(N) Find/Contains 1 * UpdateKey lg(N) * Count 1
+    /// Enumerate N*lg(N)
     /// </remarks>
-    public class CPriorityQueueExtended<T> : CPriorityQueue<T>
+    public class PriorityQueueExtended<T> : PriorityQueue<T>
     {
         private Dictionary<T, int> m_lookup;
 
         /// <summary>
         /// Construct a new priority queue, using the default comparator for objects
         /// </summary>
-        public CPriorityQueueExtended()
+        public PriorityQueueExtended()
             : base()
         {
         }
 
         /// <summary>
-        /// Construct a new priority queue, using the default comparator for objects if none is specified
+        /// Construct a new priority queue, using the default comparator for objects if none is
+        /// specified
         /// </summary>
         /// <param name="_comparer">The comparer to use for collation/ordering</param>
-        public CPriorityQueueExtended( IComparer<T> _comparer )
+        public PriorityQueueExtended( IComparer<T> _comparer )
             : base( _comparer )
         {
         }
 
         /// <summary>
-        /// Construct a new priority queue with an initialized capacity, optionally specifying a comparator
+        /// Construct a new priority queue with an initialized capacity, optionally specifying a
+        /// comparator
         /// </summary>
-        /// <param name="_initialCapacity">The initial capacity of the heap, used to help reduce memory re-allocation</param>
+        /// <param name="_initialCapacity">
+        /// The initial capacity of the heap, used to help reduce memory re-allocation
+        /// </param>
         /// <param name="_comparer">The comparer to use for collation/ordering</param>
-        public CPriorityQueueExtended( int _initialCapacity, IComparer<T> _comparer = null )
+        public PriorityQueueExtended( int _initialCapacity, IComparer<T> _comparer = null )
             : base( _initialCapacity, _comparer )
         {
         }
@@ -68,10 +67,10 @@ namespace Morpheus
         /// <param name="_collection">The collection of objects</param>
         /// <param name="_comparer">The comparer to use for collation/ordering</param>
         /// <remarks>
-        /// Relies heavily on the base-class implementation of "ConstructFromEnumerable" to determine an optimal
-        /// method of constructing a queue from a collection.
+        /// Relies heavily on the base-class implementation of "ConstructFromEnumerable" to
+        /// determine an optimal method of constructing a queue from a collection.
         /// </remarks>
-        public CPriorityQueueExtended( IEnumerable<T> _collection, IComparer<T> _comparer = null )
+        public PriorityQueueExtended( IEnumerable<T> _collection, IComparer<T> _comparer = null )
         {
             if (_comparer != null)
                 m_comparer = _comparer;
@@ -86,7 +85,9 @@ namespace Morpheus
         /// <summary>
         /// Allocate the dictionary
         /// </summary>
-        /// <param name="_capacity">The capacity hint: Positive, specify an initial Dictionary capacity, otherwise don't</param>
+        /// <param name="_capacity">
+        /// The capacity hint: Positive, specify an initial Dictionary capacity, otherwise don't
+        /// </param>
         protected override void Allocate( int _capacity )
         {
             base.Allocate( _capacity );
@@ -98,9 +99,9 @@ namespace Morpheus
         }
 
         /// <summary>
-        /// Helper function to swap two objects in the heap. All base class operations that could affect the
-        /// index of an element in the heap MUST use the "Swap" function to maintain any helper data structures
-        /// with optimization
+        /// Helper function to swap two objects in the heap. All base class operations that
+        /// could affect the index of an element in the heap MUST use the "Swap" function to
+        /// maintain any helper data structures with optimization
         /// </summary>
         /// <param name="_index1">First object to swap</param>
         /// <param name="_index2">Second object to swap</param>
@@ -128,7 +129,7 @@ namespace Morpheus
         /// Add a new node to the heap, and prioritize it
         /// </summary>
         /// <remarks>
-        /// This implements the <see cref="ICollection&lt;T>"/> "Add" function
+        /// This implements the <see cref="ICollection&lt;T> "/> "Add" function
         /// </remarks>
         /// <param name="_newObject">The object to add</param>
         public override void Add( T _newObject )
@@ -181,9 +182,10 @@ namespace Morpheus
         }
 
         /// <summary>
-        /// When the Priority of an element changes, this method will re-organize the queue considering the new priority for the element.
-        /// This will adjust the node's position in the collection based on its new value. If the node does not exist, it will be added 
-        /// to the priority queue.
+        /// When the Priority of an element changes, this method will re-organize the queue
+        /// considering the new priority for the element. This will adjust the node's position
+        /// in the collection based on its new value. If the node does not exist, it will be
+        /// added to the priority queue.
         /// </summary>
         /// <param name="_element">The node whose value has changed.</param>
         public override void Update( T _element )

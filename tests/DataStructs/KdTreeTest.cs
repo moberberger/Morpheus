@@ -2,17 +2,18 @@
 using System;
 using System.Collections.Generic;
 
-namespace Morpheus.Standard.UnitTests
+namespace Morpheus.Standard.UnitTests.DataStructs
 {
     [TestClass]
-    public class CKdTreeTest
+    [TestCategory( "Data Structures" )]
+    public class KdTreeTest
     {
-        public class CCity
+        public class City
         {
             public double Lat, Lng;
             public int Id;
 
-            public static double GetAxisValue( CCity _city, int _axis )
+            public static double GetAxisValue( City _city, int _axis )
             {
                 if (_city == null)
                     throw new ArgumentNullException();
@@ -23,7 +24,7 @@ namespace Morpheus.Standard.UnitTests
                 throw new ArgumentOutOfRangeException( "_axis", _axis, "Axis needs to be 0 or 1" );
             }
 
-            public static double GetDistance( CCity _one, CCity _two )
+            public static double GetDistance( City _one, City _two )
             {
                 if (_one == null)
                     throw new ArgumentNullException( "_one" );
@@ -35,7 +36,7 @@ namespace Morpheus.Standard.UnitTests
                 return dx * dx + dy * dy;
             }
 
-            public static double RealDistance( CCity _one, CCity _two )
+            public static double RealDistance( City _one, City _two )
             {
                 var dx = _one.Lat - _two.Lat;
                 var dy = _one.Lng - _two.Lng;
@@ -45,44 +46,43 @@ namespace Morpheus.Standard.UnitTests
 
 
         [TestMethod]
-        [TestCategory( "DataStructs" )]
         public void AddToTreeTest()
         {
             const int COUNT = 1000;
             var rng = new Random( 120 ); // Some arbitrary seed ensuring that all sequences for all test runs are identical (and therefore NOT random)
 
-            var tree = new CKDTree<CCity>( 2, CCity.GetAxisValue, CCity.GetDistance );
+            var tree = new KDTree<City>( 2, City.GetAxisValue, City.GetDistance );
             tree.RebuildTree( COUNT ); // pre-allocate memory to try to avoid use of the sparse leaves in the tree
 
-            var list = new List<CCity>();
+            var list = new List<City>();
 
             for (var i = 0; i < COUNT; i++)
             {
-                var city = new CCity() { Id = i, Lat = rng.NextDouble() * 10, Lng = rng.NextDouble() * 10 };
+                var city = new City() { Id = i, Lat = rng.NextDouble() * 10, Lng = rng.NextDouble() * 10 };
                 tree.Add( city );
                 list.Add( city );
             }
 
             VerifyTreeToList( tree, list );
 
-            var tree2 = new CKDTree<CCity>( list, 2, CCity.GetAxisValue, CCity.GetDistance );
+            var tree2 = new KDTree<City>( list, 2, City.GetAxisValue, City.GetDistance );
             VerifyTreeToList( tree2, list );
         }
 
 
 
 
-        private static void VerifyTreeToList( CKDTree<CCity> tree, List<CCity> list )
+        private static void VerifyTreeToList( KDTree<City> tree, List<City> list )
         {
 
             for (var x = 0.0; x <= 10; x += 0.25)
             {
                 for (var y = 0.0; y <= 10; y += 0.25)
                 {
-                    var city = new CCity() { Lat = x, Lng = y };
+                    var city = new City() { Lat = x, Lng = y };
 
                     var treeClosest = tree.FindNearest( city );
-                    var listClosest = list.Smallest( _c => CCity.RealDistance( _c, city ) );
+                    var listClosest = list.Smallest( _c => City.RealDistance( _c, city ) );
 
                     Assert.AreEqual( listClosest.Id, treeClosest.Id, "The closest was not generated equally" );
                 }

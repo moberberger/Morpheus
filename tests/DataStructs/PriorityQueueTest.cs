@@ -5,10 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace Morpheus.Standard.UnitTests
+namespace Morpheus.Standard.UnitTests.DataStructs
 {
     [TestClass]
-    public class CPriorityQueueTest
+    [TestCategory("Data Structures")]
+    public class PriorityQueueTest
     {
         #region Data objects for priority queue
 
@@ -87,34 +88,34 @@ namespace Morpheus.Standard.UnitTests
         /////////////////////////////////////////////////////////////////////////////////////////////////////////
         [TestMethod]
         [TestCategory( "DataStructs" )]
-        public void GeneralAcceptanceTest() => GeneralPrimitivesTest( new CPriorityQueue<int>( INT_DATA ) );
+        public void GeneralAcceptanceTest() => GeneralPrimitivesTest( new PriorityQueue<int>( INT_DATA ) );
 
         [TestMethod]
         [TestCategory( "DataStructs" )]
-        public void EmptyQueueTest() => EmptyPrimitivesTest( new CPriorityQueue<int>( INT_DATA ) );
+        public void EmptyQueueTest() => EmptyPrimitivesTest( new PriorityQueue<int>( INT_DATA ) );
 
         [TestMethod]
         [TestCategory( "DataStructs" )]
-        public void RemoveTest() => RemovePrimitivesTest( new CPriorityQueue<int>( INT_DATA ) );
+        public void RemoveTest() => RemovePrimitivesTest( new PriorityQueue<int>( INT_DATA ) );
 
 
         [TestMethod]
         [TestCategory( "DataStructs" )]
-        public void GeneralAcceptanceExtendedTest() => GeneralPrimitivesTest( new CPriorityQueueExtended<int>( INT_DATA ) );
+        public void GeneralAcceptanceExtendedTest() => GeneralPrimitivesTest( new PriorityQueueExtended<int>( INT_DATA ) );
 
         [TestMethod]
         [TestCategory( "DataStructs" )]
-        public void EmptyQueueExtendedTest() => EmptyPrimitivesTest( new CPriorityQueueExtended<int>( INT_DATA ) );
+        public void EmptyQueueExtendedTest() => EmptyPrimitivesTest( new PriorityQueueExtended<int>( INT_DATA ) );
 
         [TestMethod]
         [TestCategory( "DataStructs" )]
-        public void RemoveExtendedTest() => RemovePrimitivesTest( new CPriorityQueueExtended<int>( INT_DATA ) );
+        public void RemoveExtendedTest() => RemovePrimitivesTest( new PriorityQueueExtended<int>( INT_DATA ) );
 
 
 
 
 
-        public static void GeneralPrimitivesTest( CPriorityQueue<int> q )
+        public static void GeneralPrimitivesTest( PriorityQueue<int> q )
         {
             var arr = new int[q.Count];
             q.CopyTo( arr, 0 );
@@ -137,7 +138,7 @@ namespace Morpheus.Standard.UnitTests
             q.CopyTo( arr, arr.Length + 1 ); // really for code-coverage- make sure there's no error doing this
         }
 
-        public static void EmptyPrimitivesTest( CPriorityQueue<int> q )
+        public static void EmptyPrimitivesTest( PriorityQueue<int> q )
         {
             Assert.AreEqual( INT_DATA.Length, q.Count, "Count should equal length of source array" );
 
@@ -150,7 +151,7 @@ namespace Morpheus.Standard.UnitTests
             Assert.IsNotNull( en, "Should get an enumerator" );
         }
 
-        public static void RemovePrimitivesTest( CPriorityQueue<int> q )
+        public static void RemovePrimitivesTest( PriorityQueue<int> q )
         {
             Assert.AreEqual( INT_DATA.Length, q.Count, "Count incorrect" );
 
@@ -185,7 +186,7 @@ namespace Morpheus.Standard.UnitTests
             Assert.AreEqual( 100, list.Count, "List count wrong" );
             Assert.AreEqual( 250, list.Capacity, "List capacity wrong" );
 
-            var q = new CPriorityQueue<byte>( list );
+            var q = new PriorityQueue<byte>( list );
             Assert.AreEqual( 100, q.Count, "Queue count is wrong" );
             Assert.AreEqual( 250, q.Capacity, "Queue capacity is wrong" );
 
@@ -203,24 +204,24 @@ namespace Morpheus.Standard.UnitTests
 
         [TestMethod]
         [TestCategory( "DataStructs" )]
-        public void IComparableTest() => IComparableTest<CPersonByAge, CPriorityQueue<CPersonByAge>>( sm_peopleByAge );
+        public void IComparableTest() => IComparableTest<CPersonByAge, PriorityQueue<CPersonByAge>>( sm_peopleByAge );
 
         [TestMethod]
         [TestCategory( "DataStructs" )]
-        public void IComparableExtendedTest() => IComparableTest<CPersonByAge, CPriorityQueueExtended<CPersonByAge>>( sm_peopleByAge );
+        public void IComparableExtendedTest() => IComparableTest<CPersonByAge, PriorityQueueExtended<CPersonByAge>>( sm_peopleByAge );
 
         [TestMethod]
         [TestCategory( "DataStructs" )]
         public void IComparableOptimizedTest()
         {
-            IComparableTest<CPersonWithIndex, CPriorityQueueOptimized<CPersonWithIndex>>( sm_peopleWithIndex );
+            IComparableTest<CPersonWithIndex, PriorityQueueOptimized<CPersonWithIndex>>( sm_peopleWithIndex );
             foreach (var p in sm_peopleWithIndex)
                 Assert.AreEqual( -1, p.HeapIndex, "Expected heap index of -1 for " + p.Name );
         }
 
 
         private void IComparableTest<T, Q>( T[] _array )
-            where Q : CPriorityQueue<T>, new()
+            where Q : PriorityQueue<T>, new()
             where T : CPerson
         {
             var queue = new Q
@@ -250,20 +251,20 @@ namespace Morpheus.Standard.UnitTests
 
         [TestMethod]
         [TestCategory( "DataStructs" )]
-        public void IComparerTest() => IComparerTest<CPerson, CPriorityQueue<CPerson>>( sm_people );
+        public void IComparerTest() => IComparerTest<CPerson, PriorityQueue<CPerson>>( sm_people );
 
         [TestMethod]
         [TestCategory( "DataStructs" )]
-        public void IComparerExtendedTest() => IComparerTest<CPerson, CPriorityQueueExtended<CPerson>>( sm_people );
+        public void IComparerExtendedTest() => IComparerTest<CPerson, PriorityQueueExtended<CPerson>>( sm_people );
 
         [TestMethod]
         [TestCategory( "DataStructs" )]
-        public void IComparerOptimizedTest() => IComparerTest<CPersonWithIndex, CPriorityQueueOptimized<CPersonWithIndex>>( sm_peopleWithIndex );
+        public void IComparerOptimizedTest() => IComparerTest<CPersonWithIndex, PriorityQueueOptimized<CPersonWithIndex>>( sm_peopleWithIndex );
 
 
 
         private void IComparerTest<T, Q>( T[] _array )
-            where Q : CPriorityQueue<T>, new()
+            where Q : PriorityQueue<T>, new()
             where T : CPerson
         {
             var queue = new Q();
@@ -302,20 +303,20 @@ namespace Morpheus.Standard.UnitTests
 
         [TestMethod]
         [TestCategory( "DataStructs" )]
-        public void UpdateKeyTest() => UpdateKeyTest<CPerson, CPriorityQueue<CPerson>>( sm_people );
+        public void UpdateKeyTest() => UpdateKeyTest<CPerson, PriorityQueue<CPerson>>( sm_people );
 
         [TestMethod]
         [TestCategory( "DataStructs" )]
-        public void UpdateKeyExtendedTest() => UpdateKeyTest<CPerson, CPriorityQueueExtended<CPerson>>( sm_people );
+        public void UpdateKeyExtendedTest() => UpdateKeyTest<CPerson, PriorityQueueExtended<CPerson>>( sm_people );
 
         [TestMethod]
         [TestCategory( "DataStructs" )]
-        public void UpdateKeyOptimizedTest() => UpdateKeyTest<CPersonWithIndex, CPriorityQueueOptimized<CPersonWithIndex>>( sm_peopleWithIndex );
+        public void UpdateKeyOptimizedTest() => UpdateKeyTest<CPersonWithIndex, PriorityQueueOptimized<CPersonWithIndex>>( sm_peopleWithIndex );
 
 
 
         private void UpdateKeyTest<T, Q>( T[] _array )
-            where Q : CPriorityQueue<T>, new()
+            where Q : PriorityQueue<T>, new()
             where T : CPerson, new()
         {
             var queue = new Q();
@@ -355,22 +356,22 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         [TestCategory( "DataStructs" )]
         [ExpectedException( typeof( ArgumentNullException ) )]
-        public void UpdateNullTest() => UpdateNullTest<CPerson, CPriorityQueue<CPerson>>( sm_people );
+        public void UpdateNullTest() => UpdateNullTest<CPerson, PriorityQueue<CPerson>>( sm_people );
 
         [TestMethod]
         [TestCategory( "DataStructs" )]
         [ExpectedException( typeof( ArgumentNullException ) )]
-        public void UpdateNullExtendedTest() => UpdateNullTest<CPerson, CPriorityQueueExtended<CPerson>>( sm_people );
+        public void UpdateNullExtendedTest() => UpdateNullTest<CPerson, PriorityQueueExtended<CPerson>>( sm_people );
 
         [TestMethod]
         [TestCategory( "DataStructs" )]
         [ExpectedException( typeof( ArgumentNullException ) )]
-        public void UpdateNullOptimizedTest() => UpdateNullTest<CPersonWithIndex, CPriorityQueueOptimized<CPersonWithIndex>>( sm_peopleWithIndex );
+        public void UpdateNullOptimizedTest() => UpdateNullTest<CPersonWithIndex, PriorityQueueOptimized<CPersonWithIndex>>( sm_peopleWithIndex );
 
 
 
         private void UpdateNullTest<T, Q>( T[] _array )
-            where Q : CPriorityQueue<T>, new()
+            where Q : PriorityQueue<T>, new()
             where T : CPerson, new()
         {
             var queue = new Q();
@@ -388,7 +389,7 @@ namespace Morpheus.Standard.UnitTests
         [TestCategory( "DataStructs" )]
         public void GeneralIEnumerableTest()
         {
-            var q = new CPriorityQueue<CPersonWithIndex>( EnumPeople() );
+            var q = new PriorityQueue<CPersonWithIndex>( EnumPeople() );
             VerifyGeneralEnumerable( q );
         }
 
@@ -396,7 +397,7 @@ namespace Morpheus.Standard.UnitTests
         [TestCategory( "DataStructs" )]
         public void GeneralIEnumerableExtendedTest()
         {
-            var q = new CPriorityQueueExtended<CPersonWithIndex>( EnumPeople() );
+            var q = new PriorityQueueExtended<CPersonWithIndex>( EnumPeople() );
             VerifyGeneralEnumerable( q );
         }
 
@@ -404,12 +405,12 @@ namespace Morpheus.Standard.UnitTests
         [TestCategory( "DataStructs" )]
         public void GeneralIEnumerableOptimizedTest()
         {
-            var q = new CPriorityQueueOptimized<CPersonWithIndex>( EnumPeople() );
+            var q = new PriorityQueueOptimized<CPersonWithIndex>( EnumPeople() );
             VerifyGeneralEnumerable( q );
         }
 
 
-        private void VerifyGeneralEnumerable( CPriorityQueue<CPersonWithIndex> q )
+        private void VerifyGeneralEnumerable( PriorityQueue<CPersonWithIndex> q )
         {
             var list = new List<CPersonWithIndex>( sm_peopleWithIndex );
             list.Sort();
@@ -438,8 +439,8 @@ namespace Morpheus.Standard.UnitTests
         [TestCategory( "DataStructs" )]
         public void TransferToDifferentPQTest()
         {
-            var q1 = new CPriorityQueueExtended<CPersonWithIndex>( sm_peopleWithIndex );
-            var q2 = new CPriorityQueueOptimized<CPersonWithIndex>( q1, LambdaComparer<CPersonWithIndex>.FromFunc( ( _l, _r ) => _r.Age - _l.Age ) );
+            var q1 = new PriorityQueueExtended<CPersonWithIndex>( sm_peopleWithIndex );
+            var q2 = new PriorityQueueOptimized<CPersonWithIndex>( q1, LambdaComparer<CPersonWithIndex>.FromFunc( ( _l, _r ) => _r.Age - _l.Age ) );
 
             var arr1 = q1.ToArray();
             var arr2 = q2.ToArray();
@@ -457,8 +458,8 @@ namespace Morpheus.Standard.UnitTests
         [TestCategory( "DataStructs" )]
         public void TransferToExtendedTest()
         {
-            var q1 = new CPriorityQueueOptimized<CPersonWithIndex>( sm_peopleWithIndex );
-            var q2 = new CPriorityQueueExtended<CPersonWithIndex>( q1 );
+            var q1 = new PriorityQueueOptimized<CPersonWithIndex>( sm_peopleWithIndex );
+            var q2 = new PriorityQueueExtended<CPersonWithIndex>( q1 );
 
             var arr1 = q1.ToArray();
             var arr2 = q2.ToArray();

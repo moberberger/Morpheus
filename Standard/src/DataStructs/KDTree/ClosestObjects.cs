@@ -97,7 +97,7 @@ namespace Morpheus
         /// <summary>
         /// The set of the N closest objects seen so far. Used ONLY for mode <see cref="EClosestMode.ClosestCount"/>
         /// </summary>
-        private readonly CPriorityQueue<CNodeDistance> m_bestObjectsSoFar;
+        private readonly PriorityQueue<CNodeDistance> m_bestObjectsSoFar;
 
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace Morpheus
         public ClosestObjects( int _closestCount )
         {
             m_closeObjects = null;
-            m_bestObjectsSoFar = new CPriorityQueue<CNodeDistance>( _closestCount );
+            m_bestObjectsSoFar = new PriorityQueue<CNodeDistance>( _closestCount );
             m_maxCount = _closestCount;
         }
 

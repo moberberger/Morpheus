@@ -41,7 +41,7 @@ namespace Morpheus
     /// NOTE This may seem like an overly specific data structure- it is! It is meant to
     /// optimize the KDTree for searching
     /// </remarks>
-    public class CSparseLeafBinaryTree<T> : IEnumerable<T>
+    public class SparseLeafBinaryTree<T> : IEnumerable<T>
     {
         private T[] m_root;
         private readonly Dictionary<int, T> m_leaves = new Dictionary<int, T>();
@@ -53,7 +53,7 @@ namespace Morpheus
         /// minus 1
         /// </summary>
         /// <param name="_capacity">The capacity of the roots</param>
-        public CSparseLeafBinaryTree( int _capacity )
+        public SparseLeafBinaryTree( int _capacity )
         {
             var rootSize = 1 << (_capacity.Log2Int() + 1 - 1);
             rootSize = Math.Max( rootSize, 255 ); // Optimized to provide at least a tree that's 8 deep (255 elements)
@@ -230,9 +230,9 @@ namespace Morpheus
         /// Create a shallow copy of this binary tree
         /// </summary>
         /// <returns></returns>
-        public CSparseLeafBinaryTree<T> Clone()
+        public SparseLeafBinaryTree<T> Clone()
         {
-            var clone = new CSparseLeafBinaryTree<T>( m_root.Length )
+            var clone = new SparseLeafBinaryTree<T>( m_root.Length )
             {
                 m_root = (T[]) m_root.Clone()
             };

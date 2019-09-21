@@ -6,7 +6,7 @@ namespace Morpheus
     /// A Line Segment, defined as having two points that describe the endpoints of said
     /// segment
     /// </summary>
-    public class CLineSegment
+    public class LineSegment
     {
         private readonly SVector2d m_point1;
         private readonly SVector2d m_point2;
@@ -16,7 +16,7 @@ namespace Morpheus
         /// </summary>
         /// <param name="_point1"></param>
         /// <param name="_point2"></param>
-        public CLineSegment( SVector2d _point1, SVector2d _point2 )
+        public LineSegment( SVector2d _point1, SVector2d _point2 )
         {
             m_point1 = _point1;
             m_point2 = _point2;
@@ -29,7 +29,7 @@ namespace Morpheus
         /// <param name="_y1"></param>
         /// <param name="_x2"></param>
         /// <param name="_y2"></param>
-        public CLineSegment( double _x1, double _y1, double _x2, double _y2 )
+        public LineSegment( double _x1, double _y1, double _x2, double _y2 )
         {
             m_point1 = new SVector2d( _x1, _y1 );
             m_point2 = new SVector2d( _x2, _y2 );
@@ -96,7 +96,7 @@ namespace Morpheus
         /// TRUE if the segments intersect, including if (at least) part of one line segment
         /// lies on the other
         /// </returns>
-        public bool DoesIntersect( CLineSegment _other )
+        public bool DoesIntersect( LineSegment _other )
         {
             var cd1 = ClockDirection( m_point1, _other.m_point1, _other.m_point2 );
             var cd2 = ClockDirection( m_point2, _other.m_point1, _other.m_point2 );

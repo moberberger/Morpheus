@@ -10,15 +10,20 @@ namespace Morpheus
     /// order, according to the required IComparable implementation for the Type.
     /// </summary>
     /// <typeparam name="T">Any Type that implements IComparable</typeparam>
-    public class COrderedList<T> : IList<T>
+    public class OrderedList<T> : IList<T>
         where T : IComparable<T>
     {
         private readonly List<T> m_list;
 
         /// <summary>
+        /// Underlying Capacity of the List object.
+        /// </summary>
+        public int Capacity => m_list.Capacity;
+
+        /// <summary>
         /// Create an empty ordered list
         /// </summary>
-        public COrderedList()
+        public OrderedList()
         {
             m_list = new List<T>();
         }
@@ -27,7 +32,7 @@ namespace Morpheus
         /// Create an empty ordered list, but with a pre-allocated memory block
         /// </summary>
         /// <param name="_initialSize">The amount of memory to pre-allocate</param>
-        public COrderedList( int _initialSize )
+        public OrderedList( int _initialSize )
         {
             m_list = new List<T>( _initialSize );
         }
@@ -37,7 +42,7 @@ namespace Morpheus
         /// contain those elements, but in sorted order.
         /// </summary>
         /// <param name="_elements">The elements to initialize the list with</param>
-        public COrderedList( IEnumerable<T> _elements )
+        public OrderedList( IEnumerable<T> _elements )
         {
             m_list = new List<T>( _elements );
             m_list.Sort();

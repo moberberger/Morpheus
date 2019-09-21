@@ -11,7 +11,7 @@ namespace Morpheus
     public interface IOptimizedBinaryHeapNode
     {
         /// <summary>
-        /// The index within the Binary Heap used by <see cref="CPriorityQueueOptimized&lt;T>"/>
+        /// The index within the Binary Heap used by <see cref="PriorityQueueOptimized&lt;T>"/>
         /// </summary>
         int HeapIndex { get; set; }
     }
@@ -25,16 +25,16 @@ namespace Morpheus
     /// <remarks>
     /// This version offloads the "index" of each object into the object itself. It has the benefit of
     /// having a smaller memory footprint, but the drawback of allowing an object to belong to at most
-    /// one COptimizedPriorityQueue. The other optimized version of the priority queue <see cref="CPriorityQueueExtended&lt;T>"/>
+    /// one COptimizedPriorityQueue. The other optimized version of the priority queue <see cref="PriorityQueueExtended&lt;T>"/>
     /// uses an internal dictionary to maintain these indicies.
     /// </remarks>
-    public class CPriorityQueueOptimized<T> : CPriorityQueue<T>
+    public class PriorityQueueOptimized<T> : PriorityQueue<T>
         where T : IOptimizedBinaryHeapNode
     {
         /// <summary>
         /// Construct a new priority queue, using the default comparator for objects
         /// </summary>
-        public CPriorityQueueOptimized()
+        public PriorityQueueOptimized()
             : base()
         {
         }
@@ -43,7 +43,7 @@ namespace Morpheus
         /// Construct a new priority queue, using the default comparator for objects if none is specified
         /// </summary>
         /// <param name="_comparer">The comparer to use for collation/ordering</param>
-        public CPriorityQueueOptimized( IComparer<T> _comparer = null )
+        public PriorityQueueOptimized( IComparer<T> _comparer = null )
             : base( _comparer )
         {
         }
@@ -53,7 +53,7 @@ namespace Morpheus
         /// </summary>
         /// <param name="_initialCapacity">The initial capacity of the heap, used to help reduce memory re-allocation</param>
         /// <param name="_comparer">The comparer to use for collation/ordering</param>
-        public CPriorityQueueOptimized( int _initialCapacity, IComparer<T> _comparer = null )
+        public PriorityQueueOptimized( int _initialCapacity, IComparer<T> _comparer = null )
             : base( _initialCapacity, _comparer )
         {
         }
@@ -68,7 +68,7 @@ namespace Morpheus
         /// collection is an Array of T, the capacity of the queue will be set to be 10% greater than the Length of the 
         /// array.
         /// </remarks>
-        public CPriorityQueueOptimized( IEnumerable<T> _collection, IComparer<T> _comparer = null )
+        public PriorityQueueOptimized( IEnumerable<T> _collection, IComparer<T> _comparer = null )
         {
             if (_comparer != null)
                 m_comparer = _comparer;

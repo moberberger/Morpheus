@@ -29,7 +29,7 @@ namespace Morpheus
     /// UpdateKey   N Count 1
     /// Enumerate   N*lg(N)
     /// </code></remarks>
-    public class CPriorityQueue<T> : ICollection<T>, IEnumerable<T>
+    public class PriorityQueue<T> : ICollection<T>, IEnumerable<T>
     {
         /// <summary>
         /// The binary heap used to store all the data in the tree
@@ -44,7 +44,7 @@ namespace Morpheus
         /// <summary>
         /// Construct a new priority queue, using the default comparator for objects
         /// </summary>
-        public CPriorityQueue()
+        public PriorityQueue()
         {
             Allocate( 0 );
         }
@@ -52,7 +52,7 @@ namespace Morpheus
         /// <summary>
         /// Construct a new priority queue, using the specified comparator for objects
         /// </summary>
-        public CPriorityQueue( IComparer<T> _comparer )
+        public PriorityQueue( IComparer<T> _comparer )
         {
             if (_comparer != null)
                 m_comparer = _comparer;
@@ -67,7 +67,7 @@ namespace Morpheus
         /// The initial capacity of the heap, used to help reduce memory re-allocation
         /// </param>
         /// <param name="_comparer">The comparer to use for collation/ordering</param>
-        public CPriorityQueue( int _initialCapacity, IComparer<T> _comparer = null )
+        public PriorityQueue( int _initialCapacity, IComparer<T> _comparer = null )
         {
             if (_comparer != null)
                 m_comparer = _comparer;
@@ -84,7 +84,7 @@ namespace Morpheus
         /// capacity of the List. If the collection is an Array of T, the capacity of the queue
         /// will be set to be 10% greater than the Length of the array.
         /// </remarks>
-        public CPriorityQueue( IEnumerable<T> _collection, IComparer<T> _comparer = null )
+        public PriorityQueue( IEnumerable<T> _collection, IComparer<T> _comparer = null )
         {
             if (_comparer != null)
                 m_comparer = _comparer;
@@ -108,9 +108,9 @@ namespace Morpheus
         /// </returns>
         protected bool ConstructFromEnumerable( IEnumerable<T> _collection )
         {
-            if (_collection is CPriorityQueue<T>) // we know the internal array is already in good heap order- simply copy it
+            if (_collection is PriorityQueue<T>) // we know the internal array is already in good heap order- simply copy it
             {
-                var otherPQ = _collection as CPriorityQueue<T>;
+                var otherPQ = _collection as PriorityQueue<T>;
                 if (otherPQ.m_comparer == m_comparer)
                 {
                     Allocate( otherPQ.m_heap.Capacity );
@@ -456,7 +456,7 @@ namespace Morpheus
         /// <returns>An Enumerator</returns>
         public IEnumerator<T> GetEnumerator()
         {
-            var useQueue = new CPriorityQueue<T>( this, Comparer );
+            var useQueue = new PriorityQueue<T>( this, Comparer );
             while (useQueue.Count > 0)
                 yield return useQueue.RemoveLowest();
         }

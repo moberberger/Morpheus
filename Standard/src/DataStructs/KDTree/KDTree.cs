@@ -17,7 +17,7 @@ namespace Morpheus
     /// there are multiple duplicate elements that are "nearest", there is no guarantee
     /// which of the duplicates will be returned.
     /// </remarks>
-    public class CKDTree<T> : ICollection<T>
+    public class KDTree<T> : ICollection<T>
     // where T : class
     {
         /// <summary>
@@ -34,7 +34,7 @@ namespace Morpheus
         /// <summary>
         /// The underlying data structure containing the tree's data
         /// </summary>
-        protected CSparseLeafBinaryTree<T> m_tree = null;
+        protected SparseLeafBinaryTree<T> m_tree = null;
 
         /// <summary>
         /// The number of axes that the tree is splitting on
@@ -176,25 +176,25 @@ namespace Morpheus
         /// performance-hindered version, as it relies on
         /// <see cref="IMultiDimensionalPoint"/> .
         /// </summary>
-        public CKDTree()
+        public KDTree()
         {
             m_distanceFunction = GetMultiDimensionalDistance;
             if (!IsTMultiDimensional())
                 throw new InvalidOperationException( "The underlying type " + typeof( T ).ToString() + " does not implement IMultidimensionalPoint and no selector was specified." );
-            m_tree = new CSparseLeafBinaryTree<T>( 1023 );
+            m_tree = new SparseLeafBinaryTree<T>( 1023 );
         }
 
         /// <summary>
         /// Construct a new K-D Tree, using the specified selector for objects
         /// </summary>
-        public CKDTree( int _axisCount, Func<T, int, double> _selector, Func<T, T, double> _distanceFunction = null )
+        public KDTree( int _axisCount, Func<T, int, double> _selector, Func<T, T, double> _distanceFunction = null )
         {
             if (_axisCount < 1)
                 throw new ArgumentOutOfRangeException( "Axis Count", _axisCount, "Axis Count must be greater than 1" );
             m_selector = _selector ?? throw new ArgumentNullException( "_selector", "The selector cannot be null" );
             m_axisCount = _axisCount;
             m_distanceFunction = _distanceFunction ?? GetMultiDimensionalDistance;
-            m_tree = new CSparseLeafBinaryTree<T>( 1023 );
+            m_tree = new SparseLeafBinaryTree<T>( 1023 );
         }
 
         /// <summary>
@@ -231,11 +231,11 @@ namespace Morpheus
         /// Thrown if _axisCount is less than 1 AND there are no elements in the
         /// collection, even if T implements <see cref="IMultiDimensionalPoint"/> .
         /// </exception>
-        public CKDTree( IEnumerable<T> _collection, int _axisCount = -1, Func<T, int, double> _selector = null, Func<T, T, double> _distanceFunction = null )
+        public KDTree( IEnumerable<T> _collection, int _axisCount = -1, Func<T, int, double> _selector = null, Func<T, T, double> _distanceFunction = null )
         {
-            if (_collection is CKDTree<T>) // we know the internal storage is already a KD Tree- simply copy it
+            if (_collection is KDTree<T>) // we know the internal storage is already a KD Tree- simply copy it
             {
-                CopyConstructor( _collection as CKDTree<T> );
+                CopyConstructor( _collection as KDTree<T> );
                 return;
             }
 
@@ -254,7 +254,7 @@ namespace Morpheus
                 m_selector = _selector;
 
             var array = _collection.ToArray(); // Construct using an array
-            m_tree = new CSparseLeafBinaryTree<T>( array.Length );
+            m_tree = new SparseLeafBinaryTree<T>( array.Length );
             m_count = array.Length;
 
             if (m_count > 0)
@@ -277,7 +277,7 @@ namespace Morpheus
         /// intact
         /// </summary>
         /// <param name="_toCopy">The KD Tree to copy</param>
-        private void CopyConstructor( CKDTree<T> _toCopy )
+        private void CopyConstructor( KDTree<T> _toCopy )
         {
             m_axisCount = _toCopy.m_axisCount;
             m_selector = _toCopy.m_selector;
@@ -363,7 +363,7 @@ namespace Morpheus
             foreach (var item in this)
                 items[idx++] = item;
 
-            m_tree = new CSparseLeafBinaryTree<T>( _capacity );
+            m_tree = new SparseLeafBinaryTree<T>( _capacity );
             BuildComparers();
             ConstructFromArray( items, 0, items.Length - 1, 0, 0 );
         }
@@ -374,7 +374,7 @@ namespace Morpheus
         /// <returns>
         /// A copy of this KD-Tree, but NOT a deep-copy of the data found in the tree
         /// </returns>
-        public CKDTree<T> Clone() => new CKDTree<T>( this );
+        public KDTree<T> Clone() => new KDTree<T>( this );
 
         /// <summary>
         /// Allows the application to set the distance function for the KD Tree. Setting

@@ -1,6 +1,4 @@
-﻿//#if _KERNEL32_OK_
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -134,5 +132,3 @@ namespace Morpheus
     }
 
 }
-
-// #endif
