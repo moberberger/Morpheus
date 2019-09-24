@@ -124,11 +124,19 @@ namespace Morpheus.Standard.UnitTests.DataStructs
         }
 
         [TestMethod]
-        public void IEnumerableTest()
+        public void IEnumerable_T_Test()
         {
             var list = new OrderedList<int>( new int[] { 10, 5, 7 } );
             var sum = list.Sum();
             Assert.AreEqual( 22, sum );
+        }
+
+        [TestMethod]
+        public void IEnumerableTest()
+        {
+            var list = new OrderedList<int>( new int[] { 10, 5, 7 } );
+            var str = list.JoinAsString( " " );
+            Assert.AreEqual( "5 7 10", str );
         }
 
 
@@ -152,6 +160,8 @@ namespace Morpheus.Standard.UnitTests.DataStructs
 
             Assert.IsFalse( list.IsReadOnly );
         }
+
+
 
     }
 }

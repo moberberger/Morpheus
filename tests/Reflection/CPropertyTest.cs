@@ -161,7 +161,7 @@ namespace Morpheus.Standard.UnitTests
             ser.Context.FixM_ = true;
 
             var doc = ser.Serialize( _object );
-            Console.WriteLine( CXmlHelper.GetFormattedString( doc ) );
+            Console.WriteLine( XmlExtensions.GetFormattedString( doc ) );
             return doc;
         }
 

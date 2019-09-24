@@ -6,7 +6,7 @@ using System.Reflection;
 namespace Morpheus.Standard.UnitTests
 {
     [TestClass]
-    public class CHelperTest
+    public class HelperTest
     {
         [TestMethod]
         public void TestConvertArrayToString()
@@ -226,26 +226,6 @@ namespace Morpheus.Standard.UnitTests
             CHelper.TransferStream( sSource, sDest, 64, COUNT );
 
             Assert.AreEqual<long>( COUNT, sDest.Length, "Length of destination stream is wrong" );
-            var dest = sDest.GetBuffer();
-
-            for (var i = 0; i < COUNT; i++)
-            {
-                Assert.AreEqual( source[OFFSET + i], dest[i], "Incorrect byte at index: " + i );
-            }
-        }
-
-        [TestMethod]
-        public void SwapTest()
-        {
-            int x = 5, y = 9;
-            CHelper.Swap( ref x, ref y );
-            Assert.AreEqual( 5, y, "New Y" );
-            Assert.AreEqual( 9, x, "New X" );
-
-            string s1 = "Hello", s2 = "Bye";
-            CHelper.Swap( ref s1, ref s2 );
-            Assert.AreEqual( "Hello", s2, "New S2" );
-            Assert.AreEqual( "Bye", s1, "New S1" );
         }
 
         [TestMethod]
@@ -268,6 +248,7 @@ namespace Morpheus.Standard.UnitTests
         }
 
         [TestMethod]
+        [ExpectedException( typeof( ArgumentException ) )]
         public void FindByteSubstringExceptionsTest()
         {
             byte[] main = { 1, 2, 1, 1, 2, 1, 3, 2, 1 };
@@ -279,15 +260,7 @@ namespace Morpheus.Standard.UnitTests
             idx = main.FindByteSubstring( main, 1 );
             Assert.AreEqual( -1, idx, "Substring too long for starting position" );
 
-            try
-            {
-                main.FindByteSubstring( main, -1 );
-            }
-            catch (ArgumentException)
-            {
-                return;
-            }
-            Assert.Fail( "Expected exception for negative start index" );
+            main.FindByteSubstring( main, -1 );
         }
 
         [TestMethod]
@@ -297,6 +270,15 @@ namespace Morpheus.Standard.UnitTests
             Assert.AreEqual( @"c:\temp\holy.cow.txt", s, "Didn't add COW correctly" );
         }
 
+
+        [TestMethod]
+        public void RemoveDuplicateWhitespaceTest()
+        {
+            var testStr = " \t \n This  \tIs  \tIt\n!   ";
+            var expected = "This Is It !";
+            var actual = testStr.RemoveDuplicateWhitespace();
+            Assert.AreEqual( expected, actual );
+        }
 
 
 

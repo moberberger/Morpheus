@@ -10,8 +10,8 @@ namespace Morpheus.Standard.UnitTests.Serialization
         {
             var x = (CStdBaseObject) _object;
 
-            CXmlHelper.AddAttribute( _parentNode, "NAME", x.Name );
-            CXmlHelper.AddAttribute( _parentNode, "AGE", x.Age );
+            XmlExtensions.AddAttribute( _parentNode, "NAME", x.Name );
+            XmlExtensions.AddAttribute( _parentNode, "AGE", x.Age );
 
             CStdBaseObject.STATUS = ETestStatus.EXTERNAL_SERIALIZER;
             return true;
@@ -24,8 +24,8 @@ namespace Morpheus.Standard.UnitTests.Serialization
 
             var x = _object.WorkingObject as CStdBaseObject;
 
-            x.Name = CXmlHelper.GetAttributeValue( _node, "NAME" );
-            x.Age = int.Parse( CXmlHelper.GetAttributeValue( _node, "AGE" ) );
+            x.Name = XmlExtensions.GetAttributeValue( _node, "NAME" );
+            x.Age = int.Parse( XmlExtensions.GetAttributeValue( _node, "AGE" ) );
 
             CStdBaseObject.STATUS = ETestStatus.EXTERNAL_DESERIALIZER;
             return true;

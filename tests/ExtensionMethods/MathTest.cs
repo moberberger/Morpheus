@@ -6,7 +6,7 @@ namespace Morpheus.Standard.UnitTests
     /// This is a test class for CMath and is intended to contain all CMath Unit Tests
     ///</summary>
     [TestClass()]
-    public class CMathTest
+    public class MathTest
     {
         private readonly int[] m_results = { 1, 3, 6, 10, 15 };
 
@@ -38,5 +38,7 @@ namespace Morpheus.Standard.UnitTests
             actual = CMath.Sigmoid( 1, expected );
             Assert.AreEqual<double>( 1 - expected, actual, "For high-end of curve" );
         }
+
+
     }
 }

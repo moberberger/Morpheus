@@ -13,7 +13,12 @@ namespace Morpheus
         /// <summary>
         /// The natural logarithm of 2
         /// </summary>
-        public static double NaturalLogOf2 = Math.Log( 2.0 );
+        public static readonly double NaturalLogOf2 = Math.Log( 2.0 );
+
+        /// <summary>
+        /// The square root of 2
+        /// </summary>
+        public static readonly double SquareRootOf2 = Math.Sqrt( 2 );
 
         /// <summary>
         /// PI
@@ -46,11 +51,6 @@ namespace Morpheus
         public const float TWO_PI_FLOAT = (float) Math.PI * 2;
 
 
-
-        /// <summary>
-        /// The square root of 2
-        /// </summary>
-        public static double SquareRootOf2 = Math.Sqrt( 2 );
 
 
         /// <summary>
@@ -102,7 +102,8 @@ namespace Morpheus
         /// <param name="_number"></param>
         /// <param name="_degree"></param>
         /// <returns></returns>
-        public static double CheapSigmoid( this double _number, double _degree ) => Math.Sign( _number ) * Math.Pow( Math.Abs( _number ), 1.0 / _degree );
+        public static double CheapSigmoid( this double _number, double _degree ) 
+            => Math.Sign( _number ) * Math.Pow( Math.Abs( _number ), 1.0 / _degree );
 
         /// <summary>
         /// Given a number between 0 and 1, assumed to be a linear scale, translate the number
@@ -274,7 +275,8 @@ namespace Morpheus
         /// <param name="_1">The first value to check against</param>
         /// <param name="_2">The second value to check against</param>
         /// <returns></returns>
-        public static bool IsBetween( this double _value, double _1, double _2 ) => (_value >= _1 && _value <= _2) || (_value >= _2 && _value <= _1);
+        public static bool IsBetween( this double _value, double _1, double _2 ) 
+            => (_value >= _1 && _value <= _2) || (_value >= _2 && _value <= _1);
 
         /// <summary>
         /// Determine if a value is "between" two other values- If the value EQUALS either
@@ -284,7 +286,8 @@ namespace Morpheus
         /// <param name="_1">The first value to check against</param>
         /// <param name="_2">The second value to check against</param>
         /// <returns></returns>
-        public static bool IsBetween( this float _value, float _1, float _2 ) => (_value >= _1 && _value <= _2) || (_value >= _2 && _value <= _1);
+        public static bool IsBetween( this float _value, float _1, float _2 ) 
+            => (_value >= _1 && _value <= _2) || (_value >= _2 && _value <= _1);
 
         /// <summary>
         /// Determine if a value is "between" two other values- If the value EQUALS either
@@ -294,7 +297,8 @@ namespace Morpheus
         /// <param name="_1">The first value to check against</param>
         /// <param name="_2">The second value to check against</param>
         /// <returns></returns>
-        public static bool IsBetween( this byte _value, byte _1, byte _2 ) => (_value >= _1 && _value <= _2) || (_value >= _2 && _value <= _1);
+        public static bool IsBetween( this byte _value, byte _1, byte _2 ) 
+            => (_value >= _1 && _value <= _2) || (_value >= _2 && _value <= _1);
 
         /// <summary>
         /// Determine if a value is "between" two other values- If the value EQUALS either
@@ -304,7 +308,8 @@ namespace Morpheus
         /// <param name="_1">The first value to check against</param>
         /// <param name="_2">The second value to check against</param>
         /// <returns></returns>
-        public static bool IsBetween( this int _value, int _1, int _2 ) => (_value >= _1 && _value <= _2) || (_value >= _2 && _value <= _1);
+        public static bool IsBetween( this int _value, int _1, int _2 ) 
+            => (_value >= _1 && _value <= _2) || (_value >= _2 && _value <= _1);
 
         /// <summary>
         /// Determine if a value is "between" two other values- If the value EQUALS either
@@ -314,7 +319,8 @@ namespace Morpheus
         /// <param name="_1">The first value to check against</param>
         /// <param name="_2">The second value to check against</param>
         /// <returns></returns>
-        public static bool IsBetween( this long _value, long _1, long _2 ) => (_value >= _1 && _value <= _2) || (_value >= _2 && _value <= _1);
+        public static bool IsBetween( this long _value, long _1, long _2 ) 
+            => (_value >= _1 && _value <= _2) || (_value >= _2 && _value <= _1);
 
 
 

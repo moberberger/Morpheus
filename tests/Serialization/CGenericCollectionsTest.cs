@@ -221,7 +221,7 @@ namespace Morpheus.Standard.UnitTests.Serialization
             Assert.AreEqual( int.Parse( stakCount.InnerText ), ca.AsStack.Count, "The number of stack elements is wrong" );
 
             var stakElems = stak["_array"];
-            var c = int.Parse( CXmlHelper.GetAttributeValue( stakElems, ctx.ArrayAttributeName ) );
+            var c = int.Parse( XmlExtensions.GetAttributeValue( stakElems, ctx.ArrayAttributeName ) );
             Assert.AreEqual( c, stakElems.ChildNodes.Count, "The number of array elements is wrong." );
 
 

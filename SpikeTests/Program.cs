@@ -12,7 +12,7 @@ namespace Morpheus
 {
     public class Program
     {
-        public const double SECONDS_TO_RUN = 1;
+        public const double SECONDS_TO_RUN = 10;
         public const int MS_BETWEEN_UPDATES = 100;
 
         public class TestBaseline : TestBase
@@ -32,7 +32,8 @@ namespace Morpheus
         /// <param name="args">Unused</param>
         public static void Main( string[] args )
         {
-            // RunTests(); return;
+            //RunTests(); return;
+
 
             var buf = new byte[1 << 17];
             buf.FromIntegers( () => (uint) RandomSeed.Robust() );

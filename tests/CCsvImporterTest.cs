@@ -18,21 +18,21 @@ namespace Morpheus.Standard.UnitTests
             var s = "  hello  ";
             var sb = new StringBuilder( s );
 
-            CCsvImporter.RemoveTrailingWhitespace( sb );
+            CsvImporter.RemoveTrailingWhitespace( sb );
             Assert.AreEqual( "  hello", sb.ToString(), "Simple Removal" );
 
             s = "hello";
             sb = new StringBuilder( s );
-            CCsvImporter.RemoveTrailingWhitespace( sb );
+            CsvImporter.RemoveTrailingWhitespace( sb );
             Assert.AreEqual( "hello", sb.ToString(), "Removal of nothing" );
 
             sb = new StringBuilder( "  " );
-            CCsvImporter.RemoveTrailingWhitespace( sb );
+            CsvImporter.RemoveTrailingWhitespace( sb );
             Assert.AreEqual( "", sb.ToString(), "Results in empty string" );
 
             try
             {
-                CCsvImporter.RemoveTrailingWhitespace( null );
+                CsvImporter.RemoveTrailingWhitespace( null );
             }
             catch (ArgumentNullException)
             {
@@ -47,13 +47,13 @@ namespace Morpheus.Standard.UnitTests
         {
             try
             {
-                CCsvImporter.ParseString( null, ",", false ).ToList();
+                CsvImporter.ParseString( null, ",", false ).ToList();
             }
             catch (ArgumentNullException)
             {
                 try
                 {
-                    CCsvImporter.ParseString( new StringBuilder( "" ), null, false ).ToList();
+                    CsvImporter.ParseString( new StringBuilder( "" ), null, false ).ToList();
                 }
                 catch (ArgumentNullException)
                 {
@@ -69,14 +69,14 @@ namespace Morpheus.Standard.UnitTests
         public void ParseStringSimpleTest()
         {
             var sb = new StringBuilder( "  hello  " );
-            var en = CCsvImporter.ParseString( sb, ",", true ).GetEnumerator();
+            var en = CsvImporter.ParseString( sb, ",", true ).GetEnumerator();
 
             Assert.AreEqual( true, en.MoveNext(), "First Token" );
             Assert.AreEqual( "hello", en.Current, "Token Value" );
             Assert.AreEqual( false, en.MoveNext(), "No more Tokens" );
 
             sb = new StringBuilder( " Bob, \"Billy Bob\"" );
-            en = CCsvImporter.ParseString( sb, ",", true ).GetEnumerator(); // remove quotes
+            en = CsvImporter.ParseString( sb, ",", true ).GetEnumerator(); // remove quotes
 
             Assert.AreEqual( true, en.MoveNext(), "First Token" );
             Assert.AreEqual( "Bob", en.Current, "Token 1 Value" );
@@ -84,7 +84,7 @@ namespace Morpheus.Standard.UnitTests
             Assert.AreEqual( "Billy Bob", en.Current, "Token 2 Value" );
             Assert.AreEqual( false, en.MoveNext(), "No more Tokens" );
 
-            en = CCsvImporter.ParseString( sb, ",", false ).GetEnumerator(); // don't remove quotes
+            en = CsvImporter.ParseString( sb, ",", false ).GetEnumerator(); // don't remove quotes
 
             Assert.AreEqual( true, en.MoveNext(), "First Token" );
             Assert.AreEqual( "Bob", en.Current, "Token 1 Value" );
@@ -98,7 +98,7 @@ namespace Morpheus.Standard.UnitTests
         [TestCategory( "CsvImporter" )]
         public void EmptyObjectTest()
         {
-            var x = new CCsvImporter();
+            var x = new CsvImporter();
             Assert.IsNull( x.GetColumnNames(), "Column Names" );
             Assert.IsNull( x.GetData(), "Get Data" );
         }
@@ -109,7 +109,7 @@ namespace Morpheus.Standard.UnitTests
         {
             // Test "space" separator
             var sb = new StringBuilder( "  hello to  all  " );
-            var list = CCsvImporter.ParseString( sb, " ", true ).ToList();
+            var list = CsvImporter.ParseString( sb, " ", true ).ToList();
 
             Assert.AreEqual( "", list[0], "0" );
             Assert.AreEqual( "", list[1], "1" );
@@ -129,7 +129,7 @@ namespace Morpheus.Standard.UnitTests
         {
             // Test "quote nested" separator
             var sb = new StringBuilder( "\" First, Name\", Last    \t, Name, " );
-            var list = CCsvImporter.ParseString( sb, ",", true ).ToList();
+            var list = CsvImporter.ParseString( sb, ",", true ).ToList();
 
             Assert.AreEqual( 4, list.Count, "Count" );
             Assert.AreEqual( " First, Name", list[0], "0" );
@@ -143,7 +143,7 @@ namespace Morpheus.Standard.UnitTests
         public void ColumnHeaderTest()
         {
             var s = "First Name, Last  Name, Age";
-            var csv = new CCsvImporter();
+            var csv = new CsvImporter();
             var onHeaderReadCalled = false;
 
             csv.OnHeaderRead += _sb =>
@@ -195,7 +195,7 @@ namespace Morpheus.Standard.UnitTests
             sb.Append( "\"Lisa Anne\", Simpson, 7, 3.9" ).AppendLine();
             sb.Append( "     " );
 
-            var csv = new CCsvImporter
+            var csv = new CsvImporter
             {
                 ColumnNameSpaceReplacement = null
             };
@@ -227,7 +227,7 @@ namespace Morpheus.Standard.UnitTests
             sb.AppendLine();
             sb.Append( "     " );
 
-            var csv = new CCsvImporter
+            var csv = new CsvImporter
             {
                 ColumnNameSpaceReplacement = null
             };
@@ -258,7 +258,7 @@ namespace Morpheus.Standard.UnitTests
                 ["Family Name"] = "LastName"
             };
 
-            var csv = new CCsvImporter
+            var csv = new CsvImporter
             {
                 ColumnNameSpaceReplacement = " "
             };
@@ -285,7 +285,7 @@ namespace Morpheus.Standard.UnitTests
             sb.Append( "\"Lisa Anne\", Simpson, 7, 3.9" ).AppendLine();
             sb.Append( "     " );
 
-            var csv = new CCsvImporter
+            var csv = new CsvImporter
             {
                 ColumnNameSpaceReplacement = null
             };
@@ -308,7 +308,7 @@ namespace Morpheus.Standard.UnitTests
         [TestCategory( "CsvImporter" )]
         public void FileIoTest()
         {
-            var csv = new CCsvImporter();
+            var csv = new CsvImporter();
             csv.ImportFile( "UnitTestCsvFileIo.csv" );
             var list = csv.GetData<CTestPerson>().ToList();
 
@@ -323,7 +323,7 @@ namespace Morpheus.Standard.UnitTests
         {
             var linesRead = 0;
 
-            var csv = new CCsvImporter();
+            var csv = new CsvImporter();
             csv.OnLineRead += _sb =>
                 {
                     linesRead++;

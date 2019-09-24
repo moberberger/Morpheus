@@ -9,7 +9,7 @@ namespace Morpheus
     /// Class to help with the encryption and decryption of strings. Any strings encrypted with
     /// an object of this class must be decrypted by the same object.
     /// </summary>
-    public class CCrypto
+    public class Crypto
     {
         private readonly SymmetricAlgorithm m_algo = new RijndaelManaged();
         // SymmetricAlgorithm m_algo = new TripleDESCryptoServiceProvider(); SymmetricAlgorithm
@@ -55,7 +55,7 @@ namespace Morpheus
         /// <summary>
         /// Set up this instantiation
         /// </summary>
-        public CCrypto()
+        public Crypto()
         {
             m_algo.GenerateKey();
             m_algo.GenerateIV();
@@ -75,7 +75,7 @@ namespace Morpheus
         /// <param name="_key"></param>
         /// <param name="_iv"></param>
         /// <param name="_salt"></param>
-        public CCrypto( byte[] _key, byte[] _iv, byte[] _salt )
+        public Crypto( byte[] _key, byte[] _iv, byte[] _salt )
         {
             m_algo.Key = _key;
             m_algo.IV = _iv;
@@ -92,7 +92,7 @@ namespace Morpheus
         /// <param name="_key"></param>
         /// <param name="_iv"></param>
         /// <param name="_salt"></param>
-        public CCrypto( string _key, string _iv, string _salt )
+        public Crypto( string _key, string _iv, string _salt )
         {
             m_algo.Key = StringToBytes( _key );
             m_algo.IV = StringToBytes( _iv );

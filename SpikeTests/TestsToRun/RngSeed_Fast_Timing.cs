@@ -15,7 +15,7 @@ namespace Reflection.RDTSCTiming
     {
         public RngSeed_Fast_Timing()
         {
-            OkToRun = true;
+            OkToRun = false;
             TestName = "RandomSeed.Fast() Timing Test";
             RandomSeed.RDTSC8();
         }
@@ -35,7 +35,7 @@ namespace Reflection.RDTSCTiming
     {
         public RngSeed_Medium_Timing()
         {
-            OkToRun = true;
+            OkToRun = false;
             TestName = "RandomSeed.Medium() Timing Test";
             RandomSeed.RDTSC8();
         }

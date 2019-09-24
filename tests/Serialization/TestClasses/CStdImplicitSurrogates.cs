@@ -17,8 +17,8 @@ namespace Morpheus.Standard.UnitTests.Serialization
         [AImplicitSerializer]
         public bool MySerialize( CSerializer _serializer, XmlNode _node )
         {
-            CXmlHelper.AddAttribute( _node, "NAME", Name );
-            CXmlHelper.AddAttribute( _node, "AGE", Age );
+            XmlExtensions.AddAttribute( _node, "NAME", Name );
+            XmlExtensions.AddAttribute( _node, "AGE", Age );
 
             STATUS = ETestStatus.IMPLICIT_SERIALIZER;
             return true;
@@ -29,8 +29,8 @@ namespace Morpheus.Standard.UnitTests.Serialization
         {
             var x = _object.GetExistingOrCreateNew<CStdImplicitSurrogate>();
 
-            x.Name = CXmlHelper.GetAttributeValue( _node, "NAME" );
-            x.Age = int.Parse( CXmlHelper.GetAttributeValue( _node, "AGE" ) );
+            x.Name = XmlExtensions.GetAttributeValue( _node, "NAME" );
+            x.Age = int.Parse( XmlExtensions.GetAttributeValue( _node, "AGE" ) );
 
             STATUS = ETestStatus.IMPLICIT_DESERIALIZER;
             return true;
@@ -59,7 +59,7 @@ namespace Morpheus.Standard.UnitTests.Serialization
         [AImplicitSerializer]
         public bool MySerialize( CSerializer _framework, XmlNode _node )
         {
-            CXmlHelper.AddAttribute( _node, "Incomplete", "Yes" );
+            XmlExtensions.AddAttribute( _node, "Incomplete", "Yes" );
 
             STATUS = ETestStatus.IMPLICIT_SERIALIZER_INCOMPLETE;
             return false;
@@ -71,7 +71,7 @@ namespace Morpheus.Standard.UnitTests.Serialization
             if (_object.WorkingObject == null)
                 _object.Set( new CIncompleteImplicitSurrogate() );
 
-            if ("Yes" != CXmlHelper.GetAttributeValue( _node, "Incomplete" ))
+            if ("Yes" != XmlExtensions.GetAttributeValue( _node, "Incomplete" ))
             {
                 throw new InvalidOperationException(
                     "Expected an attribute named 'Incomplete' and that attrribute to have the value 'Yes'." );
@@ -96,8 +96,8 @@ namespace Morpheus.Standard.UnitTests.Serialization
         [AImplicitSerializer]
         public void MySerialize( CSerializer _framework, XmlNode _node )
         {
-            CXmlHelper.AddAttribute( _node, "NAME", Name );
-            CXmlHelper.AddAttribute( _node, "AGE", Age );
+            XmlExtensions.AddAttribute( _node, "NAME", Name );
+            XmlExtensions.AddAttribute( _node, "AGE", Age );
 
             STATUS = ETestStatus.IMPLICIT_SERIALIZER_VOID;
         }
@@ -108,8 +108,8 @@ namespace Morpheus.Standard.UnitTests.Serialization
             var x = new CVoidImplicitSurrogate();
             _object.Set( x );
 
-            x.Name = CXmlHelper.GetAttributeValue( _node, "NAME" );
-            x.Age = int.Parse( CXmlHelper.GetAttributeValue( _node, "AGE" ) );
+            x.Name = XmlExtensions.GetAttributeValue( _node, "NAME" );
+            x.Age = int.Parse( XmlExtensions.GetAttributeValue( _node, "AGE" ) );
 
             STATUS = ETestStatus.IMPLICIT_DESERIALIZER_VOID;
         }

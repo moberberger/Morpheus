@@ -14,7 +14,7 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         public void TestStandardUsage()
         {
-            var crypt = new CCrypto();
+            var crypt = new Crypto();
             var target = "homer is sooooo cool!!";
 
             var crypted = crypt.Encrypt( target );
@@ -27,13 +27,13 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         public void TestNewCryptoObject()
         {
-            var c1 = new CCrypto();
+            var c1 = new Crypto();
             var target = "Bart is the biatch.";
 
             var crypted = c1.Encrypt( target );
             Assert.AreNotEqual<string>( target, crypted, "Should be different strings" );
 
-            var c2 = new CCrypto( c1.Key, c1.IV, c1.SystemSalt );
+            var c2 = new Crypto( c1.Key, c1.IV, c1.SystemSalt );
             var actual = c2.Decrypt( crypted );
             Assert.AreEqual<string>( target, actual, "Should be equal again" );
         }
@@ -41,23 +41,23 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         public void TestNewCryptoObjectWithSaltError()
         {
-            var c1 = new CCrypto();
+            var c1 = new Crypto();
             var target = "Bart is the biatch.";
 
             var crypted = c1.Encrypt( target );
             Assert.AreNotEqual<string>( target, crypted, "Should be different strings" );
 
-            var salt = CCrypto.StringToBytes( c1.SystemSalt );
+            var salt = Crypto.StringToBytes( c1.SystemSalt );
             salt[0] = (byte) ~salt[0];
-            var key = CCrypto.StringToBytes( c1.Key );
-            var iv = CCrypto.StringToBytes( c1.IV );
+            var key = Crypto.StringToBytes( c1.Key );
+            var iv = Crypto.StringToBytes( c1.IV );
 
-            var c2 = new CCrypto( key, iv, salt );
+            var c2 = new Crypto( key, iv, salt );
             var actual = c2.Decrypt( crypted );
             Assert.IsNull( actual, "Should be NULL with a bad Salt." );
 
             salt[0] = (byte) ~salt[0];
-            var c3 = new CCrypto( key, iv, salt );
+            var c3 = new Crypto( key, iv, salt );
             actual = c3.Decrypt( crypted );
             Assert.AreEqual<string>( target, actual, "Should be equal again" );
         }
@@ -65,7 +65,7 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         public void CryptErrorTest()
         {
-            var c1 = new CCrypto();
+            var c1 = new Crypto();
             var s = c1.Encrypt( null );
             Assert.IsNull( s, "Expected null return value from encrypting a null string" );
 

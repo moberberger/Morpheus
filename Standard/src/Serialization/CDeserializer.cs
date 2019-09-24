@@ -159,11 +159,11 @@ namespace Morpheus
         {
             // Check the XML to see if this is a NULL object reference. If it is, then return
             // TRUE.
-            if (CXmlHelper.HasAttribute( _xml, m_context.NullAttributeName ))
+            if (XmlExtensions.HasAttribute( _xml, m_context.NullAttributeName ))
                 return true;
 
             // Check the XML to see if its referring to some other object.
-            var referTo = CXmlHelper.GetAttributeValue( _xml, m_context.ReferToAttributeName );
+            var referTo = XmlExtensions.GetAttributeValue( _xml, m_context.ReferToAttributeName );
             if (referTo != null) // There was a reference to another object, so handle it and return that other object.
             {
                 // Check the table for the RefID to get the object. The reference must be in the
@@ -176,7 +176,7 @@ namespace Morpheus
             }
 
             // Check to see if this element is associating the XML with a reference ID
-            var refId = CXmlHelper.GetAttributeValue( _xml, m_context.ReferenceIdAttributeName );
+            var refId = XmlExtensions.GetAttributeValue( _xml, m_context.ReferenceIdAttributeName );
             if (refId != null)
                 _workObj.SetRefInfo( this, refId );
 
@@ -199,7 +199,7 @@ namespace Morpheus
             else if (_type.IsPrimitive)
                 _workingObject.Set( Convert.ChangeType( _xml.InnerText, _type ) );
             // Check for an Array
-            else if (_type.IsArray || CXmlHelper.HasAttribute( _xml, m_context.ArrayAttributeName ))
+            else if (_type.IsArray || XmlExtensions.HasAttribute( _xml, m_context.ArrayAttributeName ))
                 DeserializeArray( _xml, _type, _workingObject );
             else if (_type.IsEnum)
                 _workingObject.Set( Enum.Parse( _type, _xml.InnerText, false ) );
@@ -333,7 +333,7 @@ namespace Morpheus
                 }
 
                 int[] indicies = null;
-                var sIndex = CXmlHelper.GetAttributeValue( elem, m_context.ArrayIndexAttributeName );
+                var sIndex = XmlExtensions.GetAttributeValue( elem, m_context.ArrayIndexAttributeName );
                 if (sIndex != null)
                     indicies = CHelper.ConvertStringToArray<int>( sIndex, ',' );
 
@@ -413,10 +413,10 @@ namespace Morpheus
                 }
 
                 // Get info from the XML
-                var sLengths = CXmlHelper.GetAttributeValue( _xml, m_context.ArrayAttributeName );
+                var sLengths = XmlExtensions.GetAttributeValue( _xml, m_context.ArrayAttributeName );
                 var lengths = CHelper.ConvertStringToArray<int>( sLengths, ',' );
 
-                var sLowerBounds = CXmlHelper.GetAttributeValue( _xml, m_context.ArrayLowerBoundAttribute );
+                var sLowerBounds = XmlExtensions.GetAttributeValue( _xml, m_context.ArrayLowerBoundAttribute );
                 var lowerBounds = CHelper.ConvertStringToArray<int>( sLowerBounds, ',' );
 
                 if (lengths == null)
@@ -470,7 +470,7 @@ namespace Morpheus
             var index = 0;
             foreach (XmlNode node in _xml.ChildNodes)
             {
-                var sIndex = CXmlHelper.GetAttributeValue( node, m_context.ArrayIndexAttributeName );
+                var sIndex = XmlExtensions.GetAttributeValue( node, m_context.ArrayIndexAttributeName );
                 if (!string.IsNullOrEmpty( sIndex ))
                     index = int.Parse( sIndex );
                 index++;
@@ -587,7 +587,7 @@ namespace Morpheus
         /// </exception>
         private Type GetTypeFromXmlOrDefault( XmlElement _xml, Type _defaultType )
         {
-            var sType = CXmlHelper.GetAttributeValue( _xml, m_context.TypeAttributeName );
+            var sType = XmlExtensions.GetAttributeValue( _xml, m_context.TypeAttributeName );
             if (sType == null) // There is no explicit Type specifier (XmlAttribute)
                 return _defaultType;
 

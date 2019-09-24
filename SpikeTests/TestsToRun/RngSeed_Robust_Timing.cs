@@ -15,7 +15,7 @@ namespace Reflection.RDTSCTiming
     {
         public RngSeed_Robust_Timing()
         {
-            OkToRun = true;
+            OkToRun = false;
             TestName = "RngSeed.Robust() Timing Test";
             RandomSeed.RDTSC8();
         }

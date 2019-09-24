@@ -163,11 +163,11 @@ namespace Morpheus
         private XmlElement CreateElementForValue( string _elementName, object _object, XmlNode _parentNode, Type _expectedType )
         {
             var fixedElementName = FixMemberName( _elementName );
-            var elem = CXmlHelper.CreateElement( _parentNode, fixedElementName );
+            var elem = XmlExtensions.CreateElement( _parentNode, fixedElementName );
 
             if (_object == null)
             {
-                CXmlHelper.AddAttribute( elem, m_context.NullAttributeName, m_context.NullAttributeValue );
+                XmlExtensions.AddAttribute( elem, m_context.NullAttributeName, m_context.NullAttributeValue );
             }
             else
             {
@@ -175,7 +175,7 @@ namespace Morpheus
                 oType = CEntityTypeData.StripProxyType( oType );
 
                 if (_expectedType != oType) // There must be a Type attribute added
-                    CXmlHelper.AddAttribute( elem, m_context.TypeAttributeName, oType.AssemblyQualifiedName );
+                    XmlExtensions.AddAttribute( elem, m_context.TypeAttributeName, oType.AssemblyQualifiedName );
             }
 
             return elem;
@@ -244,7 +244,7 @@ namespace Morpheus
         /// <param name="_elementForObject"></param>
         private void SerializeUsingEntitySemantics( object _object, Type _useType, XmlElement _elementForObject )
         {
-            CXmlHelper.AddAttribute( _elementForObject, m_context.UseEntitySemanticsAttributeName, "1" );
+            XmlExtensions.AddAttribute( _elementForObject, m_context.UseEntitySemanticsAttributeName, "1" );
 
             // Gets (cached) type data pertinent to serializing an Entity
             var typeData = CEntityTypeData.GetTypeData( _useType );
@@ -267,7 +267,7 @@ namespace Morpheus
             for (var i = 0; i < typeData.CollectionProperties.Length; i++)
             {
                 var col = typeData.CollectionProperties[i];
-                var collectionElement = CXmlHelper.AddElement( _elementForObject, col.Name );
+                var collectionElement = XmlExtensions.AddElement( _elementForObject, col.Name );
 
                 Type elementType = null; // set if the PropertyType is a generic collection
                 if (col.PropertyType.IsGenericType)
@@ -305,19 +305,19 @@ namespace Morpheus
                 if (ReferenceEquals( _elementForObject, refElem )) // If this IS the referenced element, then skip it
                     return false;
 
-                var refId = CXmlHelper.GetAttributeValue( refElem, m_context.ReferenceIdAttributeName );
+                var refId = XmlExtensions.GetAttributeValue( refElem, m_context.ReferenceIdAttributeName );
                 if (refId == null) // The object that was serialized doesn't have its RefID set yet
                 {
                     refId = m_refId.ToString();
-                    CXmlHelper.AddAttribute( refElem, m_context.ReferenceIdAttributeName, refId );
+                    XmlExtensions.AddAttribute( refElem, m_context.ReferenceIdAttributeName, refId );
                     m_refId++;
                 }
                 // Add the "ReferTo" attribute to the xml
-                CXmlHelper.AddAttribute( _elementForObject, m_context.ReferToAttributeName, refId );
+                XmlExtensions.AddAttribute( _elementForObject, m_context.ReferToAttributeName, refId );
 
                 // Remove a "Type" attribute (if it exists) because this becomes redundant with
                 // the presence of RefTo
-                CXmlHelper.RemoveAttribute( _elementForObject, m_context.TypeAttributeName );
+                XmlExtensions.RemoveAttribute( _elementForObject, m_context.TypeAttributeName );
 
                 return true;
             }
@@ -441,9 +441,9 @@ namespace Morpheus
             var lowerBound = _array.GetLowerBound( 0 );
             var upperBound = _array.GetUpperBound( 0 );
 
-            CXmlHelper.AddAttribute( _elementToAddTo, m_context.ArrayAttributeName, count );
+            XmlExtensions.AddAttribute( _elementToAddTo, m_context.ArrayAttributeName, count );
             if (lowerBound != 0)
-                CXmlHelper.AddAttribute( _elementToAddTo, m_context.ArrayLowerBoundAttribute, lowerBound );
+                XmlExtensions.AddAttribute( _elementToAddTo, m_context.ArrayLowerBoundAttribute, lowerBound );
 
             if (elementType.IsPrimitive && !m_context.AllArraysHaveExplicitElements)
             {
@@ -476,7 +476,7 @@ namespace Morpheus
                         var elem = FrameworkSerialize( elementName, arrayElementValue, _elementToAddTo, elementType );
 
                         if (m_context.ArrayElementsIncludeIndicies || skipped)
-                            CXmlHelper.AddAttribute( elem, m_context.ArrayIndexAttributeName, i );
+                            XmlExtensions.AddAttribute( elem, m_context.ArrayIndexAttributeName, i );
 
                         skipped = false;
                     }

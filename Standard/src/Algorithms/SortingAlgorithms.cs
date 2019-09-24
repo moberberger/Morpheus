@@ -11,7 +11,7 @@ namespace Morpheus
     /// implemented from within the <see cref="System.Array"/> class. (Note: It was QuickSort up
     /// until 4.5) (Note 2: Its still not stable)
     /// </summary>
-    public static class CSortingAlgorithms
+    public static class SortingAlgorithms
     {
         /// <summary>
         /// Sort the IList using an INSERTION SORT- O(n^2) in complexity, but it is a STABLE

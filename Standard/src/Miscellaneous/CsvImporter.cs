@@ -43,7 +43,7 @@ namespace Morpheus
     /// only whitespace. If the separator for data elements is itself a whitespace character,
     /// then multiple such separators in a line will prevent the "skipping" of the line.
     /// </summary>
-    public class CCsvImporter
+    public class CsvImporter
     {
         /// <summary>
         /// This delegate can be used to handle exceptions in the input stream
@@ -117,7 +117,7 @@ namespace Morpheus
         /// <summary>
         /// The default constructor
         /// </summary>
-        public CCsvImporter()
+        public CsvImporter()
         {
         }
 

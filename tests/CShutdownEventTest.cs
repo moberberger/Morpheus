@@ -15,7 +15,7 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         public void ShutdownEventTest()
         {
-            var e = new CShutdownEvent();
+            var e = new ShutdownEvent();
             Assert.IsFalse( e.IsShutdown, "Should not be shutting down on construction" );
 
             var wh = (WaitHandle) e;
@@ -26,7 +26,7 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         public void ShutdownEventSignalledTest()
         {
-            var e = new CShutdownEvent();
+            var e = new ShutdownEvent();
             e.Shutdown();
 
             Assert.IsTrue( e.IsShutdown, "Should be shutting down after being instructed to" );

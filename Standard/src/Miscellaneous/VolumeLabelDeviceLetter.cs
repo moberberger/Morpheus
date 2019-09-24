@@ -31,7 +31,7 @@ namespace Morpheus
     /// 
     /// NOTE- The colons are required!
     /// </remarks>
-    public static class CVolumeLabelDeviceLetter
+    public static class VolumeLabelDeviceLetter
     {
         /// <summary>
         /// Translate a full path name that includes a volume label into a "proper"

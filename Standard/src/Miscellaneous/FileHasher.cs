@@ -9,7 +9,7 @@ namespace Morpheus
     /// This class will calculate the hash value for a given file/stream using either MD5 or whatever
     /// other <see cref="HashAlgorithm"/> specified by the application
     /// </summary>
-    public class CFileHasher : CFileProcessor
+    public class FileHasher : FileProcessor
     {
         /// <summary>
         /// The hash algorithm used by this object instance
@@ -19,7 +19,7 @@ namespace Morpheus
         /// <summary>
         /// Default algorithm uses MD5
         /// </summary>
-        public CFileHasher()
+        public FileHasher()
         {
             m_hashAlgorithm = new MD5CryptoServiceProvider();
         }
@@ -28,7 +28,7 @@ namespace Morpheus
         /// Specify the type of hashing that the app wants to use
         /// </summary>
         /// <param name="_hashAlgorithm">The hash algorithm used by this instance</param>
-        public CFileHasher( HashAlgorithm _hashAlgorithm )
+        public FileHasher( HashAlgorithm _hashAlgorithm )
         {
             m_hashAlgorithm = _hashAlgorithm;
             AssertValidHashAlgorithm();
@@ -39,7 +39,7 @@ namespace Morpheus
         /// more information. 
         /// </summary>
         /// <param name="_hashAlgorithmName">"MD5", "SHA[1|256|384|512]", etc.</param>
-        public CFileHasher( string _hashAlgorithmName )
+        public FileHasher( string _hashAlgorithmName )
         {
             m_hashAlgorithm = HashAlgorithm.Create( _hashAlgorithmName );
             AssertValidHashAlgorithm();

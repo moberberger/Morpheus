@@ -222,9 +222,9 @@ namespace Morpheus.Standard.UnitTests.Serialization
             var s = new CSerializer( c );
             var doc = s.Serialize( CBigPerson.People );
 
-            Console.WriteLine( "Depth of resulting XML: " + CXmlHelper.Depth( doc ) );
+            Console.WriteLine( "Depth of resulting XML: " + XmlExtensions.Depth( doc ) );
             Console.WriteLine( "Length of resulting XML String: " + doc.OuterXml.Length );
-            Console.WriteLine( "Number of resulting XmlElements: " + CXmlHelper.ElementCount( doc ) );
+            Console.WriteLine( "Number of resulting XmlElements: " + XmlExtensions.ElementCount( doc ) );
 
             var d = new CDeserializer( c );
 

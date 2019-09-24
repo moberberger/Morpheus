@@ -60,7 +60,7 @@ namespace Morpheus.Serialization
                                                  Type[] _expectedTypes,
                                                  CSerializer _serializer )
         {
-            var entryElement = CXmlHelper.AddElement( _parentElement, _name );
+            var entryElement = _parentElement.AddElement( _name );
 
             var entry = (DictionaryEntry) _element;
 

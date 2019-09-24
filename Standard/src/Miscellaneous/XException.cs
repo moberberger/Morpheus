@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Morpheus
 {
     /// <summary>
-    /// A base override of Exception that works with Morpheus Code Snippets and distinguishes Morpheus exceptions from .NET exceptions.
+    /// A base override of Exception that works with Morpheus Code Snippets and distinguishes
+    /// Morpheus exceptions from .NET exceptions.
     /// </summary>
     public class XException : Exception
     {

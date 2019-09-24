@@ -8,7 +8,7 @@ namespace Morpheus
     /// <remarks>
     /// It uses a standard <see cref="ManualResetEvent"/> along with a <see cref="bool"/> value to provide "shutdown" information and functionality
     /// </remarks>
-    public class CShutdownEvent
+    public class ShutdownEvent
     {
         private readonly ManualResetEvent m_shutdownEvent = new ManualResetEvent( false );
 
@@ -39,13 +39,13 @@ namespace Morpheus
         /// </summary>
         /// <param name="_object">The CShutdownEvent object</param>
         /// <returns>The "WaitHandle" part of the ManualResetEvent field of the object</returns>
-        public static implicit operator WaitHandle( CShutdownEvent _object ) => _object.m_shutdownEvent;
+        public static implicit operator WaitHandle( ShutdownEvent _object ) => _object.m_shutdownEvent;
 
         /// <summary>
         /// Allow an object of this type to be passed into a "WaitOne" or "WaitAny" call.
         /// </summary>
         /// <param name="_object">The CShutdownEvent object</param>
         /// <returns>The "WaitHandle" part of the ManualResetEvent field of the object</returns>
-        public static implicit operator ManualResetEvent( CShutdownEvent _object ) => _object.m_shutdownEvent;
+        public static implicit operator ManualResetEvent( ShutdownEvent _object ) => _object.m_shutdownEvent;
     }
 }

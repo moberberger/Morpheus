@@ -63,7 +63,7 @@ namespace Morpheus
                 {
                     var group = match.Groups[i];
                     var name = m_regex.GroupNameFromNumber( i );
-                    if (group == null || name.IsNullOrWhitespace()) continue;
+                    if (group == null || string.IsNullOrWhiteSpace( name )) continue;
 
                     var setter = GetValueSetter<T>( name, out var memberType );
                     if (setter == null) continue;
@@ -96,9 +96,9 @@ namespace Morpheus
         private static Action<object, object> GetValueSetter<T>( string _name, out Type _memberType )
             where T : class, new()
         {
-            //var setter = CGetterSetter.GetCached( typeof( T ), _name );
-            //_memberType = setter?.MemberType;
-            //return (setter == null) ? default( Action<object, object> ) : setter.Set;
+            // var setter = CGetterSetter.GetCached( typeof( T ), _name ); _memberType =
+            // setter?.MemberType; return (setter == null) ? default( Action
+            // <object, object> ) : setter.Set;
             throw new NotImplementedException();
         }
 

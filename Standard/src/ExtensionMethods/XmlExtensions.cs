@@ -11,7 +11,7 @@ namespace Morpheus
     /// <summary>
     /// A helper to do various simple operations on XML documents Elements
     /// </summary>
-    public static class CXmlHelper
+    public static class XmlExtensions
     {
         /// <summary>
         /// Helper function to add an attribute, including the name and value, to an Xml node

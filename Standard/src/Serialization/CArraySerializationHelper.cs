@@ -7,8 +7,8 @@ using System.Xml;
 namespace Morpheus.Serialization
 {
     /// <summary>
-    /// Helper class to contain the "State" data for a recursive algorithm used to serialize
-    /// a multi-dimensional array of objects
+    /// Helper class to contain the "State" data for a recursive algorithm used to serialize a
+    /// multi-dimensional array of objects
     /// </summary>
     internal class CArraySerializationHelper
     {
@@ -32,7 +32,9 @@ namespace Morpheus.Serialization
         /// </summary>
         /// <param name="_array">The array that its going to serialize</param>
         /// <param name="_xmlToAddTo">The XML node that the array data is to be added to</param>
-        /// <param name="_serializer">The serializer that will handle serialization of array elements</param>
+        /// <param name="_serializer">
+        /// The serializer that will handle serialization of array elements
+        /// </param>
         internal CArraySerializationHelper( Array _array, XmlElement _xmlToAddTo, CSerializer _serializer )
         {
             m_array = _array;
@@ -52,8 +54,9 @@ namespace Morpheus.Serialization
         }
 
         /// <summary>
-        /// "Simple Arrays" are arrays of primitives or strings. These arrays can be turned into strings containing
-        /// comma-separated values. Doing so greatly reduces the resulting dataset, but is less "friendly" to XML processing.
+        /// "Simple Arrays" are arrays of primitives or strings. These arrays can be turned into
+        /// strings containing comma-separated values. Doing so greatly reduces the resulting
+        /// dataset, but is less "friendly" to XML processing.
         /// </summary>
         private void EstablishSimpleElementProcessing()
         {
@@ -65,8 +68,8 @@ namespace Morpheus.Serialization
         }
 
         /// <summary>
-        /// Generate lower-bounds and length arrays from the configuration data of the Array. Add this information
-        /// as attribute information on the Xml that we're serializing to.
+        /// Generate lower-bounds and length arrays from the configuration data of the Array.
+        /// Add this information as attribute information on the Xml that we're serializing to.
         /// </summary>
         private void GenerateAttributeInfo()
         {
@@ -80,8 +83,8 @@ namespace Morpheus.Serialization
             var sLengths = CHelper.ConvertArrayToString( m_lengths );
             var slowerBounds = CHelper.ConvertArrayToString( m_lowerBounds );
 
-            CXmlHelper.AddAttribute( m_xmlToAddTo, m_serializer.Context.ArrayAttributeName, sLengths );
-            CXmlHelper.AddAttribute( m_xmlToAddTo, m_serializer.Context.ArrayLowerBoundAttribute, slowerBounds );
+            m_xmlToAddTo.AddAttribute( m_serializer.Context.ArrayAttributeName, sLengths );
+            m_xmlToAddTo.AddAttribute( m_serializer.Context.ArrayLowerBoundAttribute, slowerBounds );
         }
 
         /// <summary>
@@ -94,8 +97,8 @@ namespace Morpheus.Serialization
         }
 
         /// <summary>
-        /// If there was a simple-element serialization, then add the results to the XML as this was not done during
-        /// serialization for performance reasons.
+        /// If there was a simple-element serialization, then add the results to the XML as this
+        /// was not done during serialization for performance reasons.
         /// </summary>
         private void HandleSimpleElements()
         {
@@ -110,7 +113,8 @@ namespace Morpheus.Serialization
         }
 
         /// <summary>
-        /// The recursive method that uses a current "Rank" parameter to determine where in the recursion we are.
+        /// The recursive method that uses a current "Rank" parameter to determine where in the
+        /// recursion we are.
         /// </summary>
         /// <param name="_rank"></param>
         private void AddArrayDimensionToXml( int _rank )
@@ -128,7 +132,8 @@ namespace Morpheus.Serialization
         }
 
         /// <summary>
-        /// Use the data found in the recursion state (this object) to serialize a single element in the array to Xml.
+        /// Use the data found in the recursion state (this object) to serialize a single
+        /// element in the array to Xml.
         /// </summary>
         private void AddArrayElementToXml()
         {
@@ -162,9 +167,8 @@ namespace Morpheus.Serialization
                                                      m_arrayType );
                 if (m_serializer.Context.ArrayElementsIncludeIndicies || m_skippedNull)
                 {
-                    CXmlHelper.AddAttribute( elem,
-                                             m_serializer.Context.ArrayIndexAttributeName,
-                                             CHelper.ConvertArrayToString( m_indicies ) );
+                    elem.AddAttribute( m_serializer.Context.ArrayIndexAttributeName,
+                                       CHelper.ConvertArrayToString( m_indicies ) );
                 }
                 m_skippedNull = false;
             }

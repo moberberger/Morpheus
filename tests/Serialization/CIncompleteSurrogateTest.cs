@@ -48,9 +48,9 @@ namespace Morpheus.Standard.UnitTests.Serialization
             var doc = s.Serialize( x );
             Assert.AreEqual( 3, x.Count, "There should have been 3 strings counted." );
 
-            Console.WriteLine( "Depth of resulting XML: " + CXmlHelper.Depth( doc ) );
+            Console.WriteLine( "Depth of resulting XML: " + XmlExtensions.Depth( doc ) );
             Console.WriteLine( "Length of resulting XML String: " + doc.OuterXml.Length );
-            Console.WriteLine( "Number of resulting XmlElements: " + CXmlHelper.ElementCount( doc ) );
+            Console.WriteLine( "Number of resulting XmlElements: " + XmlExtensions.ElementCount( doc ) );
             Print( doc );
 
             var d = new CDeserializer( c );
@@ -66,7 +66,7 @@ namespace Morpheus.Standard.UnitTests.Serialization
             public bool Serialize( object _object, Type _useType, XmlElement _parentNode, CSerializer _serializer )
             {
                 var array = (int[]) _object;
-                CXmlHelper.AddAttribute( _parentNode, "MYLEN", array.Length );
+                XmlExtensions.AddAttribute( _parentNode, "MYLEN", array.Length );
                 return false;
             }
 
@@ -74,7 +74,7 @@ namespace Morpheus.Standard.UnitTests.Serialization
                                      XmlElement _parentNode,
                                      CDeserializer _deserializer )
             {
-                var sLen = CXmlHelper.GetAttributeValue( _parentNode, "MYLEN" );
+                var sLen = XmlExtensions.GetAttributeValue( _parentNode, "MYLEN" );
                 var len = int.Parse( sLen );
                 _workingObject.Set( Array.CreateInstance( typeof( int ), len + 1 ) );
                 // This actually is a no-no, but i'm testing to make sure
@@ -97,9 +97,9 @@ namespace Morpheus.Standard.UnitTests.Serialization
             var s = new CSerializer( c );
             var doc = s.Serialize( x );
 
-            Console.WriteLine( "Depth of resulting XML: " + CXmlHelper.Depth( doc ) );
+            Console.WriteLine( "Depth of resulting XML: " + XmlExtensions.Depth( doc ) );
             Console.WriteLine( "Length of resulting XML String: " + doc.OuterXml.Length );
-            Console.WriteLine( "Number of resulting XmlElements: " + CXmlHelper.ElementCount( doc ) );
+            Console.WriteLine( "Number of resulting XmlElements: " + XmlExtensions.ElementCount( doc ) );
             Print( doc );
 
             var d = new CDeserializer( c );
@@ -120,7 +120,7 @@ namespace Morpheus.Standard.UnitTests.Serialization
                 var f = (CFriend) _object;
                 _serializer.IgnoreField( "FriendPerson" );
                 var idx = Array.IndexOf( CBigPerson.People, f.FriendPerson );
-                CXmlHelper.AddElement( _parentNode, "FriendPerson", idx );
+                XmlExtensions.AddElement( _parentNode, "FriendPerson", idx );
                 return false;
             }
 
@@ -129,7 +129,7 @@ namespace Morpheus.Standard.UnitTests.Serialization
             public bool Deserialize( CWorkingObject _workingObject, XmlElement _parentNode, CDeserializer _framework )
             {
                 _framework.IgnoreField( "FriendPerson" );
-                var sIdx = CXmlHelper.GetElementValue( _parentNode, "FriendPerson" );
+                var sIdx = XmlExtensions.GetElementValue( _parentNode, "FriendPerson" );
                 var idx = int.Parse( sIdx );
 
                 if (m_indicies == null)
@@ -173,9 +173,9 @@ namespace Morpheus.Standard.UnitTests.Serialization
             var s = new CSerializer( c );
             var doc = s.Serialize( CBigPerson.People );
 
-            Console.WriteLine( "Depth of resulting XML: " + CXmlHelper.Depth( doc ) );
+            Console.WriteLine( "Depth of resulting XML: " + XmlExtensions.Depth( doc ) );
             Console.WriteLine( "Length of resulting XML String: " + doc.OuterXml.Length );
-            Console.WriteLine( "Number of resulting XmlElements: " + CXmlHelper.ElementCount( doc ) );
+            Console.WriteLine( "Number of resulting XmlElements: " + XmlExtensions.ElementCount( doc ) );
             Print( doc );
 
             var d = new CDeserializer( c );

@@ -10,7 +10,7 @@ namespace Morpheus
     /// This class allows an application to "process" a file concurrently with reading it. It assumes 
     /// that the application needs to deal with VERY LARGE FILES, otherwise there is no benefit.
     /// </summary>
-    public class CFileProcessor
+    public class FileProcessor
     {
         /// <summary>
         /// Delegate matching <see cref="Stream.Write"/> for processing bytes read from the file

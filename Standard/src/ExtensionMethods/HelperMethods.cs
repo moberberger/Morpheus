@@ -19,28 +19,7 @@ namespace Morpheus
         /// will not recognize a number with commas in it as a single number. For example,
         /// "1,234" will be recognized as two numbers- "1" and "234".
         /// </summary>
-        public static Regex NumberFindingRegex = new Regex( @"\d+", RegexOptions.Compiled );
-
-        /// <summary>
-        /// Connect this method (as an Extension) to the Enum class to determine if the "Value"
-        /// of the enumeration is a "valid" value given the enumeration. Unlike
-        /// <see cref="Enum.IsDefined"/> , this will return TRUE if the Enum is a bitmask that
-        /// contains only "valid" bits.
-        /// </summary>
-        /// <param name="_this"></param>
-        /// <returns></returns>
-        public static bool IsValidEnum( this Enum _this )
-        {
-            var s = _this.ToString();
-            for (var i = 0; i < s.Length; i++)
-            {
-                if (!char.IsDigit( s, i ))
-                    return true;
-            }
-            return false;
-        }
-
-
+        public static Regex NumberFindingRegex = new Regex( @"-?\d+", RegexOptions.Compiled );
         private static readonly Regex sm_getFirstNumberRegex = new Regex( @"-?\d+", RegexOptions.Compiled );
 
         /// <summary>
@@ -322,7 +301,7 @@ namespace Morpheus
         /// <param name="_source">The stream containing the bytes to transfer</param>
         /// <param name="_destination">The stream to receive the bytes</param>
         /// <returns>The actual number of bytes transferred</returns>
-        public static int TransferStream( Stream _source, Stream _destination ) => TransferStream( _source, _destination, 65536, -1 );
+        public static int TransferStream( this Stream _source, Stream _destination ) => TransferStream( _source, _destination, 65536, -1 );
 
         /// <summary>
         /// Transfer the bytes from one stream to another
@@ -333,7 +312,7 @@ namespace Morpheus
         /// The size of the buffer used as temporary storage as the bytes are transferred
         /// </param>
         /// <returns>The actual number of bytes transferred</returns>
-        public static int TransferStream( Stream _source, Stream _destination, int _bufferSize ) => TransferStream( _source, _destination, _bufferSize, -1 );
+        public static int TransferStream( this Stream _source, Stream _destination, int _bufferSize ) => TransferStream( _source, _destination, _bufferSize, -1 );
 
         /// <summary>
         /// Transfer the bytes from one stream to another
@@ -348,7 +327,7 @@ namespace Morpheus
         /// be read.
         /// </param>
         /// <returns>The actual number of bytes transferred</returns>
-        public static int TransferStream( Stream _source, Stream _destination, int _bufferSize, int _count )
+        public static int TransferStream( this Stream _source, Stream _destination, int _bufferSize, int _count )
         {
             if (_count == 0)
                 return 0;
@@ -373,19 +352,6 @@ namespace Morpheus
             while (bytesRead > 0);
 
             return totalBytesRead;
-        }
-
-        /// <summary>
-        /// Swap two values
-        /// </summary>
-        /// <typeparam name="T">The Type of the values</typeparam>
-        /// <param name="_first">First Value</param>
-        /// <param name="_second">Second Value</param>
-        public static void Swap<T>( ref T _first, ref T _second )
-        {
-            var tmp = _first;
-            _first = _second;
-            _second = tmp;
         }
 
         /// <summary>
@@ -447,8 +413,8 @@ namespace Morpheus
 
                 for (var findIdx = 0; findIdx < _toFind.Length; findIdx++)
                 {
-                    var sourceChar = _source[srcIdx + findIdx];
-                    if (sourceChar != _toFind[findIdx])
+                    var srcByte = _source[srcIdx + findIdx];
+                    if (srcByte != _toFind[findIdx])
                     {
                         found = false;
                         break;
@@ -469,16 +435,26 @@ namespace Morpheus
         /// </summary>
         /// <param name="_string">The string to "clean up"</param>
         /// <returns>A new string with the modifications requested</returns>
+        /// <remarks>
+        /// <code>
+        /// var testStr = " \t \n This  \tIs  \tIt\n!   ";
+        /// var expected = "This Is It !";
+        /// var actual = testStr.RemoveDuplicateWhitespace();
+        /// Assert.AreEqual( expected, actual );
+        /// </code>
+        /// </remarks>
         public static string RemoveDuplicateWhitespace( this string _string )
         {
-            var str = new StringBuilder( _string.Length );
+            if (_string == null)
+                throw new ArgumentNullException();
 
+            var str = new StringBuilder( _string.Length );
             var whitespaceAdded = true; // start as true to prevent whitespace at beginning of string
             for (var i = 0; i < _string.Length; i++)
             {
                 var ch = _string[i];
 
-                if (char.IsWhiteSpace( ch ) || ch < ' ') // if char is WS...
+                if (ch < ' ' || char.IsWhiteSpace( ch )) // if char is WS...
                 {
                     if (whitespaceAdded) // AND we've already added WS
                     {
@@ -502,27 +478,11 @@ namespace Morpheus
             {
                 str.Length--; // remove the trailing WS
                 var ch = str[str.Length - 1];
-                whitespaceAdded = char.IsWhiteSpace( ch ) || ch < ' ';
+                whitespaceAdded = ch < ' ' || char.IsWhiteSpace( ch );
             }
 
             return str.ToString();
         }
-
-        /// <summary>
-        /// Return TRUE if the string contains something other than whitespace. NULL strings
-        /// return false.
-        /// </summary>
-        /// <param name="_someString">The string to test</param>
-        /// <returns>TRUE if the string contains any non-whitespace characters</returns>
-        public static bool IsSet( this string _someString ) => _someString?.Length > 0;
-
-        /// <summary>
-        /// Return FALSE if the string contains something other than whitespace. NULL strings
-        /// return TRUE.
-        /// </summary>
-        /// <param name="_someString">The string to test</param>
-        /// <returns>FALSE if the string contains any non-whitespace characters</returns>
-        public static bool IsNullOrWhitespace( this string _someString ) => _someString?.Length == 0;
 
         /// <summary>
         /// Convert a byte array to a string that represents the byte array encoded as Base64

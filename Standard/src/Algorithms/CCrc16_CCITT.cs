@@ -7,19 +7,19 @@ namespace Morpheus
     /// This class encapsulates a CRC-16 algorithm based on the CCITT polynomial.
     /// </summary>
     /// <remarks>
-    /// This is a table-based algorithm which was tested as much faster than a purely
-    /// bit-manipulation method.
+    /// <para> This is a table-based algorithm which was tested as much faster than a purely
+    /// bit-manipulation method. </para>
     /// 
-    /// This algorithm is faster than using <see cref="MD5CryptoServiceProvider"/> when the
-    /// size of the data is approximately 5k or less. For data sizes greater than 5k-bytes,
-    /// the MD5 calculation becomes faster.
+    /// <para> This algorithm is faster than using <see cref="MD5CryptoServiceProvider"/> when
+    /// the size of the data is approximately 5k or less. For data sizes greater than 5k-bytes,
+    /// the MD5 calculation becomes faster. </para>
     /// 
-    /// The larger the dataset, the better MD5 performs compared to this algorithm.
+    /// <para> The larger the dataset, the better MD5 performs compared to this algorithm. </para>
     /// 
-    /// Another significant difference is that MD5 produces a 16-byte result, where CCITT-16
-    /// produces a 2-byte result.
+    /// <para> Another significant difference is that MD5 produces a 16-byte result, where
+    /// CCITT-16 produces a 2-byte result. </para>
     /// </remarks>
-    public class CCrc16_CCITT
+    public class CCrc16_CCITT // TODO: Make sure this is really CCITT and not XModem
     {
         private static readonly uint[] sm_crcTable = new uint[256];
 
@@ -55,18 +55,17 @@ namespace Morpheus
         /// </param>
         /// <param name="_length">The number of bytes to include in the CRC</param>
         /// <returns>The CRC16 for the data in the array</returns>
-        public static ushort CalculateCrc( byte[] _data, int _offset, int _length )
+        public static ushort CalculateCrc( byte[] _data, int _offset = 0, int _length = -1 )
         {
             if (_offset < 0 || _offset > _data.Length)
                 throw new ArgumentException( "_offset needs to be between 0 and _data.Length, inclusive" );
 
             if (_length < 0)
-                _length = _data.Length;
+                _length = _data.Length - _offset;
 
             var lastIndex = Math.Min( _offset + _length, _data.Length );
 
             uint CRC = 0xffff;
-
             for (var i = _offset; i < lastIndex; i++)
             {
                 uint C = _data[i];
@@ -79,10 +78,10 @@ namespace Morpheus
         /// This override will calculate the CCITT-CRC16 for a USHORT.
         /// </summary>
         /// <remarks>
-        /// This method is used, for instance, to create the "pair" for a framing operation.
-        /// For instance, the parameter to this method would represent the length of the
-        /// frame and the return value of this method is appended that length and placed at
-        /// the beginning of the frame.
+        /// This method is used, for instance, to create the "pair" for a framing operation. For
+        /// instance, the parameter to this method would represent the length of the frame and
+        /// the return value of this method is appended that length and placed at the beginning
+        /// of the frame.
         /// </remarks>
         /// <param name="_number">The 2-byte number to take the CRC of</param>
         /// <returns>The CCITT-CRC of the ushort parameter</returns>
@@ -103,8 +102,8 @@ namespace Morpheus
         /// This override will calculate the CCITT-CRC16 for an Int32.
         /// </summary>
         /// <remarks>
-        /// For example, the parameter to this method would represent the length of
-        /// something that, coupled with its CRC, may be a checksum of sorts
+        /// For example, the parameter to this method would represent the length of something
+        /// that, coupled with its CRC, may be a checksum of sorts
         /// </remarks>
         /// <param name="_number">
         /// The 4-byte number to take the CRC of. Sign is irrelevant.
