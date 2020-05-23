@@ -27,7 +27,7 @@ namespace Morpheus
         /// Create a new DI Scope
         /// </summary>
         /// <returns></returns>
-        public static DI New() => new DI( Default );
+        public static DI New() => new DI(Default);
 
 
 
@@ -38,7 +38,8 @@ namespace Morpheus
         private readonly Dictionary<Type, ClassConfig> m_typeLookup = new Dictionary<Type, ClassConfig>();
 
         /// <summary>
-        /// If NULL, then this is the <see cref="DI.Default"/> object.
+        /// If NULL, then this is the <see cref="DI.Default"/> object or its been created to be
+        /// expressly empty.
         /// </summary>
         private readonly DI m_parent;
 
@@ -46,7 +47,7 @@ namespace Morpheus
         /// Construct with a parent.
         /// </summary>
         /// <param name="_parent"></param>
-        private DI( DI _parent = null ) => m_parent = _parent;
+        private DI(DI _parent = null) => m_parent = _parent;
 
 
         /// <summary>
@@ -54,13 +55,13 @@ namespace Morpheus
         /// </summary>
         /// <param name="_type"></param>
         /// <returns></returns>
-        public ClassConfig GetClassConfig( Type _type )
+        public ClassConfig GetClassConfig(Type _type)
         {
-            if (m_typeLookup.ContainsKey( _type ))
+            if (m_typeLookup.ContainsKey(_type))
                 return m_typeLookup[_type];
 
-            var fromAncestors = m_parent?.GetClassConfig( _type );
-            var newConfig = new ClassConfig( _type, this, fromAncestors );
+            var fromAncestors = m_parent?.GetClassConfig(_type);
+            var newConfig = new ClassConfig(_type, this, fromAncestors);
 
             m_typeLookup[_type] = newConfig;
             return newConfig;
@@ -72,7 +73,7 @@ namespace Morpheus
         /// <returns></returns>
         public DI CreateChild()
         {
-            return new DI( this );
+            return new DI(this);
         }
 
         /// <summary>
@@ -89,7 +90,7 @@ namespace Morpheus
         /// </summary>
         /// <typeparam name="T">The <see cref="Type"/> the caller is interested in</typeparam>
         /// <returns></returns>
-        public ClassConfig For<T>() where T : class => GetClassConfig( typeof( T ) );
+        public ClassConfig For<T>() where T : class => GetClassConfig(typeof(T));
 
         /// <summary>
         /// 
@@ -100,7 +101,8 @@ namespace Morpheus
     }
 
     /// <summary>
-    /// 
+    /// this looks like its a little over the top for accessing the static object- but maybe not
+    /// for simple applications
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public static class DI<T> where T : class
@@ -115,7 +117,7 @@ namespace Morpheus
         /// For <see cref="DI.Default"/> , use an object as a singleton.
         /// </summary>
         /// <param name="_singleton"></param>
-        public static void Use( object _singleton ) => DI.Default.For<T>().Use( _singleton );
+        public static void Use(object _singleton) => DI.Default.For<T>().Use(_singleton);
 
         /// <summary>
         /// 
@@ -128,6 +130,6 @@ namespace Morpheus
         /// <see cref="ELifecycle.New"/> .
         /// </summary>
         /// <param name="_type"></param>
-        public static void Use( Type _type ) => DI.Default.For<T>().Use( _type );
+        public static void Use(Type _type) => DI.Default.For<T>().Use(_type);
     }
 }

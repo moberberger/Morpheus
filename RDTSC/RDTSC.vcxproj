@@ -11,7 +11,7 @@
     <ProjectGuid>{04B88EC8-CAC3-4A0D-9E2E-80078F39DBE2}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>RDTSC</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <ProjectName>RDTSC</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

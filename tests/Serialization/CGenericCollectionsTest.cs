@@ -3,6 +3,7 @@ using Morpheus.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Xml;
+using System.Linq;
 
 namespace Morpheus.Standard.UnitTests.Serialization
 {
@@ -27,7 +28,7 @@ namespace Morpheus.Standard.UnitTests.Serialization
             Print( doc );
 
             var d = new CDeserializer();
-            var d2 = (SortedList<string, CAddress>) d.Deserialize( doc );
+            var d2 = (SortedList<string, CAddress>)d.Deserialize( doc );
 
             Assert.AreEqual( dict.Count, d2.Count, "Size of resulting dictionary is wrong" );
             Assert.AreEqual( dict.Count, doc.DocumentElement.ChildNodes.Count, "The number of XmlNodes for the collection is wrong" );
@@ -57,7 +58,7 @@ namespace Morpheus.Standard.UnitTests.Serialization
             Print( doc );
 
             var d = new CDeserializer();
-            var d2 = (SortedDictionary<string, CAddress>) d.Deserialize( doc );
+            var d2 = (SortedDictionary<string, CAddress>)d.Deserialize( doc );
 
             Assert.AreEqual( dict.Count, d2.Count, "Size of resulting dictionary is wrong" );
             Assert.AreEqual( dict.Count, doc.DocumentElement.ChildNodes.Count, "The number of XmlNodes for the collection is wrong" );
@@ -86,7 +87,7 @@ namespace Morpheus.Standard.UnitTests.Serialization
             Print( doc );
 
             var d = new CDeserializer();
-            var q2 = (Stack<CAddress>) d.Deserialize( doc );
+            var q2 = (Stack<CAddress>)d.Deserialize( doc );
 
             Assert.AreEqual( q.Count, q2.Count, "Number of resulting elements is wrong." );
             Assert.AreEqual( q.Count,
@@ -118,7 +119,7 @@ namespace Morpheus.Standard.UnitTests.Serialization
             Print( doc );
 
             var d = new CDeserializer();
-            var q2 = (Queue<CAddress>) d.Deserialize( doc );
+            var q2 = (Queue<CAddress>)d.Deserialize( doc );
 
             Assert.AreEqual( q.Count, q2.Count, "Number of resulting elements is wrong." );
             Assert.AreEqual( q.Count,
@@ -139,7 +140,7 @@ namespace Morpheus.Standard.UnitTests.Serialization
         {
             var list = new LinkedList<int>();
 
-            for (var i = 1; i < 1000000; i = (int) ((i + 1) * 1.5))
+            for (var i = 1; i < 1000000; i = (int)((i + 1) * 1.5))
             {
                 list.AddLast( i );
             }
@@ -170,7 +171,7 @@ namespace Morpheus.Standard.UnitTests.Serialization
             var names = new string[26];
             for (var i = 0; i < 26; i++)
             {
-                names[i] = new string( (char) (i + 'A'), 5 );
+                names[i] = new string( (char)(i + 'A'), 5 );
             }
 
             for (var i = 0; i < 26; i++)
@@ -215,18 +216,18 @@ namespace Morpheus.Standard.UnitTests.Serialization
                              "Child Node Count should match Dictionary Count when using an Interface surrogate" );
 
             var stak = doc.DocumentElement["AsStack"];
-            Assert.AreEqual( 4, stak.ChildNodes.Count, "The Stack should have 4 elements in it" );
+            //var stakArr = stak.ChildNodes[0];
+            //Assert.AreEqual( ca.AsStack.Count, stakArr.ChildNodes.Count, $"The Stack size is incorrect" );
 
             var stakCount = stak["_size"];
             Assert.AreEqual( int.Parse( stakCount.InnerText ), ca.AsStack.Count, "The number of stack elements is wrong" );
 
             var stakElems = stak["_array"];
             var c = int.Parse( XmlExtensions.GetAttributeValue( stakElems, ctx.ArrayAttributeName ) );
-            Assert.AreEqual( c, stakElems.ChildNodes.Count, "The number of array elements is wrong." );
-
+            Assert.IsTrue( c >= ca.AsStack.Count, "Not enough child elements for Stack" );
 
             var d = new CDeserializer( ctx );
-            var cb = (CClassWithBothTypesOfCollections) d.Deserialize( doc );
+            var cb = (CClassWithBothTypesOfCollections)d.Deserialize( doc );
 
             foreach (var key in ca.ByName.Keys)
             {
@@ -297,7 +298,7 @@ namespace Morpheus.Standard.UnitTests.Serialization
             Assert.AreEqual( "Coast Ave", cwl.Addresses[3].m_street, "[3]- Street" );
             Assert.AreEqual( "Cronulla", cwl.Addresses[3].m_city, "[3]- City" );
             Assert.AreEqual( 2020, cwl.Addresses[3].m_zip, "[3]- Zip" );
-            var sa = (CSuperAddress) cwl.Addresses[3];
+            var sa = (CSuperAddress)cwl.Addresses[3];
             Assert.AreEqual( "Australia", sa.m_country, "[3]- Country" );
 
             Assert.AreEqual( "Plateau Road", cwl.Addresses[4].m_street, "[4]- Street" );
@@ -357,7 +358,7 @@ namespace Morpheus.Standard.UnitTests.Serialization
             Print( doc );
 
             var d = new CDeserializer( c );
-            var y = (Dictionary<int, string>) d.Deserialize( doc );
+            var y = (Dictionary<int, string>)d.Deserialize( doc );
 
 
             Assert.AreEqual( x.Count, y.Count, "Size of resulting hashtable is wrong" );
@@ -446,9 +447,11 @@ namespace Morpheus.Standard.UnitTests.Serialization
 
             ca.SimpleArrayList = MakeSampleArrayList();
             ca.ReadOnlyArrayList = ArrayList.ReadOnly( ca.SimpleArrayList );
-            // This is really bad because we shouldn't really hold the ref to the "old" object after its been wrapped
+            // This is really bad because we shouldn't really hold the ref to the "old" object
+            // after its been wrapped
             ca.SyncArrayList = ArrayList.Synchronized( ca.SimpleArrayList );
-            // This is really bad because we shouldn't really hold the ref to the "old" object after its been wrapped
+            // This is really bad because we shouldn't really hold the ref to the "old" object
+            // after its been wrapped
 
             Assert.AreNotEqual( ca.SimpleArrayList.GetType(),
                                 ca.ReadOnlyArrayList.GetType(),
