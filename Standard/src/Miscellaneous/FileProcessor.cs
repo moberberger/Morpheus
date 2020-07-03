@@ -13,7 +13,7 @@ namespace Morpheus
     public class FileProcessor
     {
         /// <summary>
-        /// Delegate matching <see cref="Stream.Write((T1, T2, T3)"/> for processing bytes read from the file
+        /// Delegate matching <see cref="Stream.Write(byte[], int, int)"/> for processing bytes read from the file
         /// </summary>
         /// <param name="_buffer">The buffer containing the data</param>
         /// <param name="_offset">The starting point in the buffer where the data resides. When called by CFileProcessor,

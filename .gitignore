@@ -20,6 +20,10 @@
 [Rr]eleases/
 x64/
 x86/
+x64_Debug/
+x86_Debug/
+x64_Release/
+x86_Release/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
