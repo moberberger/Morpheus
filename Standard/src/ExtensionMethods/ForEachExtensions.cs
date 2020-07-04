@@ -141,5 +141,17 @@ namespace Morpheus
             foreach (var item in _set)
                 _operation( item );
         }
+
+
+        /// <summary>
+        /// Makes sure the enumeration is actually "run". This is a no-overhead way of making
+        /// something like a ".ToArray()" or a "foreach" STATEMENT (not an operator) not
+        /// necessary.
+        /// </summary>
+        /// <param name="stuff"></param>
+        public static void Run( this IEnumerable stuff )
+        {
+            foreach (var _ in stuff) ;
+        }
     }
 }
