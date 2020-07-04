@@ -154,7 +154,7 @@ namespace Morpheus
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public bool Contains( KeyValuePair<TKey, TValue> item ) => m_dictionary.ContainsKey( item.Key ) || (bool)m_encapsulatedDictionary?.ContainsKey( item.Key );
+        public bool Contains( KeyValuePair<TKey, TValue> item ) => m_dictionary.ContainsKey( item.Key ) || (m_encapsulatedDictionary?.ContainsKey( item.Key ) ?? false);
 
         /// <summary>
         /// Returns TRUE if the specified key exists in the dictionary or any encapsulated
@@ -164,7 +164,7 @@ namespace Morpheus
         /// <returns>
         /// TRUE if the specified key exists in the dictionary or any encapsulated dictionaries
         /// </returns>
-        public bool ContainsKey( TKey key ) => m_dictionary.ContainsKey( key ) || (bool)m_encapsulatedDictionary?.ContainsKey( key );
+        public bool ContainsKey( TKey key ) => m_dictionary.ContainsKey( key ) || (m_encapsulatedDictionary?.ContainsKey( key ) ?? false);
 
         /// <summary>
         /// Remove an element from -this- dictionary, but leaves encapsulated dictionaries
@@ -188,7 +188,7 @@ namespace Morpheus
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryGetValue( TKey key, out TValue value ) => m_dictionary.TryGetValue( key, out value ) || (bool)m_encapsulatedDictionary?.TryGetValue( key, out value );
+        public bool TryGetValue( TKey key, out TValue value ) => m_dictionary.TryGetValue( key, out value ) || (m_encapsulatedDictionary?.TryGetValue( key, out value ) ?? false);
 
         /// <summary>
         /// Copy ALL elements of this dictionary and encapsulated dictionaries to an Array

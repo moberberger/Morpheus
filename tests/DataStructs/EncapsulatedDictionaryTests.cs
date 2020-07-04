@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace MSUnitTests.DataStructs
 {
@@ -33,14 +34,42 @@ namespace MSUnitTests.DataStructs
             var ed = new EncapsulatingDictionary<string, string>();
 
             ed["name"] = "anne";
-            ed["age"] = "8";
+            ed["age"] = "82";
 
             Assert.AreEqual( 2, ed.Count );
             Assert.AreEqual( ed.ShallowCount, ed.DeepCount );
             Assert.AreEqual( 1, ed.Depth );
 
             Assert.AreEqual( "anne", ed["name"] );
-            Assert.AreEqual( "8", ed["age"] );
+            Assert.AreEqual( "82", ed["age"] );
+
+            ed.Add( "city", "syrupville" );
+            Assert.AreEqual( 3, ed.Count );
+            Assert.AreEqual( ed.ShallowCount, ed.DeepCount );
+            Assert.AreEqual( 1, ed.Depth );
+            Assert.IsTrue( ed.ContainsKey( "name" ) );
+            Assert.IsTrue( ed.ContainsKey( "age" ) );
+            Assert.IsTrue( ed.ContainsKey( "city" ) );
+            Assert.IsFalse( ed.ContainsKey( "state" ) );
+
+
+            Assert.IsFalse( ed.Remove( "state" ) );
+            Assert.AreEqual( 3, ed.Count );
+            Assert.AreEqual( ed.ShallowCount, ed.DeepCount );
+            Assert.AreEqual( 1, ed.Depth );
+            
+            Assert.IsTrue( ed.Remove( "age" ) );
+            Assert.AreEqual( 2, ed.Count );
+            Assert.AreEqual( ed.ShallowCount, ed.DeepCount );
+            Assert.AreEqual( 1, ed.Depth );
+
+
+            ed.Clear();
+            Assert.AreEqual( 0, ed.Count );
+            Assert.AreEqual( ed.ShallowCount, ed.DeepCount );
+            Assert.AreEqual( 1, ed.Depth );
+
+
         }
     }
 }
