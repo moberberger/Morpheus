@@ -187,6 +187,22 @@ namespace MSUnitTests.DataStructs
             Assert.AreEqual( "1b", _3["b"] );
         }
 
+        [TestMethod]
+        public void CopyToTest()
+        {
+            var count = _3.Count;
+            Assert.AreEqual( 4, count );
+
+            KeyValuePair<string, string>[] arr = new KeyValuePair<string, string>[count + 1];
+
+            _3.CopyTo( arr, 1 );
+            Assert.IsNull( arr[0].Key );
+            Assert.IsNotNull( arr[1].Key );
+            Assert.IsNotNull( arr[2].Key );
+            Assert.IsNotNull( arr[3].Key );
+            Assert.IsNotNull( arr[4].Key );
+        }
+
 
     }
 }

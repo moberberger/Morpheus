@@ -119,7 +119,6 @@ namespace Morpheus
 
         #region IDictionary Implementation
 
-
         /// <summary>
         /// If the TKey value does not exist in either this nor the encapsulated IDictionary,
         /// then one of those better throw a <see cref="KeyNotFoundException"/>
@@ -213,11 +212,7 @@ namespace Morpheus
         /// </summary>
         /// <param name="array"></param>
         /// <param name="arrayIndex"></param>
-        public void CopyTo( KeyValuePair<TKey, TValue>[] array, int arrayIndex )
-        {
-            foreach (var obj in this)
-                array[arrayIndex++] = obj;
-        }
+        public void CopyTo( KeyValuePair<TKey, TValue>[] array, int arrayIndex ) => this.Select( x => array[arrayIndex++] = x ).Run();
 
         /// <summary>
         /// Pass-through to the enumeration algorithm
