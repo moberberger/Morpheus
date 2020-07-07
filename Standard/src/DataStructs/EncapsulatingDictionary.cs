@@ -8,7 +8,9 @@ using System.Text;
 namespace Morpheus
 {
     /// <summary>
-    /// This <see cref="IDictionary{TKey, TValue}"/> implementation
+    /// This <see cref="IDictionary{TKey, TValue}"/> implementation allows the read-only
+    /// encapsulation of another IDictionary to provide a value for a key if this dictionary
+    /// doesn't contain a value for said key.
     /// </summary>
     public class EncapsulatingDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
@@ -63,6 +65,18 @@ namespace Morpheus
         /// </summary>
         public int ShallowCount { get => m_dictionary.Count; }
 
+
+        /// <summary>
+        /// Does this EncapsulatingDictionary contain a key, without regard to any encapsulated
+        /// dictionaries?
+        /// </summary>
+        /// <param name="key">The key to look for</param>
+        /// <returns>
+        /// TRUE -iff- the key exists in -this- dictionary REGARDLESS of its presence in an
+        /// Encapsulated dictionary.
+        /// </returns>
+        public bool ContainsKeyShallow( TKey key ) => m_dictionary.ContainsKey( key );
+
         /// <summary>
         /// Return all EncapsulatingDictionary's being encapsulated in this object's history
         /// </summary>
@@ -89,7 +103,10 @@ namespace Morpheus
         /// Enumeration in order from "highest" level object for the key through to the lowest
         /// level's object for the key
         /// </returns>
-        public IEnumerable<IDictionary<TKey, TValue>> KeyTrace( TKey key ) => Trace().Where( d => d.ContainsKey( key ) );
+        public IEnumerable<IDictionary<TKey, TValue>> TraceKey( TKey key ) =>
+            Trace().Where( d =>
+                (d as EncapsulatingDictionary<TKey, TValue>)?.ContainsKeyShallow( key )
+                ?? d.ContainsKey( key ) );
 
         /// <summary>
         /// How many encapsulated layers are there?

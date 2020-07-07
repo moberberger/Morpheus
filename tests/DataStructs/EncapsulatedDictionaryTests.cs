@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Morpheus;
+using Morpheus.Standard.UnitTests.Serialization;
 
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace MSUnitTests.DataStructs
     public class EncapsulatedDictionaryTests
     {
         [TestMethod]
-        public void TestDefaultConstruction()
+        public void DefaultConstructionTest()
         {
             var ed = new EncapsulatingDictionary<string, string>();
             Assert.AreEqual( 0, ed.Count );
@@ -29,7 +30,7 @@ namespace MSUnitTests.DataStructs
         }
 
         [TestMethod]
-        public void TestNoEncapsulation()
+        public void NoEncapsulationTest()
         {
             var ed = new EncapsulatingDictionary<string, string>();
 
@@ -57,7 +58,7 @@ namespace MSUnitTests.DataStructs
             Assert.AreEqual( 3, ed.Count );
             Assert.AreEqual( ed.ShallowCount, ed.DeepCount );
             Assert.AreEqual( 1, ed.Depth );
-            
+
             Assert.IsTrue( ed.Remove( "age" ) );
             Assert.AreEqual( 2, ed.Count );
             Assert.AreEqual( ed.ShallowCount, ed.DeepCount );
@@ -69,7 +70,165 @@ namespace MSUnitTests.DataStructs
             Assert.AreEqual( ed.ShallowCount, ed.DeepCount );
             Assert.AreEqual( 1, ed.Depth );
 
-
         }
+
+        [TestMethod]
+        public void TraceTest()
+        {
+            var _1 = new EncapsulatingDictionary<string, string>();
+            var _2 = new EncapsulatingDictionary<string, string>( _1 );
+            var _3 = new EncapsulatingDictionary<string, string>( _2 );
+
+            _1["all"] = "1";
+            _2["all"] = "2";
+            _3["all"] = "3";
+
+            _1["a"] = "1a";
+            _1["b"] = "1b";
+            _2["b"] = "2b";
+            _2["c"] = "2c";
+            _3["a"] = "3a";
+            _3["c"] = "3c";
+
+            var t = new List<IDictionary<string, string>>( _3.TraceKey( "all" ) );
+            Assert.AreEqual( 3, t.Count );
+            Assert.AreEqual( _3, t[0] );
+            Assert.AreEqual( _2, t[1] );
+            Assert.AreEqual( _1, t[2] );
+
+            t = new List<IDictionary<string, string>>( _3.TraceKey( "a" ) );
+            Assert.AreEqual( 2, t.Count );
+            Assert.AreEqual( _3, t[0] );
+            Assert.AreEqual( _1, t[1] );
+
+            t = new List<IDictionary<string, string>>( _3.TraceKey( "b" ) );
+            Assert.AreEqual( 2, t.Count );
+            Assert.AreEqual( _2, t[0] );
+            Assert.AreEqual( _1, t[1] );
+
+            t = new List<IDictionary<string, string>>( _3.TraceKey( "c" ) );
+            Assert.AreEqual( 2, t.Count );
+            Assert.AreEqual( _3, t[0] );
+            Assert.AreEqual( _2, t[1] );
+
+            t = new List<IDictionary<string, string>>( _3.TraceKey( "d" ) );
+            Assert.AreEqual( 0, t.Count );
+
+            Assert.AreEqual( "1", _1["all"] );
+            Assert.AreEqual( "2", _2["all"] );
+            Assert.AreEqual( "3", _3["all"] );
+
+            Assert.AreEqual( "3a", _3["a"] );
+            Assert.AreEqual( "2b", _3["b"] );
+            Assert.AreEqual( "3c", _3["c"] );
+
+            Assert.AreEqual( "1a", _2["a"] );
+            Assert.AreEqual( "2b", _2["b"] );
+            Assert.AreEqual( "2c", _2["c"] );
+
+            Assert.AreEqual( "1a", _1["a"] );
+            Assert.AreEqual( "1b", _1["b"] );
+            Assert.IsFalse( _1.ContainsKey( "c" ) );
+
+            Assert.IsTrue( _2.ContainsKey( "a" ) );
+            Assert.IsTrue( _2.ContainsKey( "b" ) );
+            Assert.IsTrue( _2.ContainsKey( "c" ) );
+            Assert.IsFalse( _2.ContainsKeyShallow( "a" ) );
+            Assert.IsTrue( _2.ContainsKeyShallow( "b" ) );
+            Assert.IsTrue( _2.ContainsKeyShallow( "c" ) );
+
+            Assert.IsTrue( _3.ContainsKey( "a" ) );
+            Assert.IsTrue( _3.ContainsKey( "b" ) );
+            Assert.IsTrue( _3.ContainsKey( "c" ) );
+            Assert.IsTrue( _3.ContainsKeyShallow( "a" ) );
+            Assert.IsFalse( _3.ContainsKeyShallow( "b" ) );
+            Assert.IsTrue( _3.ContainsKeyShallow( "c" ) );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( KeyNotFoundException ) )]
+        public void MissingKeyTest()
+        {
+            var _1 = new EncapsulatingDictionary<string, string>();
+            var _2 = new EncapsulatingDictionary<string, string>( _1 );
+            var _3 = new EncapsulatingDictionary<string, string>( _2 );
+
+            _1["all"] = "1";
+            _2["all"] = "2";
+            _3["all"] = "3";
+
+            _1["a"] = "1a";
+            _1["b"] = "1b";
+            _2["b"] = "2b";
+            _2["c"] = "2c";
+            _3["a"] = "3a";
+            _3["c"] = "3c";
+
+            Assert.AreEqual( "1a", _1["a"] );
+            Assert.AreEqual( "1b", _1["b"] );
+            Assert.AreEqual( null, _1["c"] );
+        }
+
+
+
+        [TestMethod]
+        [ExpectedException( typeof( KeyNotFoundException ) )]
+        public void RemoveTest()
+        {
+            var _1 = new EncapsulatingDictionary<string, string>();
+            var _2 = new EncapsulatingDictionary<string, string>( _1 );
+            var _3 = new EncapsulatingDictionary<string, string>( _2 );
+
+            _1["all"] = "1";
+            _2["all"] = "2";
+            _3["all"] = "3";
+
+            _1["a"] = "1a";
+            _1["b"] = "1b";
+            _2["b"] = "2b";
+            _2["c"] = "2c";
+            _3["a"] = "3a";
+            _3["c"] = "3c";
+
+            Assert.AreEqual( "3c", _3["c"] );
+            Assert.IsTrue( _3.Remove( "c" ) );
+            Assert.AreEqual( "2c", _3["c"] );
+
+            Assert.AreEqual( "2b", _3["b"] );
+            Assert.IsFalse( _3.Remove( "b" ) );
+            Assert.AreEqual( "2b", _3["b"] );
+            Assert.IsTrue( _2.Remove( "b" ) );
+            Assert.AreEqual( "1b", _3["b"] );
+            Assert.IsTrue( _1.Remove( "b" ) );
+            Assert.AreEqual( "1b", _3["b"] ); // exception- keynotfound
+        }
+
+
+        [TestMethod]
+        public void ChangedSubDictionaryTest()
+        {
+            var _1 = new EncapsulatingDictionary<string, string>();
+            var _2 = new EncapsulatingDictionary<string, string>( _1 );
+            var _3 = new EncapsulatingDictionary<string, string>( _2 );
+
+            _1["all"] = "1";
+            _2["all"] = "2";
+            _3["all"] = "3";
+
+            _1["a"] = "1a";
+            _1["b"] = "1b";
+            _2["b"] = "2b";
+            _2["c"] = "2c";
+            _3["a"] = "3a";
+            _3["c"] = "3c";
+
+            Assert.AreEqual( "2b", _3["b"] );
+            _2["b"] = "abc";
+            Assert.AreEqual( "abc", _3["b"] );
+            _2.Remove( "b" );
+            Assert.AreEqual( "1b", _3["b"] );
+        }
+
+
     }
 }
