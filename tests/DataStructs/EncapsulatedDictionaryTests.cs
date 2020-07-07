@@ -1,13 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Morpheus;
-using Morpheus.Standard.UnitTests.Serialization;
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
 
 namespace MSUnitTests.DataStructs
 {
@@ -15,6 +10,29 @@ namespace MSUnitTests.DataStructs
     [TestCategory( "Data Structures" )]
     public class EncapsulatedDictionaryTests
     {
+        private EncapsulatingDictionary<string, string> _1, _2, _3;
+
+        [TestInitialize]
+        public void SetMembers()
+        {
+            _1 = new EncapsulatingDictionary<string, string>();
+            _2 = new EncapsulatingDictionary<string, string>( _1 );
+            _3 = new EncapsulatingDictionary<string, string>( _2 );
+
+            _1["all"] = "1";
+            _2["all"] = "2";
+            _3["all"] = "3";
+
+            _1["a"] = "1a";
+            _1["b"] = "1b";
+            _2["b"] = "2b";
+            _2["c"] = "2c";
+            _3["a"] = "3a";
+            _3["c"] = "3c";
+        }
+
+
+
         [TestMethod]
         public void DefaultConstructionTest()
         {
@@ -75,21 +93,6 @@ namespace MSUnitTests.DataStructs
         [TestMethod]
         public void TraceTest()
         {
-            var _1 = new EncapsulatingDictionary<string, string>();
-            var _2 = new EncapsulatingDictionary<string, string>( _1 );
-            var _3 = new EncapsulatingDictionary<string, string>( _2 );
-
-            _1["all"] = "1";
-            _2["all"] = "2";
-            _3["all"] = "3";
-
-            _1["a"] = "1a";
-            _1["b"] = "1b";
-            _2["b"] = "2b";
-            _2["c"] = "2c";
-            _3["a"] = "3a";
-            _3["c"] = "3c";
-
             var t = new List<IDictionary<string, string>>( _3.TraceKey( "all" ) );
             Assert.AreEqual( 3, t.Count );
             Assert.AreEqual( _3, t[0] );
@@ -149,21 +152,6 @@ namespace MSUnitTests.DataStructs
         [ExpectedException( typeof( KeyNotFoundException ) )]
         public void MissingKeyTest()
         {
-            var _1 = new EncapsulatingDictionary<string, string>();
-            var _2 = new EncapsulatingDictionary<string, string>( _1 );
-            var _3 = new EncapsulatingDictionary<string, string>( _2 );
-
-            _1["all"] = "1";
-            _2["all"] = "2";
-            _3["all"] = "3";
-
-            _1["a"] = "1a";
-            _1["b"] = "1b";
-            _2["b"] = "2b";
-            _2["c"] = "2c";
-            _3["a"] = "3a";
-            _3["c"] = "3c";
-
             Assert.AreEqual( "1a", _1["a"] );
             Assert.AreEqual( "1b", _1["b"] );
             Assert.AreEqual( null, _1["c"] );
@@ -175,21 +163,6 @@ namespace MSUnitTests.DataStructs
         [ExpectedException( typeof( KeyNotFoundException ) )]
         public void RemoveTest()
         {
-            var _1 = new EncapsulatingDictionary<string, string>();
-            var _2 = new EncapsulatingDictionary<string, string>( _1 );
-            var _3 = new EncapsulatingDictionary<string, string>( _2 );
-
-            _1["all"] = "1";
-            _2["all"] = "2";
-            _3["all"] = "3";
-
-            _1["a"] = "1a";
-            _1["b"] = "1b";
-            _2["b"] = "2b";
-            _2["c"] = "2c";
-            _3["a"] = "3a";
-            _3["c"] = "3c";
-
             Assert.AreEqual( "3c", _3["c"] );
             Assert.IsTrue( _3.Remove( "c" ) );
             Assert.AreEqual( "2c", _3["c"] );
@@ -207,21 +180,6 @@ namespace MSUnitTests.DataStructs
         [TestMethod]
         public void ChangedSubDictionaryTest()
         {
-            var _1 = new EncapsulatingDictionary<string, string>();
-            var _2 = new EncapsulatingDictionary<string, string>( _1 );
-            var _3 = new EncapsulatingDictionary<string, string>( _2 );
-
-            _1["all"] = "1";
-            _2["all"] = "2";
-            _3["all"] = "3";
-
-            _1["a"] = "1a";
-            _1["b"] = "1b";
-            _2["b"] = "2b";
-            _2["c"] = "2c";
-            _3["a"] = "3a";
-            _3["c"] = "3c";
-
             Assert.AreEqual( "2b", _3["b"] );
             _2["b"] = "abc";
             Assert.AreEqual( "abc", _3["b"] );
