@@ -131,13 +131,16 @@ namespace Morpheus.PerformanceTests
         /// <summary>
         /// Run all of the tests configured for this runner in the constructor
         /// </summary>
-        /// <param name="_secondsToRun">How long the tests should be run for</param>
-        public void RunTests( double _secondsToRun )
+        /// <param name="secondsToRun">How long the tests should be run for</param>
+        /// <param name="frame">
+        /// If specified (non-null), ONLY run tests in the specified frame
+        /// </param>
+        public void RunTests( double secondsToRun, string frame = null )
         {
             foreach (var test in Tests)
             {
-                if (test.OkToRun)
-                    RunTest( test, _secondsToRun );
+                if (test.OkToRun && test.InFrame( frame ))
+                    RunTest( test, secondsToRun );
             }
         }
 
@@ -150,7 +153,7 @@ namespace Morpheus.PerformanceTests
         /// <param name="_secondsToRun">How long the tests should be run for</param>
         public void RunTest( TestBase _test, double _secondsToRun )
         {
-            using (var timer = new Timer( _x => _test.StopRunning = true, null, (int) (1000 * _secondsToRun), 0 ))
+            using (var timer = new Timer( _x => _test.StopRunning = true, null, (int)(1000 * _secondsToRun), 0 ))
             {
                 InitTest( _test );
 

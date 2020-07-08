@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http.Headers;
 using System.Text;
 
 using Morpheus.DependencyInjection;
 
 namespace Morpheus
 {
+    using THIS_DICT = IDictionary<Type, ClassConfig>;
+
     /// <summary>
     /// A Dependency Injection Scope.
     /// </summary>
-    public class DI : IDisposable
+    public class DI
     {
+        #region Static stuff
         /// <summary>
         /// AppDomain Default DI scope. All DI scopes will eventually link down to this scope.
         /// </summary>
@@ -27,27 +31,21 @@ namespace Morpheus
         /// Create a new DI Scope
         /// </summary>
         /// <returns></returns>
-        public static DI New() => new DI(Default);
-
+        public static DI NewDefault() => new DI( Default );
+        #endregion
 
 
 
         /// <summary>
         /// internal lookup table
         /// </summary>
-        private readonly Dictionary<Type, ClassConfig> m_typeLookup = new Dictionary<Type, ClassConfig>();
-
-        /// <summary>
-        /// If NULL, then this is the <see cref="DI.Default"/> object or its been created to be
-        /// expressly empty.
-        /// </summary>
-        private readonly DI m_parent;
+        private readonly THIS_DICT m_typeLookup = null;
 
         /// <summary>
         /// Construct with a parent.
         /// </summary>
         /// <param name="_parent"></param>
-        private DI(DI _parent = null) => m_parent = _parent;
+        private DI( DI _parent = null ) => m_typeLookup = _parent?.m_typeLookup ?? new EncapsulatingDictionary<Type, ClassConfig>();
 
 
         /// <summary>
@@ -55,34 +53,13 @@ namespace Morpheus
         /// </summary>
         /// <param name="_type"></param>
         /// <returns></returns>
-        public ClassConfig GetClassConfig(Type _type)
-        {
-            if (m_typeLookup.ContainsKey(_type))
-                return m_typeLookup[_type];
-
-            var fromAncestors = m_parent?.GetClassConfig(_type);
-            var newConfig = new ClassConfig(_type, this, fromAncestors);
-
-            m_typeLookup[_type] = newConfig;
-            return newConfig;
-        }
+        public ClassConfig GetClassConfig( Type _type ) => m_typeLookup.GetOrAdd( _type, t => new ClassConfig( t, this, null ) );
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public DI CreateChild()
-        {
-            return new DI(this);
-        }
-
-        /// <summary>
-        /// TODO: Dispose of contents of this DI scope
-        /// </summary>
-        public void Dispose() => m_parent?.Dispose();
-
-
-
+        public DI CreateChild() => new DI( this );
 
 
         /// <summary>
@@ -90,7 +67,7 @@ namespace Morpheus
         /// </summary>
         /// <typeparam name="T">The <see cref="Type"/> the caller is interested in</typeparam>
         /// <returns></returns>
-        public ClassConfig For<T>() where T : class => GetClassConfig(typeof(T));
+        public ClassConfig For<T>() where T : class => GetClassConfig( typeof( T ) );
 
         /// <summary>
         /// 
@@ -117,7 +94,7 @@ namespace Morpheus
         /// For <see cref="DI.Default"/> , use an object as a singleton.
         /// </summary>
         /// <param name="_singleton"></param>
-        public static void Use(object _singleton) => DI.Default.For<T>().Use(_singleton);
+        public static void Use( object _singleton ) => DI.Default.For<T>().Use( _singleton );
 
         /// <summary>
         /// 
@@ -130,6 +107,6 @@ namespace Morpheus
         /// <see cref="ELifecycle.New"/> .
         /// </summary>
         /// <param name="_type"></param>
-        public static void Use(Type _type) => DI.Default.For<T>().Use(_type);
+        public static void Use( Type _type ) => DI.Default.For<T>().Use( _type );
     }
 }

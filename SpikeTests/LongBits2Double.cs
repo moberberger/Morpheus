@@ -1,5 +1,8 @@
 ﻿// Example of the BitConverter.Int64BitsToDouble method.
 using System;
+using System.Linq;
+using System.Linq.Expressions;
+
 
 class Int64BitsToDoubleDemo
 {

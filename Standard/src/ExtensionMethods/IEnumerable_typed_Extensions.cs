@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http.Headers;
 
 namespace Morpheus
 {
@@ -251,6 +253,23 @@ namespace Morpheus
                 _dictionary[_key] = retval;
             }
             return retval;
+        }
+
+        /// <summary>
+        /// Why isn't this there? just because it should be? sheesh. be kind. please rewind.
+        /// yeah I know i can do it. why didn't you though, for the rest of us?
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="lookup"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool TryGetValue<TKey, TValue>( this ILookup<TKey, TValue> lookup, TKey key, out IEnumerable<TValue> value )
+        {
+            bool contains = lookup.Contains( key );
+            value = contains ? lookup[key] : null;
+            return contains;
         }
     }
 }

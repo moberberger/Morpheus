@@ -46,6 +46,11 @@ namespace Morpheus.PerformanceTests
         /// </summary>
         public object Context { get; set; } = null;
 
+        /// <summary>
+        /// Used to keep old Spike Tests around while new spikes are developed.
+        /// </summary>
+        public string Frame { get; set; } = null;
+
         #endregion
 
 
@@ -122,6 +127,22 @@ namespace Morpheus.PerformanceTests
             {
                 System.Threading.Interlocked.Increment( ref Iterations );
             }
+        }
+
+        /// <summary>
+        /// Is this test in the specified Frame? Used to tightly filter tests.
+        /// </summary>
+        /// <param name="frame"></param>
+        /// <returns></returns>
+        public bool InFrame( string frame )
+        {
+            if (frame == null)
+                return true;
+            if (frame == "") // only tests WITHOUT a frame
+                return string.IsNullOrEmpty( Frame );
+            if (frame == Frame)
+                return true;
+            return false;
         }
 
         /// <summary>
