@@ -104,7 +104,6 @@ namespace Morpheus
 
         /// <summary>
         /// More specific than <see cref="Use(object)"/> allows Types to be interpretted as
-        /// <see cref="ELifecycle.New"/> .
         /// </summary>
         /// <param name="_type"></param>
         public static void Use( Type _type ) => DI.Default.For<T>().Use( _type );

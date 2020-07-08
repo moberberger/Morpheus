@@ -4,12 +4,11 @@ using System.Text;
 
 namespace Morpheus.DependencyInjection
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public enum ELifecycle
     {
-        New,
-        Singleton,
-        Singleton_PerThread,
-        Pooled,
     }
 
     /// <summary>
