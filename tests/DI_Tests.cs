@@ -93,19 +93,19 @@ namespace Morpheus.Standard.UnitTests
             Assert.AreEqual( typeof( List<int> ), list1.GetType() );
             Assert.AreEqual( basis, list1 );
 
-            var di2 = di.CreateChild();
-            var rng2 = di2.Get<Random>();
+            var di2 = di.New();
+            var rng2 = di2.GetInstance<Random>();
             Assert.AreEqual( typeof( CryptoRandomNumbers ), rng2.GetType() );
 
-            di2.For<Random>().Use<MersenneTwister>();
-            var rng3 = di2.Get<Random>();
+            di2.For<Random>().UseType<MersenneTwister>();
+            var rng3 = di2.GetInstance<Random>();
             Assert.AreEqual( typeof( MersenneTwister ), rng3.GetType() );
 
             var rng4 = di.Get<Random>();
             Assert.AreEqual( typeof( CryptoRandomNumbers ), rng4.GetType() );
             Assert.AreNotEqual( rng1, rng4 );
 
-            var rng5 = di2.Get<IEnumerable<int>>();
+            var rng5 = di2.GetInstance<IEnumerable<int>>();
             Assert.AreEqual( basis, rng5 );
         }
 
@@ -135,7 +135,7 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         public void DefaultOverrideTest()
         {
-            DI<Random>.Use( Rng.Default );
+            DI.Default.For<Random>().Use( Rng.Default );
 
             var di = DI.NewDefault();
             var rng1 = di.Get<Random>();

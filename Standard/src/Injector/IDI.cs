@@ -8,7 +8,8 @@ using System.Text;
 namespace Morpheus
 {
     /// <summary>
-    /// This interface offers the exposed functionality of the Morpheus Dependency Injection Framework
+    /// This interface offers the exposed functionality of the Morpheus Dependency Injection
+    /// Framework
     /// </summary>
     public interface IDI
     {
@@ -20,21 +21,19 @@ namespace Morpheus
         IDI New();
 
         /// <summary>
-        /// Return an object for a type, as specified in the type parameter.
+        /// Return an instance of the requested Type
         /// </summary>
-        /// <typeparam name="T">The Type to look up</typeparam>
-        /// <returns>
-        /// A new object for the given Type, or an exception detailing why a/the object could
-        /// not be returned
-        /// </returns>
-        T New<T>();
+        /// <param name="type"></param>
+        /// <param name="parms"></param>
+        /// <returns></returns>
+        object GetInstance( Type type, params object[] parms );
 
         /// <summary>
         /// Inject all reference-typed members as configured
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
-        void Inject<T>( T obj );
+        object Inject( object obj );
 
         /// <summary>
         /// Return a config object for a given type.
@@ -45,6 +44,30 @@ namespace Morpheus
         /// parameters sent to that Method
         /// </param>
         /// <returns></returns>
-        IClassConfig For<T>( params object[] _params );
+        IClassConfig For<T>( params object[] parms );
+    }
+
+    /// <summary>
+    /// Extensions that every IDI should support
+    /// </summary>
+    public static class IDI_Extensions
+    {
+        /// <summary>
+        /// Return an object for a type, as specified in the type parameter.
+        /// </summary>
+        /// <typeparam name="T">The Type to look up</typeparam>
+        /// <returns>
+        /// A new object for the given Type, or an exception detailing why a/the object could
+        /// not be returned
+        /// </returns>
+        public static T GetInstance<T>( this IDI idi ) => (T)idi.GetInstance( typeof( T ) );
+
+        /// <summary>
+        /// Inject all reference-typed members as configured
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        public static T Inject<T>( this IDI idi, T obj ) => (T)idi.Inject( obj );
+
     }
 }

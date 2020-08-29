@@ -96,7 +96,7 @@ namespace Morpheus
         /// of 0 typically might mean that the object pool implementation isn't really pooling
         /// objects.
         /// </returns>
-        public static int Allocate<T>( this IObjectPool pool, int minimumPoolSize = 0 ) => pool.Allocate( typeof( T ), minimumPoolSize );
+        public static int Allocate<T>( this IObjectPool pool, int minimumPoolSize = 0 ) => pool.Allocate( typeof( T ), minimumPoolSize, out int _ );
     }
 
     /// <summary>
@@ -109,8 +109,11 @@ namespace Morpheus
         /// </summary>
         /// <param name="type"></param>
         /// <param name="minimumPoolSize"></param>
+        /// <param name="inusePoolObjects">
+        /// The number of pool objects that are currently "In-Use" (Gotten but not Returned)
+        /// </param>
         /// <returns>0, signalling that this object is not really pooling objects</returns>
-        public int Allocate( Type type, int minimumPoolSize = 0 ) { return 0; }
+        public int Allocate( Type type, int minimumPoolSize, out int inusePoolObjects ) => inusePoolObjects = 0;
 
         /// <summary>
         /// Get simply returns a new object- nothing else.

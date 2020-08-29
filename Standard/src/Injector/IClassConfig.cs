@@ -121,13 +121,27 @@ namespace Morpheus.DependencyInjection
         IClassConfig UseSpecificMembers( IEnumerable<MemberInfo> SpecificMembers );
 
         /// <summary>
-        /// Return an IParameterConfig for the parameter index specified. All
-        /// typecast information is performed at run-time. 
+        /// Return an IParameterConfig for the parameter index specified. All typecast
+        /// information is performed at run-time.
         /// </summary>
         /// <param name="parameterIndex"></param>
         /// <returns></returns>
         IParameterConfig ForParameterConfig( int parameterIndex );
+
+        /// <summary>
+        /// Get an instance of the specified object based on the configuration present in this
+        /// object.
+        /// </summary>
+        /// <param name="type">The Type of the object to retrieve</param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        object GetInstance( Type type, object[] parameters );
     }
 
+    /// <summary>
+    /// Configuration for a parameter for a method/constructor
+    /// </summary>
     public interface IParameterConfig
+    {
+    }
 }

@@ -12,7 +12,7 @@ namespace Morpheus
     /// <summary>
     /// A Dependency Injection Scope.
     /// </summary>
-    public class DI
+    public class DI : IDI
     {
         #region Static stuff
         /// <summary>
@@ -59,7 +59,7 @@ namespace Morpheus
         /// 
         /// </summary>
         /// <returns></returns>
-        public DI CreateChild() => new DI( this );
+        public IDI New() => new DI( this );
 
 
         /// <summary>
@@ -75,37 +75,24 @@ namespace Morpheus
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public object Get<T>() where T : class => For<T>().GetObject();
+
+        public object GetInstance( Type type, params object[] parms )
+        {
+            throw new NotImplementedException();
+        }
+
+        public object Inject( object obj )
+        {
+            throw new NotImplementedException();
+        }
+
+        public IClassConfig For<T>( params object[] parms )
+        {
+            throw new NotImplementedException();
+        }
     }
 
-    /// <summary>
-    /// this looks like its a little over the top for accessing the static object- but maybe not
-    /// for simple applications
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public static class DI<T> where T : class
-    {
-        /// <summary>
-        /// Get the configuration for a class.
-        /// </summary>
-        /// <returns>The configuration for a class.</returns>
-        public static ClassConfig For() => DI.Default.For<T>();
 
-        /// <summary>
-        /// For <see cref="DI.Default"/> , use an object as a singleton.
-        /// </summary>
-        /// <param name="_singleton"></param>
-        public static void Use( object _singleton ) => DI.Default.For<T>().Use( _singleton );
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="Component"></typeparam>
-        public static void Use<Component>() where Component : class => DI.Default.For<T>().Use<Component>();
 
-        /// <summary>
-        /// More specific than <see cref="Use(object)"/> allows Types to be interpretted as
-        /// </summary>
-        /// <param name="_type"></param>
-        public static void Use( Type _type ) => DI.Default.For<T>().Use( _type );
-    }
 }
