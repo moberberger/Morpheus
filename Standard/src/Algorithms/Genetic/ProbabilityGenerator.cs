@@ -20,10 +20,10 @@ namespace Morpheus
         /// <summary>
         /// The expected value of the dot-product
         /// </summary>
-        public double ExpectedValue { get; set; }
+        public decimal ExpectedValue { get; set; }
 
-        private double[] values;
-        private double[] probabilities;
+        private decimal[] values;
+        private decimal[] probabilities;
 
         /// <summary>
         /// Construct using an expected value and the established set of values.
@@ -33,7 +33,7 @@ namespace Morpheus
         /// of <see cref="values"/>
         /// </param>
         /// <param name="values">The values to associate probabilities with</param>
-        public ProbabilityGenerator( double expectedValue, params double[] values )
+        public ProbabilityGenerator( decimal expectedValue, params decimal[] values )
         {
             this.ExpectedValue = expectedValue;
             this.values = values;
@@ -43,16 +43,16 @@ namespace Morpheus
         /// 
         /// </summary>
         /// <returns></returns>
-        public double[] Calculate()
+        public decimal[] Calculate()
         {
             Validate();
 
-            probabilities = new double[values.Length];
+            probabilities = new decimal[values.Length];
 
             if (values.Length == 2) // special and trivial case
             {
                 probabilities[0] = (ExpectedValue - values[1]) / (values[0] - values[1]);
-                probabilities[1] = 1 - probabilities[0];
+                probabilities[1] = 1.0m - probabilities[0];
             }
             else
             {
@@ -122,9 +122,10 @@ namespace Morpheus
         /// </summary>
         private void ErrorCheckDotProduct()
         {
-            double actualValue = values.DotProduct( probabilities );
+            decimal actualValue = values.DotProduct( probabilities );
+            var delta = Math.Abs( actualValue - ExpectedValue );
 
-            if (ExpectedValue != actualValue)
+            if (delta > 0.0000000000001m)
                 throw new InvalidProgramException( $"The Expected Value {ExpectedValue} does not equal the calculated value {actualValue}." );
         }
 

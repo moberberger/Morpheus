@@ -107,5 +107,15 @@ namespace Morpheus.DependencyInjection
             else
                 return Activator.CreateInstance( m_componentType ?? m_type );
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return m_type.Name;
+        }
     }
 }
