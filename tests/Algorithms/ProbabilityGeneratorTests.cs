@@ -1,4 +1,5 @@
 ﻿using System;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Morpheus.Standard.UnitTests.Algorithms
@@ -64,6 +65,17 @@ namespace Morpheus.Standard.UnitTests.Algorithms
             decimal[] vals = new decimal[] { -7, 100, 55, -450 };
             var pg = new ProbabilityGenerator( -500, vals );
             var probs = pg.Calculate();
+        }
+
+
+        [TestMethod]
+        public void ThreeValueTest()
+        {
+            const decimal EXPECTED = 63m;
+
+            decimal[] v = new decimal[] { 127, 41, 2 };
+            var pg = new ProbabilityGenerator( EXPECTED, v );
+            var p = pg.Calculate();
         }
 
 

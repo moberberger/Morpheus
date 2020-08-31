@@ -220,8 +220,10 @@ namespace Morpheus
         /// <returns></returns>
         public double SimpleValueError( decimal[] probabilities )
         {
-            var val = probabilities.DotProduct( values );
-            var err = (val - ExpectedValue) / ExpectedValue * 100;
+            // TODO: figure out what to do about dividing probabilities by the sum of all probabilities
+            1var val = probabilities.DotProduct( values );
+            var delta = val - ExpectedValue;
+            var err = delta * delta / ExpectedValue * 100;
             return (double)err;
         }
     }
