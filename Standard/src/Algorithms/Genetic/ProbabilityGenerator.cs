@@ -17,7 +17,11 @@ namespace Morpheus
         /// </summary>
         public Random Rng { get; set; } = DI.Default.Get<Random>();
 
-        private double expectedValue;
+        /// <summary>
+        /// The expected value of the dot-product
+        /// </summary>
+        public double ExpectedValue { get; set; }
+
         private double[] values;
         private double[] probabilities;
 
@@ -31,7 +35,7 @@ namespace Morpheus
         /// <param name="values">The values to associate probabilities with</param>
         public ProbabilityGenerator( double expectedValue, params double[] values )
         {
-            this.expectedValue = expectedValue;
+            this.ExpectedValue = expectedValue;
             this.values = values;
         }
 
@@ -47,7 +51,7 @@ namespace Morpheus
 
             if (values.Length == 2) // special and trivial case
             {
-                probabilities[0] = (expectedValue - values[1]) / (values[0] - values[1]);
+                probabilities[0] = (ExpectedValue - values[1]) / (values[0] - values[1]);
                 probabilities[1] = 1 - probabilities[0];
             }
             else
@@ -66,12 +70,28 @@ namespace Morpheus
         /// </summary>
         private void Validate()
         {
+            ValidateInRange();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void ValidateInRange()
+        {
             bool foundLesser = false, foundGreater = false;
 
             foreach (var v in values)
             {
-                if (v < expectedValue) foundLesser = true;
-                else if (v > expectedValue) foundGreater = true;
+                if (v < ExpectedValue)
+                    if (foundGreater)
+                        return;
+                    else
+                        foundLesser = true;
+                else if (v > ExpectedValue)
+                    if (foundLesser)
+                        return;
+                    else
+                        foundGreater = true;
             }
 
             if (!foundLesser || !foundGreater)
@@ -83,17 +103,42 @@ namespace Morpheus
         /// </summary>
         private void ErrorCheck()
         {
-            double actualValue = values.DotProduct( probabilities );
-
-            if (expectedValue != actualValue)
-                throw new InvalidProgramException( $"The Expected Value {expectedValue} does not equal the calculated value {actualValue}." );
+            ErrorCheckDotProduct();
+            ErrorCheckValidProbabilities();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        private void ErrorCheckValidProbabilities()
+        {
+            foreach (var p in probabilities)
+                if (p <= 0 || p >= 1)
+                    throw new InvalidProgramException( $"Generated values which are not valid probabilities: {probabilities.JoinAsString( ", " )}" );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void ErrorCheckDotProduct()
+        {
+            double actualValue = values.DotProduct( probabilities );
+
+            if (ExpectedValue != actualValue)
+                throw new InvalidProgramException( $"The Expected Value {ExpectedValue} does not equal the calculated value {actualValue}." );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         private void ApplyHeuristicsAndStochastics()
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void FixUsingHeuristic()
         {
             throw new NotImplementedException();
