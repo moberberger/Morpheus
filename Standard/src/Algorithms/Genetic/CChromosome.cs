@@ -9,7 +9,7 @@ namespace Morpheus
     /// <summary>
     /// A chromosome for use with the <see cref="CGeneticAlgorithm"/> class.
     /// </summary>
-    public class CChromosome : IComparable<CChromosome>, IComparable
+    public class CChromosome : IComparable<CChromosome>, IComparable, IEvaluate
     {
         /// <summary>
         /// The number of words in this chromosome

@@ -74,18 +74,35 @@ namespace Morpheus
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public object Get<T>() where T : class => For<T>().GetObject();
+        public T Get<T>() where T : class => (T)(For<T>().GetObject());
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="parms"></param>
+        /// <returns></returns>
         public object GetInstance( Type type, params object[] parms )
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public object Inject( object obj )
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="parms"></param>
+        /// <returns></returns>
         public IClassConfig For<T>( params object[] parms )
         {
             throw new NotImplementedException();

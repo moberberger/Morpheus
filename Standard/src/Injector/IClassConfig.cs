@@ -48,13 +48,13 @@ namespace Morpheus.DependencyInjection
 
         /// <summary>
         /// For this type, generate values from the return value of the <see cref="MethodInfo"/>
-        /// provided, assuming the <see cref="IDI.New{T}"/> caller passes in any required
+        /// provided, assuming the <see cref="IDI.New"/> caller passes in any required
         /// parameters for the provided <see cref="MethodInfo"/> .
         /// </summary>
         /// <remarks>This provider has 2nd priority.</remarks>
         /// <param name="method">
         /// The method whose return value when Invoked should be returned for a
-        /// <see cref="IDI.New{T}"/> call or for use by an <see cref="IObjectPool"/>
+        /// <see cref="IDI.New"/> call or for use by an <see cref="IObjectPool"/>
         /// implementation.
         /// </param>
         /// <returns>IClassConfig</returns>

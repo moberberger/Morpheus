@@ -31,7 +31,6 @@ namespace Morpheus
         /// <summary>
         /// Inject all reference-typed members as configured
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
         object Inject( object obj );
 
@@ -39,7 +38,7 @@ namespace Morpheus
         /// Return a config object for a given type.
         /// </summary>
         /// <typeparam name="T">The Type to get the config for</typeparam>
-        /// <param name="_params">
+        /// <param name="parms">
         /// If the configured Type is using a <see cref="MethodInfo"/> , then these are the
         /// parameters sent to that Method
         /// </param>
@@ -66,6 +65,7 @@ namespace Morpheus
         /// Inject all reference-typed members as configured
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <param name="idi"></param>
         /// <param name="obj"></param>
         public static T Inject<T>( this IDI idi, T obj ) => (T)idi.Inject( obj );
 
