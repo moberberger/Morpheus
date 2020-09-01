@@ -47,7 +47,7 @@ namespace Morpheus.DependencyInjection
         {
             m_type = _type;
             m_owner = _owner;
-            m_override = true;
+            m_override = _override != null;
             m_overrideObject = _override;
         }
 

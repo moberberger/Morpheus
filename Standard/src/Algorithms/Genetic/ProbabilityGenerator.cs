@@ -15,17 +15,17 @@ namespace Morpheus
         /// <summary>
         /// 
         /// </summary>
-        public int Generations = 100;
+        public int Generations = 100000;
 
         /// <summary>
         /// 
         /// </summary>
-        public int PopulationSize = 50;
+        public int PopulationSize = 200;
 
         /// <summary>
         /// 
         /// </summary>
-        public double MutationRate = 0.5;
+        public double MutationRate = 0.1;
 
         /// <summary>
         /// 
@@ -36,6 +36,15 @@ namespace Morpheus
         /// The expected value of the dot-product
         /// </summary>
         public decimal ExpectedValue { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public decimal CalculatedValue { get => values.DotProduct( probabilities ); }
+
+
+
+
 
         private decimal[] values;
         private decimal[] probabilities;
@@ -92,53 +101,39 @@ namespace Morpheus
         /// </summary>
         private void ApplyHeuristicsAndStochastics()
         {
-            List<decimal[]> list1 = new List<decimal[]>();
-            List<decimal[]> list2 = new List<decimal[]>();
+            var current = new int[Dimensionality];
+            for (int i = 0; i < current.Length; i++)
+                current[i] = 1;
 
-            GenerateInitialProbs( list1 );
-            GenerateInitialProbs( list2 );
+            double bestError;
+            int bestIndex;
 
-            for (int q = 0; q < Generations; q++)
+            for (int i = 0; i < Generations; i++)
             {
-                GenerateNextProbabilities( list1, list2 );
-                GenerateNextProbabilities( list2, list1 );
-            }
-        }
-
-        private void GenerateNextProbabilities( List<decimal[]> current, List<decimal[]> next )
-        {
-            for (int i = 0; i < PopulationSize; i++)
-            {
-                var probs = current.Sample( SimpleValueError, false );
-                var nextP = next[i];
+                bestError = double.MaxValue;
+                bestIndex = -1;
 
                 for (int j = 0; j < Dimensionality; j++)
                 {
-                    nextP[j] = probs[j];
-                    if (Rng.NextDouble() < MutationRate)
+                    current[j]++;
+                    var error = SimpleValueError( current );
+                    current[j]--;
+
+                    if (error < bestError)
                     {
-                        var rngVal = Rng.NextGaussian( 1, 0.5 );
-                        var newVal = probs[j] + (decimal)rngVal;
-                        if (newVal > 0)
-                            nextP[j] = newVal;
+                        bestError = error;
+                        bestIndex = j;
                     }
                 }
-            }
-        }
+                if (bestIndex == -1)
+                    break;
 
-        private void GenerateInitialProbs( List<decimal[]> current )
-        {
-            for (int i = 0; i < PopulationSize; i++)
-            {
-                var parr = new decimal[Dimensionality];
-                current.Add( parr );
-
-                for (int j = 0; j < Dimensionality; j++)
-                {
-                    var rngVal = Math.Abs( Rng.NextGaussian( 2, 1 ) );
-                    parr[j] = (decimal)rngVal;
-                }
+                current[bestIndex]++;
             }
+
+            decimal sum = current.Sum();
+            for (int i = 0; i < Dimensionality; i++)
+                probabilities[i] = (decimal)current[i] / sum;
         }
 
         /// <summary>
@@ -218,12 +213,18 @@ namespace Morpheus
         /// </summary>
         /// <param name="probabilities"></param>
         /// <returns></returns>
-        public double SimpleValueError( decimal[] probabilities )
+        public double SimpleValueError( int[] probabilities )
         {
-            // TODO: figure out what to do about dividing probabilities by the sum of all probabilities
-            1var val = probabilities.DotProduct( values );
+            decimal sum = 0, sumProduct = 0;
+
+            for (int i = 0; i < Dimensionality; i++)
+            {
+                sum += probabilities[i];
+                sumProduct += probabilities[i] * values[i];
+            }
+            var val = sumProduct / sum;
             var delta = val - ExpectedValue;
-            var err = delta * delta / ExpectedValue * 100;
+            var err = delta * delta;
             return (double)err;
         }
     }
