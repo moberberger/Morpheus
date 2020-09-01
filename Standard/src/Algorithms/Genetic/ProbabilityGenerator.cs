@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace Morpheus
         /// <summary>
         /// 
         /// </summary>
-        public int Generations = 100000;
+        public int Generations = 10000;
 
         /// <summary>
         /// 
@@ -141,7 +142,25 @@ namespace Morpheus
         /// </summary>
         private void FixUsingHeuristic()
         {
-            throw new NotImplementedException();
+            int lowIdx = 0, highIdx = 0;
+            for (int i = 0; i < Dimensionality; i++)
+            {
+                if (values[i] < ExpectedValue) lowIdx = i;
+                if (values[i] > ExpectedValue) highIdx = i;
+            }
+
+            var v1 = values[lowIdx];
+            var v2 = values[highIdx];
+            var p1 = probabilities[lowIdx];
+            var p2 = probabilities[highIdx];
+
+            var c = p1 + p2;
+            var d = p1 * v1 + p2 * v2 + ExpectedValue - CalculatedValue;
+            var p11 = (d - c * v2) / (v1 - v2);
+            var p22 = c - p11;
+
+            probabilities[lowIdx] = p11;
+            probabilities[highIdx] = p22;
         }
 
 
