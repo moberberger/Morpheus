@@ -4,7 +4,7 @@ using Morpheus;
 
 using System.Collections.Generic;
 
-namespace MSUnitTests.DataStructs
+namespace Morpheus.Standard.UnitTests.DataStructs
 {
     [TestClass]
     [TestCategory( "Data Structures" )]
