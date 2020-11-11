@@ -16,17 +16,7 @@ namespace Morpheus
         /// <summary>
         /// 
         /// </summary>
-        public int Generations = 10000;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int PopulationSize = 200;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public double MutationRate = 0.1;
+        public int Generations = 500;
 
         /// <summary>
         /// 
@@ -66,7 +56,8 @@ namespace Morpheus
         public ProbabilityGenerator( decimal expectedValue, params decimal[] values )
         {
             this.ExpectedValue = expectedValue;
-            this.values = values;
+            this.values = (decimal[])values.Clone();
+            Array.Sort( this.values );
         }
 
         /// <summary>
@@ -97,44 +88,32 @@ namespace Morpheus
             return probabilities;
         }
 
+
         /// <summary>
         /// 
         /// </summary>
         private void ApplyHeuristicsAndStochastics()
         {
+            // Stochastics with Heuristic function for evaluation
+            var chromoTemplate = new Chromosome( Dimensionality, 32, ValuePV2Error );
+            var ga = new GeneticAlgorithm( chromoTemplate );
+            var bestChromo = ga.Run( 10 );
+
+            decimal sum = (decimal)((long)bestChromo.Words.Select( w => (long)(w & 0xffffffff) ).Sum());
+            for (int i = 0; i < Dimensionality; i++)
+                probabilities[i] = (decimal)bestChromo[i] / sum;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private int[] GetInitializedCounters()
+        {
             var current = new int[Dimensionality];
             for (int i = 0; i < current.Length; i++)
-                current[i] = 1;
-
-            double bestError;
-            int bestIndex;
-
-            for (int i = 0; i < Generations; i++)
-            {
-                bestError = double.MaxValue;
-                bestIndex = -1;
-
-                for (int j = 0; j < Dimensionality; j++)
-                {
-                    current[j]++;
-                    var error = SimpleValueError( current );
-                    current[j]--;
-
-                    if (error < bestError)
-                    {
-                        bestError = error;
-                        bestIndex = j;
-                    }
-                }
-                if (bestIndex == -1)
-                    break;
-
-                current[bestIndex]++;
-            }
-
-            decimal sum = current.Sum();
-            for (int i = 0; i < Dimensionality; i++)
-                probabilities[i] = (decimal)current[i] / sum;
+                current[i] = 1; // Rng.Next( 1, 100 );
+            return current;
         }
 
         /// <summary>
@@ -142,6 +121,7 @@ namespace Morpheus
         /// </summary>
         private void FixUsingHeuristic()
         {
+            // Select two entries used in the final adjustment process
             int lowIdx = 0, highIdx = 0;
             for (int i = 0; i < Dimensionality; i++)
             {
@@ -149,6 +129,7 @@ namespace Morpheus
                 if (values[i] > ExpectedValue) highIdx = i;
             }
 
+            // Adjust these values based on the dot-product
             var v1 = values[lowIdx];
             var v2 = values[highIdx];
             var p1 = probabilities[lowIdx];
@@ -156,11 +137,11 @@ namespace Morpheus
 
             var c = p1 + p2;
             var d = p1 * v1 + p2 * v2 + ExpectedValue - CalculatedValue;
-            var p11 = (d - c * v2) / (v1 - v2);
-            var p22 = c - p11;
+            var newP1 = (d - c * v2) / (v1 - v2);
+            var newP2 = c - newP1;
 
-            probabilities[lowIdx] = p11;
-            probabilities[highIdx] = p22;
+            probabilities[lowIdx] = newP1;
+            probabilities[highIdx] = newP2;
         }
 
 
@@ -245,6 +226,89 @@ namespace Morpheus
             var delta = val - ExpectedValue;
             var err = delta * delta;
             return (double)err;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="probs"></param>
+        /// <returns></returns>
+        public double ValuePV2Error( int[] probs )
+        {
+            double sum = 0, sumProduct = 0, sumPV2 = 0;
+            double maxV = double.MinValue, minV = double.MaxValue;
+
+            for (int i = 0; i < Dimensionality; i++)
+            {
+                var p = (double)probs[i];
+                var v = (double)values[i];
+
+                sum += p;
+                sumProduct += p * v;
+
+                maxV = Math.Max( maxV, v * v );
+                minV = Math.Min( minV, v * v );
+            }
+            var val = sumProduct / sum;
+            var delta = val - (double)ExpectedValue;
+            var err1 = delta * delta;
+
+
+            for (int i = 0; i < Dimensionality; i++)
+            {
+                var p = (double)probs[i];
+                var v = (double)values[i];
+
+                var e = maxV - p * v * v;
+                sumPV2 += e * e;
+            }
+            var range = (maxV - minV);
+            var valPV2 = sumPV2 / range;
+            var err2 = Math.Sqrt( (double)valPV2 );
+
+            return (double)err1 + err2;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="chromo"></param>
+        /// <returns></returns>
+        public double ValuePV2Error( Chromosome chromo )
+        {
+            double sumProbability = 0, sumProduct = 0, sumPV2 = 0;
+            double maxV2 = double.MinValue, minV2 = double.MaxValue;
+
+            for (int i = 0; i < Dimensionality; i++)
+            {
+                var p = (double)chromo[i];
+                var v = (double)values[i];
+
+                sumProbability += p;
+                sumProduct += p * v;
+
+                maxV2 = Math.Max( maxV2, v * v );
+                minV2 = Math.Min( minV2, v * v );
+            }
+            var val = sumProduct;
+            var delta = val - (double)ExpectedValue;
+            var err1 = delta * delta;
+
+
+            for (int i = 0; i < Dimensionality; i++)
+            {
+                var p = (double)chromo[i];
+                var v = (double)values[i];
+
+                var e = maxV2 - p * v * v;
+                sumPV2 += e * e;
+            }
+            var range = (maxV2 - minV2);
+            var valPV2 = sumPV2 / (range * range);
+            var err2 = Math.Sqrt( (double)valPV2 );
+
+            return err1 + err2;
         }
     }
 }

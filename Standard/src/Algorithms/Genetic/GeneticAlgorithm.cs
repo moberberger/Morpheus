@@ -5,9 +5,9 @@ using System.Threading;
 namespace Morpheus
 {
     /// <summary>
-    /// A generalized Genetic Algorithm. Uses the <see cref="CChromosome"/> class.
+    /// A generalized Genetic Algorithm. Uses the <see cref="Chromosome"/> class.
     /// </summary>
-    public class CGeneticAlgorithm
+    public class GeneticAlgorithm
     {
         /// <summary>
         /// When the worst chromosome error is more than this TIMES the best chromosome error,
@@ -20,14 +20,14 @@ namespace Morpheus
         /// A list containing all "good" chromosomes- these are used in crossover and mutation
         /// to move into the "New Pool"
         /// </summary>
-        private List<CChromosome> m_fullPool;
+        private List<Chromosome> m_fullPool;
 
         /// <summary>
         /// A list that contains "blank" chromosomes, that must be created using any of a
         /// variety of methods. This helps alleviate garbage collection by not allocating new
         /// chromosomes all the time.
         /// </summary>
-        private List<CChromosome> m_workingPool;
+        private List<Chromosome> m_workingPool;
 
         /// <summary>
         /// Reset at the start of every generation, this keeps track of any chromosomes that the
@@ -67,7 +67,7 @@ namespace Morpheus
         /// <summary>
         /// The template chromosome for the application
         /// </summary>
-        private readonly CChromosome m_template;
+        private readonly Chromosome m_template;
 
         /// <summary>
         /// The current Generation that the GA is working on
@@ -90,7 +90,7 @@ namespace Morpheus
         /// The currently "full" pool of chromosomes that the application may access in order to
         /// inject new chromosomes (via <see cref="GetWorkingChromosome"/> )
         /// </summary>
-        public List<CChromosome> Pool => m_fullPool;
+        public List<Chromosome> Pool => m_fullPool;
 
         /// <summary>
         /// How often should the <see cref="OnUpdateStatus"/> event be called, in Milliseconds
@@ -103,12 +103,12 @@ namespace Morpheus
         /// application should not modify any of the GA parameters- This should be done inside
         /// the OnGenerationStart event handler.
         /// </summary>
-        public event Action<CGeneticAlgorithm> OnUpdateStatus;
+        public event Action<GeneticAlgorithm> OnUpdateStatus;
 
         /// <summary>
         /// Allow the application to interfere at the beginning of each generation
         /// </summary>
-        public event Action<CGeneticAlgorithm> OnGenerationStart;
+        public event Action<GeneticAlgorithm> OnGenerationStart;
 
         /// <summary>
         /// Counter to communicate the number of Normal distributions (high difference in errors
@@ -135,7 +135,7 @@ namespace Morpheus
         /// Create a new GA using a specific chromosome as a template.
         /// </summary>
         /// <param name="_template">The template chromosome</param>
-        public CGeneticAlgorithm( CChromosome _template )
+        public GeneticAlgorithm( Chromosome _template )
         {
             m_template = _template;
             Generation = -1;
@@ -149,9 +149,9 @@ namespace Morpheus
         /// <param name="_evaluator">
         /// The (presumably non-trivial) evaluator for the chromosome
         /// </param>
-        public CGeneticAlgorithm( int _wordCount, int _bitsPerWord, Func<CChromosome, double> _evaluator )
+        public GeneticAlgorithm( int _wordCount, int _bitsPerWord, Func<Chromosome, double> _evaluator )
         {
-            m_template = new CChromosome( _wordCount, _bitsPerWord, _evaluator );
+            m_template = new Chromosome( _wordCount, _bitsPerWord, _evaluator );
             Generation = -1;
         }
 
@@ -162,7 +162,7 @@ namespace Morpheus
         /// NULL if there are no more working chromosomes available, or a reference to an
         /// uninitialized chromosome if one is available.
         /// </returns>
-        public CChromosome GetWorkingChromosome()
+        public Chromosome GetWorkingChromosome()
         {
             if (Generation < 0)
                 throw new InvalidOperationException( "Not allowed to get working chromosomes until the GA is Run()" );
@@ -191,21 +191,21 @@ namespace Morpheus
         /// Run the GA for a specific number of generations.
         /// </summary>
         /// <param name="_generations">The number of generations to run for</param>
-        public CChromosome Run( int _generations )
+        public Chromosome Run( int _generations )
         {
             // Build a pool of random chromos
-            m_fullPool = new List<CChromosome>();
-            m_workingPool = new List<CChromosome>();
+            m_fullPool = new List<Chromosome>();
+            m_workingPool = new List<Chromosome>();
             MaxGeneration = _generations;
 
             // Generate the two pools of chromosomes
             for (var i = 0; i < PoolSize; i++)
             {
-                var chromo = new CChromosome( m_template );
+                var chromo = new Chromosome( m_template );
                 chromo.Randomize();
                 m_workingPool.Add( chromo ); // first operation in loop is to swap pools!
 
-                chromo = new CChromosome( m_template );
+                chromo = new Chromosome( m_template );
                 m_fullPool.Add( chromo ); // Don't care about these counts right now
             }
 
@@ -242,7 +242,7 @@ namespace Morpheus
                     updateTime += new TimeSpan( 0, 0, 0, 0, UpdateInterval );
                 }
 
-                CChromosome working;
+                Chromosome working;
 
                 // Handle Elitism
                 for (var i = 0; i < ElitismCount; i++)
@@ -307,7 +307,7 @@ namespace Morpheus
         /// work better.
         /// </summary>
         /// <returns>A sampled chromosome</returns>
-        private CChromosome Sample()
+        private Chromosome Sample()
         {
             var best = Pool[0].GetValue();
             var worst = Pool[Pool.Count - 1].GetValue();

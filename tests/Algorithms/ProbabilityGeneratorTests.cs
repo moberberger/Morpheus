@@ -78,6 +78,33 @@ namespace Morpheus.Standard.UnitTests.Algorithms
             var p = pg.Calculate();
         }
 
+        [TestMethod]
+        public void LotsOfValuesTest()
+        {
+            var vals = new decimal[48];
+            for (int i = 0; i < vals.Length; i++)
+                vals[i] = Rng.Default.Next();
+
+            var target = int.MaxValue / 2;
+            var pg = new ProbabilityGenerator( target, vals );
+            var probs = pg.Calculate();
+        }
+
+
+        [TestMethod]
+        public void TwentyValueTest()
+        {
+            const decimal EXPECTED = 63m;
+
+            decimal[] v = new decimal[] {
+                  5, 10, 10, 15, 15,
+                 15, 25, 25, 40, 50,
+                 50, 75, 75, 100, 125,
+                 150, 250, 500, 500, 1000
+            };
+            var pg = new ProbabilityGenerator( EXPECTED, v );
+            var p = pg.Calculate();
+        }
 
 
     }

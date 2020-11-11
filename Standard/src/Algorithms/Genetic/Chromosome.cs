@@ -7,9 +7,9 @@ using System.Threading;
 namespace Morpheus
 {
     /// <summary>
-    /// A chromosome for use with the <see cref="CGeneticAlgorithm"/> class.
+    /// A chromosome for use with the <see cref="GeneticAlgorithm"/> class.
     /// </summary>
-    public class CChromosome : IComparable<CChromosome>, IComparable, IEvaluate
+    public class Chromosome : IComparable<Chromosome>, IComparable, IEvaluate
     {
         /// <summary>
         /// The number of words in this chromosome
@@ -51,7 +51,7 @@ namespace Morpheus
         /// The evaluator for the chromosome. Assume that this operation is not fast or trivial,
         /// thus "dirty" and a cached value.
         /// </summary>
-        private readonly Func<CChromosome, double> m_evaluator;
+        private readonly Func<Chromosome, double> m_evaluator;
 
         /// <summary>
         /// Construct a raw chromosome, giving it personality.
@@ -61,7 +61,7 @@ namespace Morpheus
         /// <param name="_evaluator">
         /// The (presumably non-trivial) evaluator for the chromosome
         /// </param>
-        public CChromosome( int _wordCount, int _bitsPerWord, Func<CChromosome, double> _evaluator )
+        public Chromosome( int _wordCount, int _bitsPerWord, Func<Chromosome, double> _evaluator )
         {
             if (_bitsPerWord < 1 || _bitsPerWord > 64)
                 throw new ArgumentOutOfRangeException( "Bits Per Word", _bitsPerWord, "Bits Per Word must be between 1 and 64, inclusive" );
@@ -88,7 +88,7 @@ namespace Morpheus
         /// evaluator.
         /// </summary>
         /// <param name="_other"></param>
-        public CChromosome( CChromosome _other )
+        public Chromosome( Chromosome _other )
             : this( _other.WordCount, _other.BitsPerWord, _other.m_evaluator )
         {
         }
@@ -100,7 +100,7 @@ namespace Morpheus
         /// collections.
         /// </summary>
         /// <param name="_other"></param>
-        public void FromOther( CChromosome _other )
+        public void FromOther( Chromosome _other )
         {
             if (m_longs.Length != _other.m_longs.Length)
                 throw new InvalidOperationException( "Data Size Mismatch (m_longs.Length)" );
@@ -157,6 +157,13 @@ namespace Morpheus
             }
         }
 
+        /// <summary>
+        /// Retrieve a word from this chromosome, using WordCount and BitsPerWord
+        /// </summary>
+        /// <param name="_index">The index into this single-dimensional chromosome</param>
+        /// <returns>Up to 64 bits from the chromosome</returns>
+        public ulong this[int _index] { get => GetWord( _index ); }
+
 
 
         /// <summary>
@@ -208,7 +215,7 @@ namespace Morpheus
         /// </summary>
         /// <param name="_1">The first chromosome to get bits from</param>
         /// <param name="_2">The second chromosome to get bits from</param>
-        public void CrossoverBits( CChromosome _1, CChromosome _2 )
+        public void CrossoverBits( Chromosome _1, Chromosome _2 )
         {
             for (var i = 0; i < m_longs.Length; i++)
             {
@@ -227,7 +234,7 @@ namespace Morpheus
         /// </summary>
         /// <param name="_1">The first chromosome to splice from</param>
         /// <param name="_2">The second chromosome to splice from</param>
-        public void CrossoverSplice( CChromosome _1, CChromosome _2 )
+        public void CrossoverSplice( Chromosome _1, Chromosome _2 )
         {
             int idx1 = 0, idx2 = 1;
 
@@ -285,7 +292,7 @@ namespace Morpheus
         /// -1 if this is less than obj, 0 if they're equal, or 1 if this is greater than the
         /// other chromosome
         /// </returns>
-        public int CompareTo( object _obj ) => CompareTo( _obj as CChromosome );
+        public int CompareTo( object _obj ) => CompareTo( _obj as Chromosome );
 
         /// <summary>
         /// Allow chromosomes to be sorted based on their "Value" (from <see cref="GetValue"/> .
@@ -295,7 +302,7 @@ namespace Morpheus
         /// -1 if this is less than obj, 0 if they're equal, or 1 if this is greater than the
         /// other chromosome
         /// </returns>
-        public int CompareTo( CChromosome _other )
+        public int CompareTo( Chromosome _other )
         {
             if (_other == null)
                 return 1;
@@ -319,7 +326,7 @@ namespace Morpheus
         /// <returns>TRUE if the bits are equal, FALSE if not</returns>
         public override bool Equals( object _obj )
         {
-            if (!(_obj is CChromosome other))
+            if (!(_obj is Chromosome other))
                 return false;
 
             if (m_longs.Length != other.m_longs.Length)
