@@ -62,45 +62,34 @@ namespace Morpheus
         /// <returns>An object from the collection selected based on the _selector</returns>
         public static T Sample<T>( this IEnumerable<T> _data, Func<T, double> _selector, double _selection, bool _inverse )
         {
-            double total = 0;
             var count = 0;
-            var min = double.MaxValue;
-            var max = double.MinValue;
-            foreach (var x in _data)
+            double sumValues = 0, sumInverses = 0;
+
+            foreach (var obj in _data)
             {
+                var val = _selector( obj );
+                if (double.IsNaN( val ) || double.IsInfinity( val ) || val <= 0)
+                    throw new XException( $"The SELECTOR returned  [ {val} ] , which is invalid." );
+
                 count++;
-                var val = _selector( x );
-                if (double.IsNaN( val ) || double.IsInfinity( val ))
-                    throw new XException( $"The SELECTOR returned {val}, which is invalid." );
-
-                if (val < 0)
-                    throw new XException( "Not allowed to return negative values from selector" );
-                if (val < min) min = val;
-                if (val > max) max = val;
-
-                total += val;
+                sumValues += val;
+                sumInverses += 1.0 / val;
             }
 
             if (count == 0)
                 return default;
             if (count == 1)
                 return _data.First();
-            if (total <= 0)
-                throw new XException( "The SUM of the specified items in the collection was {0}, must be greater than zero", total );
-
-            if (_inverse)
-                total = _data.Sum( _x => min + max - _selector( _x ) );
 
             double running = 0;
-            var target = _selection * total;
-
             foreach (var obj in _data)
             {
-                var increment = _selector( obj );
-                if (_inverse) increment = min + max - increment;
+                var val = _selector( obj );
+
+                var increment = _inverse ? 1.0 / (sumInverses * val) : val / sumValues;
                 running += increment;
 
-                if (running >= target)
+                if (running >= _selection)
                     return obj;
             }
             throw new XException( "Never should run out of objects in the sampled set" );

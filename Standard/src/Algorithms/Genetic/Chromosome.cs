@@ -73,13 +73,13 @@ namespace Morpheus
             BitsPerWord = _bitsPerWord;
 
             var bits = _wordCount * _bitsPerWord;
-            var words = (bits + 63) / 64;
+            var wordCount = (bits + 63) / 64;
 
-            words = Math.Max( 2, words ); // must have 2 words for crossover optimization
+            wordCount = Math.Max( 2, wordCount ); // must have 2 words for crossover optimization
 
-            m_longs = new ulong[words];
+            m_longs = new ulong[wordCount];
             m_dirty = true;
-            m_mask = (1UL << BitsPerWord) - 1;
+            m_mask = 0xffff_ffff_ffff_ffff >> (64 - BitsPerWord);
         }
 
         /// <summary>

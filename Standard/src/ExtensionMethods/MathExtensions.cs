@@ -43,12 +43,12 @@ namespace Morpheus
         /// <summary>
         /// PI as a float (not a double)
         /// </summary>
-        public const float PI_FLOAT = (float) Math.PI;
+        public const float PI_FLOAT = (float)Math.PI;
 
         /// <summary>
         /// Two times PI as a float (not a double)
         /// </summary>
-        public const float TWO_PI_FLOAT = (float) Math.PI * 2;
+        public const float TWO_PI_FLOAT = (float)Math.PI * 2;
 
 
 
@@ -71,7 +71,7 @@ namespace Morpheus
         /// The largest integer producing a "SumOfConsecutiveInts" less than or equal to
         /// <paramref name="_sum"/> .
         /// </returns>
-        public static int InverseSumOfConsecutiveInts( int _sum ) => (int) ((Math.Sqrt( 8 * _sum + 1 ) - 1) / 2);
+        public static int InverseSumOfConsecutiveInts( int _sum ) => (int)((Math.Sqrt( 8 * _sum + 1 ) - 1) / 2);
 
         /// <summary>
         /// A sigmoid function that will re-scale values between 0 and 1 to the curve between
@@ -102,7 +102,7 @@ namespace Morpheus
         /// <param name="_number"></param>
         /// <param name="_degree"></param>
         /// <returns></returns>
-        public static double CheapSigmoid( this double _number, double _degree ) 
+        public static double CheapSigmoid( this double _number, double _degree )
             => Math.Sign( _number ) * Math.Pow( Math.Abs( _number ), 1.0 / _degree );
 
         /// <summary>
@@ -275,7 +275,7 @@ namespace Morpheus
         /// <param name="_1">The first value to check against</param>
         /// <param name="_2">The second value to check against</param>
         /// <returns></returns>
-        public static bool IsBetween( this double _value, double _1, double _2 ) 
+        public static bool IsBetween( this double _value, double _1, double _2 )
             => (_value >= _1 && _value <= _2) || (_value >= _2 && _value <= _1);
 
         /// <summary>
@@ -286,7 +286,7 @@ namespace Morpheus
         /// <param name="_1">The first value to check against</param>
         /// <param name="_2">The second value to check against</param>
         /// <returns></returns>
-        public static bool IsBetween( this float _value, float _1, float _2 ) 
+        public static bool IsBetween( this float _value, float _1, float _2 )
             => (_value >= _1 && _value <= _2) || (_value >= _2 && _value <= _1);
 
         /// <summary>
@@ -297,7 +297,7 @@ namespace Morpheus
         /// <param name="_1">The first value to check against</param>
         /// <param name="_2">The second value to check against</param>
         /// <returns></returns>
-        public static bool IsBetween( this byte _value, byte _1, byte _2 ) 
+        public static bool IsBetween( this byte _value, byte _1, byte _2 )
             => (_value >= _1 && _value <= _2) || (_value >= _2 && _value <= _1);
 
         /// <summary>
@@ -308,7 +308,7 @@ namespace Morpheus
         /// <param name="_1">The first value to check against</param>
         /// <param name="_2">The second value to check against</param>
         /// <returns></returns>
-        public static bool IsBetween( this int _value, int _1, int _2 ) 
+        public static bool IsBetween( this int _value, int _1, int _2 )
             => (_value >= _1 && _value <= _2) || (_value >= _2 && _value <= _1);
 
         /// <summary>
@@ -319,7 +319,7 @@ namespace Morpheus
         /// <param name="_1">The first value to check against</param>
         /// <param name="_2">The second value to check against</param>
         /// <returns></returns>
-        public static bool IsBetween( this long _value, long _1, long _2 ) 
+        public static bool IsBetween( this long _value, long _1, long _2 )
             => (_value >= _1 && _value <= _2) || (_value >= _2 && _value <= _1);
 
 
@@ -610,5 +610,133 @@ namespace Morpheus
         /// <param name="_target"></param>
         /// <returns></returns>
         public static double DifferenceAsRatioOf( this double _val, double _target ) => (_val - _target) / _target;
+
+
+
+
+
+
+
+        /// <summary>
+        /// This function converts an unsigned binary number to reflected binary Gray code.
+        /// </summary>
+        /// <param name="num"></param>
+        /// <returns></returns>
+        public static byte BinaryToGray( this byte num )
+        {
+            return (byte)(num ^ (num >> 1)); // The operator >> is shift right. The operator ^ is exclusive or.
+        }
+
+        /// <summary>
+        /// This function converts an unsigned binary number to reflected binary Gray code.
+        /// </summary>
+        /// <param name="num"></param>
+        /// <returns></returns>
+        public static ushort BinaryToGray( this ushort num )
+        {
+            return (ushort)(num ^ (num >> 1)); // The operator >> is shift right. The operator ^ is exclusive or.
+        }
+
+        /// <summary>
+        /// This function converts an unsigned binary number to reflected binary Gray code.
+        /// </summary>
+        /// <param name="num"></param>
+        /// <returns></returns>
+        public static uint BinaryToGray( this uint num )
+        {
+            return num ^ (num >> 1); // The operator >> is shift right. The operator ^ is exclusive or.
+        }
+
+        /// <summary>
+        /// This function converts an unsigned binary number to reflected binary Gray code.
+        /// </summary>
+        /// <param name="num"></param>
+        /// <returns></returns>
+        public static ulong BinaryToGray( this ulong num )
+        {
+            return num ^ (num >> 1); // The operator >> is shift right. The operator ^ is exclusive or.
+        }
+
+        // This function converts a reflected binary Gray code number to a binary number in a
+        // generalized manner
+        //<code>
+        //uint GrayToBinary( uint num )
+        //{
+        //    uint mask = num;
+        //    while (mask)
+        //    {           // Each Gray code bit is exclusive-ored with all more significant bits.
+        //        mask >>= 1;
+        //        num ^= mask;
+        //    }
+        //    return num;
+        //}
+
+        /// <summary>
+        /// A more efficient version for Gray codes 32 bits or fewer through the use of SWAR
+        /// (SIMD within a register) techniques. It implements a parallel prefix XOR function.
+        /// The assignment statements can be in any order.
+        /// </summary>
+        /// <param name="num"></param>
+        /// <returns></returns>
+        public static byte GrayToBinary( this byte num )
+        {
+            num ^= (byte)(num >> 4);
+            num ^= (byte)(num >> 2);
+            num ^= (byte)(num >> 1);
+            return num;
+        }
+
+        /// <summary>
+        /// A more efficient version for Gray codes 32 bits or fewer through the use of SWAR
+        /// (SIMD within a register) techniques. It implements a parallel prefix XOR function.
+        /// The assignment statements can be in any order.
+        /// </summary>
+        /// <param name="num"></param>
+        /// <returns></returns>
+        public static ushort GrayToBinary( this ushort num )
+        {
+            num ^= (byte)(num >> 8);
+            num ^= (byte)(num >> 4);
+            num ^= (byte)(num >> 2);
+            num ^= (byte)(num >> 1);
+            return num;
+        }
+
+        /// <summary>
+        /// A more efficient version for Gray codes 32 bits or fewer through the use of SWAR
+        /// (SIMD within a register) techniques. It implements a parallel prefix XOR function.
+        /// The assignment statements can be in any order.
+        /// </summary>
+        /// <param name="num"></param>
+        /// <returns></returns>
+        public static uint GrayToBinary( this uint num )
+        {
+            num ^= (byte)(num >> 16);
+            num ^= (byte)(num >> 8);
+            num ^= (byte)(num >> 4);
+            num ^= (byte)(num >> 2);
+            num ^= (byte)(num >> 1);
+            return num;
+        }
+
+        /// <summary>
+        /// A more efficient version for Gray codes 32 bits or fewer through the use of SWAR
+        /// (SIMD within a register) techniques. It implements a parallel prefix XOR function.
+        /// The assignment statements can be in any order.
+        /// </summary>
+        /// <param name="num"></param>
+        /// <returns></returns>
+        public static ulong GrayToBinary( this ulong num )
+        {
+            num ^= num >> 32;
+            num ^= num >> 16;
+            num ^= num >> 8;
+            num ^= num >> 4;
+            num ^= num >> 2;
+            num ^= num >> 1;
+            return num;
+        }
+
+
     }
 }

@@ -10,11 +10,38 @@ namespace Morpheus
     public class GeneticAlgorithm
     {
         /// <summary>
+        /// Percentage chance of a mutation occurring
+        /// </summary>
+        public double MutationRate = 0.05;
+
+        /// <summary>
+        /// Chance of additional mutated bits per mutation
+        /// </summary>
+        public double MutationStrength = 0.5;
+
+        /// <summary>
+        /// Set this to terminate a Run after a certain amount of time
+        /// </summary>
+        public DateTime StopTime = DateTime.MaxValue;
+
+        /// <summary>
+        /// The number of chromosomes in the pool. Ignored if set/modified after the GA is run.
+        /// </summary>
+        public int PoolSize = 100;
+
+        /// <summary>
+        /// How many of the top chromosomes will always make it into the next generation as-is
+        /// </summary>
+        public int ElitismCount = 2;
+
+
+
+
+        /// <summary>
         /// When the worst chromosome error is more than this TIMES the best chromosome error,
         /// switch sampling algorithms. This number is a wild guess.
         /// </summary>
         private const double SAMPLING_HEURISTIC = 100000;
-
 
         /// <summary>
         /// A list containing all "good" chromosomes- these are used in crossover and mutation
@@ -36,33 +63,11 @@ namespace Morpheus
         /// </summary>
         private int m_workingIndex = 0;
 
+        /// <summary>
+        /// 
+        /// </summary>
         private int m_lastUpdateCount;
 
-
-        /// <summary>
-        /// Percentage chance of a mutation occurring
-        /// </summary>
-        public double MutationRate = 0.2;
-
-        /// <summary>
-        /// Chance of additional mutated bits per mutation
-        /// </summary>
-        public double MutationStrength = 0.25;
-
-        /// <summary>
-        /// Set this to terminate a Run after a certain amount of time
-        /// </summary>
-        public DateTime StopTime = DateTime.MaxValue;
-
-        /// <summary>
-        /// The number of chromosomes in the pool. Ignored if set/modified after the GA is run.
-        /// </summary>
-        public int PoolSize = 1000;
-
-        /// <summary>
-        /// How many of the top chromosomes will always make it into the next generation as-is
-        /// </summary>
-        public int ElitismCount = 5;
 
         /// <summary>
         /// The template chromosome for the application
@@ -206,6 +211,7 @@ namespace Morpheus
                 m_workingPool.Add( chromo ); // first operation in loop is to swap pools!
 
                 chromo = new Chromosome( m_template );
+                chromo.Randomize();
                 m_fullPool.Add( chromo ); // Don't care about these counts right now
             }
 

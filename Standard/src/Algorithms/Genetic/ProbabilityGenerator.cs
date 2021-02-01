@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -16,11 +17,6 @@ namespace Morpheus
         /// <summary>
         /// 
         /// </summary>
-        public int Generations = 500;
-
-        /// <summary>
-        /// 
-        /// </summary>
         public Random Rng { get; set; } = DI.Default.Get<Random>();
 
         /// <summary>
@@ -33,17 +29,23 @@ namespace Morpheus
         /// </summary>
         public decimal CalculatedValue { get => values.DotProduct( probabilities ); }
 
-
-
-
-
-        private decimal[] values;
-        private decimal[] probabilities;
-
         /// <summary>
         /// How many values/probabilities are there
         /// </summary>
         public int Dimensionality { get => values.Length; }
+
+        /// <summary>
+        /// Get a copy of the probabilities generated
+        /// </summary>
+        public decimal[] Probabilities { get => (decimal[])probabilities.Clone(); }
+
+
+        private decimal[] values;
+        private decimal[] probabilities;
+        private decimal[] tempBuffer;
+
+        private List<int> lowerValueIndicies = new List<int>();
+        private List<int> higherValueIndicies = new List<int>();
 
         /// <summary>
         /// Construct using an expected value and the established set of values.
@@ -57,7 +59,15 @@ namespace Morpheus
         {
             this.ExpectedValue = expectedValue;
             this.values = (decimal[])values.Clone();
-            Array.Sort( this.values );
+
+            for (int i = 0; i < Dimensionality; i++)
+            {
+                if (values[i] < ExpectedValue)
+                    lowerValueIndicies.Add( i );
+                else if (values[i] > ExpectedValue)
+                    higherValueIndicies.Add( i );
+            }
+
         }
 
         /// <summary>
@@ -68,7 +78,8 @@ namespace Morpheus
         {
             Validate();
 
-            probabilities = new decimal[values.Length];
+            probabilities = new decimal[Dimensionality];
+            tempBuffer = new decimal[Dimensionality];
 
             // special and trivial case which always produces most accurate probabilities. No
             // heuristics possible, nor stochastics necessary- there's always exactly one
@@ -95,11 +106,17 @@ namespace Morpheus
         private void ApplyHeuristicsAndStochastics()
         {
             // Stochastics with Heuristic function for evaluation
-            var chromoTemplate = new Chromosome( Dimensionality, 32, ValuePV2Error );
+            var chromoTemplate = new Chromosome( Dimensionality, 64, ValuePV2Error );
             var ga = new GeneticAlgorithm( chromoTemplate );
-            var bestChromo = ga.Run( 10 );
+            ga.PoolSize = PoolSize;
+            ga.ElitismCount = ElitismCount;
+            ga.MutationRate = MutationRate;
+            ga.MutationStrength = MutationStrength;
+            var bestChromo = ga.Run( Generations );
 
-            decimal sum = (decimal)((long)bestChromo.Words.Select( w => (long)(w & 0xffffffff) ).Sum());
+            decimal sum = 0;
+            for (int i = 0; i < Dimensionality; i++)
+                sum += bestChromo[i];
             for (int i = 0; i < Dimensionality; i++)
                 probabilities[i] = (decimal)bestChromo[i] / sum;
         }
@@ -107,41 +124,57 @@ namespace Morpheus
         /// <summary>
         /// 
         /// </summary>
-        /// <returns></returns>
-        private int[] GetInitializedCounters()
-        {
-            var current = new int[Dimensionality];
-            for (int i = 0; i < current.Length; i++)
-                current[i] = 1; // Rng.Next( 1, 100 );
-            return current;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         private void FixUsingHeuristic()
         {
-            // Select two entries used in the final adjustment process
-            int lowIdx = 0, highIdx = 0;
-            for (int i = 0; i < Dimensionality; i++)
+            var bestIdx = (-1, -1); // lower index / upper index
+            var bestErr = double.MaxValue;
+
+            // find low and high indicies (related to ExpectedValue)
+            for (int j = 0; j < lowerValueIndicies.Count; j++)
             {
-                if (values[i] < ExpectedValue) lowIdx = i;
-                if (values[i] > ExpectedValue) highIdx = i;
+                for (int k = 0; k < higherValueIndicies.Count; k++)
+                {
+                    var lowerIdx = lowerValueIndicies[j];
+                    var higherIdx = higherValueIndicies[k];
+                    double err = GetErrorBySwitchingIndicies( lowerIdx, higherIdx );
+                    if (err < bestErr)
+                    {
+                        bestErr = err;
+                        bestIdx = (lowerIdx, higherIdx);
+                    }
+                }
             }
 
+            FixTwoProbabilities( bestIdx.Item1, bestIdx.Item2 );
+        }
+
+        private double GetErrorBySwitchingIndicies( int lowIdx, int highIdx )
+        {
+            var previousVals = FixTwoProbabilities( lowIdx, highIdx );
+            var retval = ValuePV2Error( probabilities );
+            probabilities[lowIdx] = previousVals.Item1;
+            probabilities[highIdx] = previousVals.Item2;
+            return retval;
+        }
+
+        private (decimal, decimal) FixTwoProbabilities( int lowIdx, int highIdx )
+        {
             // Adjust these values based on the dot-product
             var v1 = values[lowIdx];
             var v2 = values[highIdx];
             var p1 = probabilities[lowIdx];
             var p2 = probabilities[highIdx];
-
             var c = p1 + p2;
             var d = p1 * v1 + p2 * v2 + ExpectedValue - CalculatedValue;
             var newP1 = (d - c * v2) / (v1 - v2);
             var newP2 = c - newP1;
 
-            probabilities[lowIdx] = newP1;
-            probabilities[highIdx] = newP2;
+            if (newP1 > 0 && newP1 < 1 && newP2 > 0 && newP2 < 1)
+            {
+                probabilities[lowIdx] = newP1;
+                probabilities[highIdx] = newP2;
+            }
+            return (p1, p2);
         }
 
 
@@ -156,34 +189,23 @@ namespace Morpheus
         /// <summary>
         /// 
         /// </summary>
-        private void ValidateInRange()
-        {
-            bool foundLesser = false, foundGreater = false;
-
-            foreach (var v in values)
-            {
-                if (v < ExpectedValue)
-                    if (foundGreater)
-                        return;
-                    else
-                        foundLesser = true;
-                else if (v > ExpectedValue)
-                    if (foundLesser)
-                        return;
-                    else
-                        foundGreater = true;
-            }
-
-            throw new InvalidOperationException( $"Invalid Expected Value: BOTH should be true---> Found Lesser: {foundLesser}, FoundGreater: {foundGreater}" );
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         private void ErrorCheck()
         {
             ErrorCheckDotProduct();
             ErrorCheckValidProbabilities();
+        }
+
+
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void ValidateInRange()
+        {
+            if (lowerValueIndicies.Count == 0 || higherValueIndicies.Count == 0)
+                throw new InvalidOperationException( $"There must be at least one Value that is LOWER than the expected value AND one value greater than the expected value" );
         }
 
         /// <summary>
@@ -215,100 +237,98 @@ namespace Morpheus
         /// <returns></returns>
         public double SimpleValueError( int[] probabilities )
         {
-            decimal sum = 0, sumProduct = 0;
+            decimal sumProbabilities = 0, sumProduct = 0;
 
             for (int i = 0; i < Dimensionality; i++)
             {
-                sum += probabilities[i];
+                sumProbabilities += probabilities[i];
                 sumProduct += probabilities[i] * values[i];
             }
-            var val = sumProduct / sum;
+            var val = sumProduct / sumProbabilities;
             var delta = val - ExpectedValue;
             var err = delta * delta;
             return (double)err;
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="probs"></param>
-        /// <returns></returns>
-        public double ValuePV2Error( int[] probs )
-        {
-            double sum = 0, sumProduct = 0, sumPV2 = 0;
-            double maxV = double.MinValue, minV = double.MaxValue;
-
-            for (int i = 0; i < Dimensionality; i++)
-            {
-                var p = (double)probs[i];
-                var v = (double)values[i];
-
-                sum += p;
-                sumProduct += p * v;
-
-                maxV = Math.Max( maxV, v * v );
-                minV = Math.Min( minV, v * v );
-            }
-            var val = sumProduct / sum;
-            var delta = val - (double)ExpectedValue;
-            var err1 = delta * delta;
-
-
-            for (int i = 0; i < Dimensionality; i++)
-            {
-                var p = (double)probs[i];
-                var v = (double)values[i];
-
-                var e = maxV - p * v * v;
-                sumPV2 += e * e;
-            }
-            var range = (maxV - minV);
-            var valPV2 = sumPV2 / range;
-            var err2 = Math.Sqrt( (double)valPV2 );
-
-            return (double)err1 + err2;
-        }
-
-
-        /// <summary>
-        /// 
+        /// no obj allocation translation of a chromo into the tempBuffer
         /// </summary>
         /// <param name="chromo"></param>
         /// <returns></returns>
         public double ValuePV2Error( Chromosome chromo )
         {
-            double sumProbability = 0, sumProduct = 0, sumPV2 = 0;
-            double maxV2 = double.MinValue, minV2 = double.MaxValue;
+            decimal sum = 0;
+            for (int i = 0; i < Dimensionality; i++)
+            {
+                decimal counter = chromo[i];
+                tempBuffer[i] = counter;
+                sum += counter;
+            }
+            for (int i = 0; i < Dimensionality; i++)
+                tempBuffer[i] /= sum;
+
+            return ValuePV2Error( tempBuffer );
+        }
+
+        /// <summary>
+        /// no memory allocation generation of the error in the current values with the
+        /// specified probabilities
+        /// </summary>
+        /// <param name="probs"></param>
+        /// <returns></returns>
+        public double ValuePV2Error( decimal[] probs )
+        {
+            decimal sumProduct = 0;
+            decimal maxV2 = decimal.MinValue, minV2 = decimal.MaxValue;
 
             for (int i = 0; i < Dimensionality; i++)
             {
-                var p = (double)chromo[i];
-                var v = (double)values[i];
+                var p = probs[i];
+                var v = values[i];
 
-                sumProbability += p;
                 sumProduct += p * v;
 
                 maxV2 = Math.Max( maxV2, v * v );
                 minV2 = Math.Min( minV2, v * v );
             }
-            var val = sumProduct;
-            var delta = val - (double)ExpectedValue;
-            var err1 = delta * delta;
+            var delta = (sumProduct - ExpectedValue) * 10;
+            var err1 = (double)(delta * delta);
+            // return err1;
 
-
+            decimal sumPV2 = 0;
             for (int i = 0; i < Dimensionality; i++)
             {
-                var p = (double)chromo[i];
-                var v = (double)values[i];
-
+                var p = probs[i];
+                var v = values[i];
                 var e = maxV2 - p * v * v;
                 sumPV2 += e * e;
             }
             var range = (maxV2 - minV2);
-            var valPV2 = sumPV2 / (range * range);
+            var valPV2 = sumPV2 / range;
             var err2 = Math.Sqrt( (double)valPV2 );
 
             return err1 + err2;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int PoolSize = 250;
+        /// <summary>
+        /// 
+        /// </summary>
+        public int Generations = 50;
+        /// <summary>
+        /// 
+        /// </summary>
+        public int ElitismCount = 3;
+        /// <summary>
+        /// 
+        /// </summary>
+        public double MutationRate = 0.5;
+        /// <summary>
+        /// 
+        /// </summary>
+        public double MutationStrength = 0.5;
     }
 }
