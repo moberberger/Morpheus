@@ -8,8 +8,8 @@ namespace Morpheus
     public struct SVector2d
     {
         /// <summary>
-        /// Something that can be used to denote a value-type that is invalid. A reference
-        /// type may use NULL, but a value type has to express this differently.
+        /// Something that can be used to denote a value-type that is invalid. A reference type
+        /// may use NULL, but a value type has to express this differently.
         /// </summary>
         public static readonly SVector2d NotAVector = new SVector2d( double.NaN, double.NaN );
 
@@ -153,8 +153,7 @@ namespace Morpheus
         /// containing the result.
         /// </param>
         /// <returns>
-        /// A new vector containing this vector's X and Y values multiplied by the scale
-        /// amount
+        /// A new vector containing this vector's X and Y values multiplied by the scale amount
         /// </returns>
         public SVector2d ScaleBy( double _scaleAmount ) => this * _scaleAmount;
 
@@ -163,9 +162,7 @@ namespace Morpheus
         /// </summary>
         /// <param name="_vector">The vector operand</param>
         /// <param name="_scale">The scalar operand</param>
-        /// <returns>
-        /// A new vector containing the operand divided by the scalar value
-        /// </returns>
+        /// <returns>A new vector containing the operand divided by the scalar value</returns>
         public static SVector2d operator /( SVector2d _vector, double _scale ) => new SVector2d( _vector.X / _scale, _vector.Y / _scale );
 
         /// <summary>
@@ -176,8 +173,8 @@ namespace Morpheus
         public static SVector2d operator -( SVector2d _vector ) => new SVector2d( -_vector.X, -_vector.Y );
 
         /// <summary>
-        /// Return a new vector which is this vector with both X and Y negated (multiplied
-        /// by -1)
+        /// Return a new vector which is this vector with both X and Y negated (multiplied by
+        /// -1)
         /// </summary>
         /// <returns>
         /// A new vector which is this vector with both X and Y negated (multiplied by -1)
@@ -196,24 +193,19 @@ namespace Morpheus
         /// Return a new SVector2d that has a new X value and this vector's Y value.
         /// </summary>
         /// <param name="_newX">The new X value</param>
-        /// <returns>
-        /// A new SVector2d that has a new X value and this vector's Y value.
-        /// </returns>
+        /// <returns>A new SVector2d that has a new X value and this vector's Y value.</returns>
         public SVector2d WithNewX( double _newX ) => new SVector2d( _newX, Y );
 
         /// <summary>
         /// Return a new SVector2d that has a new Y value and this vector's X value.
         /// </summary>
         /// <param name="_newY">The new Y value</param>
-        /// <returns>
-        /// A new SVector2d that has a new Y value and this vector's X value.
-        /// </returns>
+        /// <returns>A new SVector2d that has a new Y value and this vector's X value.</returns>
         public SVector2d WithNewY( double _newY ) => new SVector2d( X, _newY );
 
 
         /// <summary>
-        /// Change the Length (Magnitude) of this vector while keeping its direction the
-        /// same
+        /// Change the Length (Magnitude) of this vector while keeping its direction the same
         /// </summary>
         /// <param name="_newLength">The new length</param>
         /// <returns>
@@ -235,8 +227,8 @@ namespace Morpheus
         /// </summary>
         /// <param name="_radians">The new direction for the vector</param>
         /// <returns>
-        /// A new vector with Length equal to this vector, but direction equal to the
-        /// radians. Alternately, this will return a unit vector if the currect vector is zero.
+        /// A new vector with Length equal to this vector, but direction equal to the radians.
+        /// Alternately, this will return a unit vector if the currect vector is zero.
         /// </returns>
         public SVector2d WithNewDirection( double _radians )
         {
@@ -259,22 +251,28 @@ namespace Morpheus
 
 
         /// <summary>
-        /// Calculate the dot-product of this vector and another vector. This is also equal
-        /// to the cosine of the angle between the two vectors.
+        /// Calculate the dot-product of this vector and another vector. This is also equal to
+        /// the cosine of the angle between the two vectors.
         /// </summary>
         /// <param name="_other">The other vector</param>
         /// <returns>The normalized dot-product, a scalar value</returns>
         public double NormalizedDot( SVector2d _other ) => Dot( _other ) / (Length * _other.Length);
 
         /// <summary>
-        /// Calculate the dot-product of this vector and another vector. This is also equal
-        /// to the cosine of the angle between the two vectors.
+        /// Calculate the dot-product of this vector and another vector. This is also equal to
+        /// the cosine of the angle between the two vectors.
         /// </summary>
         /// <param name="_other">The other vector</param>
         /// <returns>The normalized dot-product, a scalar value</returns>
         public double CosineOfAngleBetween( SVector2d _other ) => Dot( _other ) / (Length * _other.Length);
 
-
+        /// <summary>
+        /// Return the angle (radians) between this and the provided vector
+        /// </summary>
+        /// <remarks>Another way of saying SVector2.ToRadians( _other - this )</remarks>
+        /// <param name="_other"></param>
+        /// <returns></returns>
+        public double AngleBetween( SVector2d _other ) => Math.Atan2( _other.Y - Y, _other.X - X );
 
 
 
@@ -302,8 +300,7 @@ namespace Morpheus
         }
 
         /// <summary>
-        /// Determine if this and another vector are parallel and pointing in the same
-        /// direction
+        /// Determine if this and another vector are parallel and pointing in the same direction
         /// </summary>
         /// <param name="_other">The other vector</param>
         /// <returns>TRUE if the vectors are parallel and in the same direction</returns>
@@ -335,8 +332,8 @@ namespace Morpheus
         public bool AreAcute( SVector2d _other ) => NormalizedDot( _other ) > 0;
 
         /// <summary>
-        /// Determine which "clock direction" (e.g. clockwise or counter-clockwise) the
-        /// other vector is from this vector, assuming both are "rooted" at (0,0)
+        /// Determine which "clock direction" (e.g. clockwise or counter-clockwise) the other
+        /// vector is from this vector, assuming both are "rooted" at (0,0)
         /// </summary>
         /// <remarks>
         /// This is basically the calculation for the determinant of the two vectors.
@@ -395,7 +392,7 @@ namespace Morpheus
 
         /// <summary>
         /// Determine if this (point) vector travelling at a specific speed can intersect a
-        /// second (point) vector travelling at a given linear velocity 
+        /// second (point) vector travelling at a given linear velocity
         /// </summary>
         /// <param name="_myPosition">The position of "me"</param>
         /// <param name="_mySpeed">The speed at which this point can travel</param>
@@ -419,8 +416,7 @@ namespace Morpheus
             out SVector2d _interceptPosition,
             out double _interceptTime )
         {
-            // First check- Are we already on top of the target? If so, its valid and we're
-            // done
+            // First check- Are we already on top of the target? If so, its valid and we're done
             if (_myPosition.AreSame( _otherPosition ))
             {
                 _interceptPosition = _myPosition;
@@ -441,8 +437,8 @@ namespace Morpheus
             var vectorFromOther = _myPosition - _otherPosition;
             var distanceToOther = vectorFromOther.Length;
 
-            // Check- Is the other thing not moving? If it isn't, the calcs don't work
-            // because we can't use the Law of Cosines
+            // Check- Is the other thing not moving? If it isn't, the calcs don't work because
+            // we can't use the Law of Cosines
             if (otherSpeed.IsClose( 0 ))
             {
                 _interceptPosition = _otherPosition;

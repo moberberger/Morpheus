@@ -21,7 +21,7 @@ namespace Morpheus
         public Type EventType { get; protected set; }
 
         /// <summary>
-        /// The <see cref="Morpheus.Dispatcher"/> that this handler is associated with
+        /// The <see cref="Dispatcher"/> that this handler is associated with
         /// </summary>
         public Dispatcher Dispatcher { get; protected set; }
 

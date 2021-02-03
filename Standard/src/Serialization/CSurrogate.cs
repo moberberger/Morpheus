@@ -149,10 +149,10 @@ namespace Morpheus
                 if (member is ConstructorInfo)
                     continue;
 
-                if (ReflectionExtenstions.HasAttribute( member, typeof( AImplicitDeserializer ) ))
+                if (Lib.HasAttribute( member, typeof( AImplicitDeserializer ) ))
                     EstablishImplicitDeserializer( member );
 
-                if (ReflectionExtenstions.HasAttribute( member, typeof( AImplicitSerializer ) ))
+                if (Lib.HasAttribute( member, typeof( AImplicitSerializer ) ))
                     EstablishImplicitSerializer( member );
             }
 

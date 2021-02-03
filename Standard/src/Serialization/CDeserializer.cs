@@ -1,4 +1,5 @@
 using Morpheus.Serialization;
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -335,7 +336,7 @@ namespace Morpheus
                 int[] indicies = null;
                 var sIndex = XmlExtensions.GetAttributeValue( elem, m_context.ArrayIndexAttributeName );
                 if (sIndex != null)
-                    indicies = CHelper.ConvertStringToArray<int>( sIndex, ',' );
+                    indicies = Lib.ConvertStringToArray<int>( sIndex, ',' );
 
                 if (indicies != null && indicies.Length > 0)
                     _arrayHelper.SetIndicies( indicies );
@@ -414,10 +415,10 @@ namespace Morpheus
 
                 // Get info from the XML
                 var sLengths = XmlExtensions.GetAttributeValue( _xml, m_context.ArrayAttributeName );
-                var lengths = CHelper.ConvertStringToArray<int>( sLengths, ',' );
+                var lengths = Lib.ConvertStringToArray<int>( sLengths, ',' );
 
                 var sLowerBounds = XmlExtensions.GetAttributeValue( _xml, m_context.ArrayLowerBoundAttribute );
-                var lowerBounds = CHelper.ConvertStringToArray<int>( sLowerBounds, ',' );
+                var lowerBounds = Lib.ConvertStringToArray<int>( sLowerBounds, ',' );
 
                 if (lengths == null)
                 {
@@ -591,7 +592,7 @@ namespace Morpheus
             if (sType == null) // There is no explicit Type specifier (XmlAttribute)
                 return _defaultType;
 
-            var explicitType = ReflectionExtenstions.BetterGetType( sType, true );
+            var explicitType = Lib.BetterGetType( sType, true );
             if (explicitType == null)
             {
 

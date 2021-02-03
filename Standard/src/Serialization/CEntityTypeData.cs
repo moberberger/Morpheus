@@ -92,7 +92,7 @@ namespace Morpheus.Serialization
                 return cached != null;
 
             // If the Type is
-            var attr = ReflectionExtenstions.GetSingleAttribute<AUseEntitySemantics>( _type );
+            var attr = Lib.GetSingleAttribute<AUseEntitySemantics>( _type );
             if (attr != null)
                 sm_cache[_type] = new CEntityTypeData( _type, attr );
             else

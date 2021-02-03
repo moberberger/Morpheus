@@ -449,7 +449,7 @@ namespace Morpheus
             {
                 // Helper doesn't care what the element type is, so we screen it first by making
                 // sure its a primitive.
-                _elementToAddTo.InnerText = CHelper.ConvertArrayToString( _array );
+                _elementToAddTo.InnerText = Lib.ConvertArrayToString( _array );
             }
             else if (elementType == TYPEOF_STRING && !m_context.AllArraysHaveExplicitElements)
             {

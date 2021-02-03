@@ -1,3 +1,5 @@
+using Morpheus;
+
 using System;
 using System.Text;
 using System.Xml;
@@ -80,8 +82,8 @@ namespace Morpheus.Serialization
                 m_lengths[i] = m_array.GetLength( i );
             }
 
-            var sLengths = CHelper.ConvertArrayToString( m_lengths );
-            var slowerBounds = CHelper.ConvertArrayToString( m_lowerBounds );
+            var sLengths = Lib.ConvertArrayToString( m_lengths );
+            var slowerBounds = Lib.ConvertArrayToString( m_lowerBounds );
 
             m_xmlToAddTo.AddAttribute( m_serializer.Context.ArrayAttributeName, sLengths );
             m_xmlToAddTo.AddAttribute( m_serializer.Context.ArrayLowerBoundAttribute, slowerBounds );
@@ -168,7 +170,7 @@ namespace Morpheus.Serialization
                 if (m_serializer.Context.ArrayElementsIncludeIndicies || m_skippedNull)
                 {
                     elem.AddAttribute( m_serializer.Context.ArrayIndexAttributeName,
-                                       CHelper.ConvertArrayToString( m_indicies ) );
+                                       Lib.ConvertArrayToString( m_indicies ) );
                 }
                 m_skippedNull = false;
             }
