@@ -77,9 +77,6 @@ namespace Morpheus
         /// A sigmoid function that will re-scale values between 0 and 1 to the curve between
         /// _base and (1 - _base).
         /// </summary>
-        /// <remarks>
-        /// This calculation takes approx .165 Microseconds on a 2.8GHz Intel processor.
-        /// </remarks>
         /// <param name="_x">The value to scale</param>
         /// <param name="_base">
         /// The return value for an input of 0, or (1-return) for an input of 1

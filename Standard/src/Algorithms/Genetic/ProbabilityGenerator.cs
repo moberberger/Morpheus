@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Morpheus.ProbabilityGeneratorNS;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -7,6 +9,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
+using Chromosome = Morpheus.ProbabilityGeneratorNS.Chromosome;
+
 namespace Morpheus
 {
     /// <summary>
@@ -14,38 +18,9 @@ namespace Morpheus
     /// </summary>
     public class ProbabilityGenerator
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        public Random Rng { get; set; } = DI.Default.Get<Random>();
-
-        /// <summary>
-        /// The expected value of the dot-product
-        /// </summary>
-        public decimal ExpectedValue { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public decimal CalculatedValue { get => values.DotProduct( probabilities ); }
-
-        /// <summary>
-        /// How many values/probabilities are there
-        /// </summary>
-        public int Dimensionality { get => values.Length; }
-
-        /// <summary>
-        /// Get a copy of the probabilities generated
-        /// </summary>
-        public decimal[] Probabilities { get => (decimal[])probabilities.Clone(); }
-
-
-        private decimal[] values;
-        private decimal[] probabilities;
-        private decimal[] tempBuffer;
-
         private List<int> lowerValueIndicies = new List<int>();
         private List<int> higherValueIndicies = new List<int>();
+        public Config Config { get; set; }
 
         /// <summary>
         /// Construct using an expected value and the established set of values.
@@ -67,6 +42,10 @@ namespace Morpheus
                 else if (values[i] > ExpectedValue)
                     higherValueIndicies.Add( i );
             }
+
+            var cfg = new Config();
+            DI.Default.For<Config>().AsSingleton( cfg );
+            cfg.Pool = new ObjectPool<Chromosome>( cfg.PopulationSize * cfg.MutationCount * 2, () => new Chromosome( cfg ) );
 
         }
 
@@ -105,20 +84,53 @@ namespace Morpheus
         /// </summary>
         private void ApplyHeuristicsAndStochastics()
         {
-            // Stochastics with Heuristic function for evaluation
-            var chromoTemplate = new Chromosome( Dimensionality, 64, ValuePV2Error );
-            var ga = new GeneticAlgorithm( chromoTemplate );
-            ga.PoolSize = PoolSize;
-            ga.ElitismCount = ElitismCount;
-            ga.MutationRate = MutationRate;
-            ga.MutationStrength = MutationStrength;
-            var bestChromo = ga.Run( Generations );
 
-            decimal sum = 0;
-            for (int i = 0; i < Dimensionality; i++)
-                sum += bestChromo[i];
-            for (int i = 0; i < Dimensionality; i++)
-                probabilities[i] = (decimal)bestChromo[i] / sum;
+            var db = Lib.Repeat( Config.PopulationSize, () => Config.Pool.Get() ).OrderBy( _x => _x.Error ).ToList();
+            var nextDb = new List<Chromosome>();
+
+            double error = double.MaxValue;
+            for (int count = 0; error > Config.ErrorTolerance; count++)
+            {
+                Config.IterationCount = count;
+                nextDb.Add( db[0] ); // Elitism
+
+                for (int i = 0; i < Config.PopulationSize; i++)
+                {
+                    var obj = db.Sample( _x => (double)_x.Error, true );
+                    for (int j = 0; j < Config.MutationCount; j++)
+                    {
+                        var newObj = obj.Mutate();
+                        nextDb.Add( newObj );
+                    }
+                }
+
+                nextDb.Sort();
+                Config.Pool.Return( db.Mid( 1 ) ); // db[0] added as Elitism
+                db.Clear();
+                db.AddRange( nextDb.Take( Config.PopulationSize ) );
+                Config.Pool.Return( nextDb.Mid( Config.PopulationSize ) );
+                nextDb.Clear();
+
+                var smallest = db[0]; // list was sorted
+                error = smallest.Error;
+                Config.Best = smallest;
+
+                Console.WriteLine( $"[{count}] {smallest}" );
+            }
+            //// Stochastics with Heuristic function for evaluation
+            //var chromoTemplate = new Chromosome( Dimensionality, 64, ValuePV2Error );
+            //var ga = new GeneticAlgorithm( chromoTemplate );
+            //ga.PoolSize = PoolSize;
+            //ga.ElitismCount = ElitismCount;
+            //ga.MutationRate = MutationRate;
+            //ga.MutationStrength = MutationStrength;
+            //var bestChromo = ga.Run( Generations );
+
+            //decimal sum = 0;
+            //for (int i = 0; i < Dimensionality; i++)
+            //    sum += bestChromo[i];
+            //for (int i = 0; i < Dimensionality; i++)
+            //    probabilities[i] = (decimal)bestChromo[i] / sum;
         }
 
         /// <summary>
@@ -213,9 +225,9 @@ namespace Morpheus
         /// </summary>
         private void ErrorCheckValidProbabilities()
         {
-            foreach (var p in probabilities)
+            foreach (var p in Config.Best)
                 if (p <= 0 || p >= 1)
-                    throw new InvalidProgramException( $"Generated values which are not valid probabilities: {probabilities.JoinAsString( ", " )}" );
+                    throw new InvalidProgramException( $"Generated values which are not valid probabilities: {Config.Best.JoinAsString( ", " )}" );
         }
 
         /// <summary>
@@ -223,112 +235,23 @@ namespace Morpheus
         /// </summary>
         private void ErrorCheckDotProduct()
         {
-            decimal actualValue = values.DotProduct( probabilities );
-            var delta = Math.Abs( actualValue - ExpectedValue );
+            var sumProb = 0.0;
+            var sumValue = 0.0;
 
-            if (delta > 0.000000000001m)
-                throw new InvalidProgramException( $"The Expected Value {ExpectedValue} does not equal the calculated value {actualValue}." );
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="probabilities"></param>
-        /// <returns></returns>
-        public double SimpleValueError( int[] probabilities )
-        {
-            decimal sumProbabilities = 0, sumProduct = 0;
-
-            for (int i = 0; i < Dimensionality; i++)
+            for (int i = 0; i < Config.DimensionCount; i++)
             {
-                sumProbabilities += probabilities[i];
-                sumProduct += probabilities[i] * values[i];
+                sumProb += Config.Best[i];
+                sumValue += Config.Best[i] * Config.Values[i];
             }
-            var val = sumProduct / sumProbabilities;
-            var delta = val - ExpectedValue;
-            var err = delta * delta;
-            return (double)err;
+
+            if (!sumProb.IsClose( 1.0 ))
+                throw new InvalidProgramException( $"Calculated the sum of probabilities to be {sumProb}. It should be 1.0" );
+
+            if (!sumValue.IsClose( Config.Best.CalculatedValue ))
+                throw new InvalidProgramException( $"Calculated an audit Value of {sumProb} that doesn't match the CalculatedValue of {Config.Best.CalculatedValue} found in the chromosome" );
+
+            if (!Config.Best.CalculatedValue.IsClose( Config.TargetValue ))
+                throw new InvalidProgramException( $"Calculated a value of {Config.Best.CalculatedValue} which is not equal to {Config.TargetValue}" );
         }
-
-        /// <summary>
-        /// no obj allocation translation of a chromo into the tempBuffer
-        /// </summary>
-        /// <param name="chromo"></param>
-        /// <returns></returns>
-        public double ValuePV2Error( Chromosome chromo )
-        {
-            decimal sum = 0;
-            for (int i = 0; i < Dimensionality; i++)
-            {
-                decimal counter = chromo[i];
-                tempBuffer[i] = counter;
-                sum += counter;
-            }
-            for (int i = 0; i < Dimensionality; i++)
-                tempBuffer[i] /= sum;
-
-            return ValuePV2Error( tempBuffer );
-        }
-
-        /// <summary>
-        /// no memory allocation generation of the error in the current values with the
-        /// specified probabilities
-        /// </summary>
-        /// <param name="probs"></param>
-        /// <returns></returns>
-        public double ValuePV2Error( decimal[] probs )
-        {
-            decimal sumProduct = 0;
-            decimal maxV2 = decimal.MinValue, minV2 = decimal.MaxValue;
-
-            for (int i = 0; i < Dimensionality; i++)
-            {
-                var p = probs[i];
-                var v = values[i];
-
-                sumProduct += p * v;
-
-                maxV2 = Math.Max( maxV2, v * v );
-                minV2 = Math.Min( minV2, v * v );
-            }
-            var delta = (sumProduct - ExpectedValue) * 10;
-            var err1 = (double)(delta * delta);
-            // return err1;
-
-            decimal sumPV2 = 0;
-            for (int i = 0; i < Dimensionality; i++)
-            {
-                var p = probs[i];
-                var v = values[i];
-                var e = maxV2 - p * v * v;
-                sumPV2 += e * e;
-            }
-            var range = (maxV2 - minV2);
-            var valPV2 = sumPV2 / range;
-            var err2 = Math.Sqrt( (double)valPV2 );
-
-            return err1 + err2;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int PoolSize = 250;
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Generations = 50;
-        /// <summary>
-        /// 
-        /// </summary>
-        public int ElitismCount = 3;
-        /// <summary>
-        /// 
-        /// </summary>
-        public double MutationRate = 0.5;
-        /// <summary>
-        /// 
-        /// </summary>
-        public double MutationStrength = 0.5;
     }
 }

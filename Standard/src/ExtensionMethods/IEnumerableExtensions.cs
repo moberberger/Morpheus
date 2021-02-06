@@ -461,6 +461,25 @@ namespace Morpheus
             }
         }
 
+        /// <summary>
+        /// Return an enumeration of some number of elements of a list starting somewhere in the
+        /// list.
+        /// 
+        /// Name Inspired by the TRS-80 Basic command "MID".
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        /// <param name="start"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> Mid<T>( this IList<T> list, int start, int count = -1 )
+        {
+            int end = (count < 1) ? list.Count : Math.Min( list.Count, start + count );
+            for (int i = start; i < end; i++)
+            {
+                yield return list[i];
+            }
+        }
 
 
         #region Really Specific Enumerations

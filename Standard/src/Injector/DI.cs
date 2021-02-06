@@ -18,7 +18,7 @@ namespace Morpheus
         /// <summary>
         /// AppDomain Default DI scope. All DI scopes will eventually link down to this scope.
         /// </summary>
-        public static readonly DI Default = new DI();
+        public static DI Default { get; private set; } = new DI();
 
         /// <summary>
         /// Load Morpheus Defaults into the Default scope.

@@ -1235,6 +1235,13 @@ public static class Lib
 
     public static IEnumerable<T> Repeat<T>( int count, Func<T> action )
     {
-        while (count-- > 0) yield return action();
+        while (count-- > 0)
+            yield return action();
+    }
+
+    public static IEnumerable<T> Repeat<T>( int count, Func<int, T> action )
+    {
+        for (int i = 0; i < count; i++)
+            yield return action( i );
     }
 }

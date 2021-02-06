@@ -96,7 +96,7 @@ namespace Morpheus.DependencyInjection
         /// STATIC OBJECT POOL.
         /// </param>
         /// <returns>IClassConfig</returns>
-        IClassConfig UseObjectPool( IObjectPool pool );
+        //IClassConfig UseObjectPool( IObjectPool pool );
 
         /// <summary>
         /// For use when deciding how to create a "new" object of this Type. The constructor

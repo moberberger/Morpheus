@@ -274,6 +274,16 @@ namespace Morpheus
         /// <returns></returns>
         public double AngleBetween( SVector2d _other ) => Math.Atan2( _other.Y - Y, _other.X - X );
 
+        /// <summary>
+        /// Return the angle (radians) as if using the law of cosines, where "this" is the
+        /// mid-point (where the interesting angle is) of the triangle formed between this and
+        /// the two points provided.
+        /// </summary>
+        /// <param name="_first">the first one of the two other points in the triangle</param>
+        /// <param name="_second">the second one of the two other points in the triangle</param>
+        /// <returns></returns>
+        public double AngleBetween( SVector2d _first, SVector2d _second ) => AngleBetween( _first ) - AngleBetween( _second );
+
 
 
         /// <summary>
