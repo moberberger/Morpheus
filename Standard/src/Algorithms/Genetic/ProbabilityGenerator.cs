@@ -8,17 +8,14 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-using Chromo = Morpheus.PGNS.Chromosome;
-
-
 namespace Morpheus
 {
     /// <summary>
     /// 
     /// </summary>
-    public class ProbabilityGenerator
+    public partial class ProbabilityGenerator
     {
-        public PGNS.Config Config { get; set; }
+        public State Config { get; set; }
         private List<int> lowerValueIndicies = new List<int>();
         private List<int> higherValueIndicies = new List<int>();
 
@@ -32,15 +29,19 @@ namespace Morpheus
         /// <param name="values">The values to associate probabilities with</param>
         public ProbabilityGenerator( double targetValue, params double[] values )
         {
-            Config = DI.Default.Get<PGNS.Config>() ?? new PGNS.Config();
-            Config.TargetValue = targetValue;
-            Config.Values = values; // don't allocate more memory- these should never change
+            var cfg = DI.Default.Get<State>() ?? new State();
+            cfg.TargetValue = targetValue;
+            cfg.Values = values; // don't allocate more memory- these should never change
 
-            Setup();
+            Setup( cfg );
         }
 
-        private void Setup()
+        public ProbabilityGenerator( State config ) => Setup( config );
+
+        private void Setup( State config )
         {
+            Config = config;
+
             for (int i = 0; i < Config.ValueCount; i++)
             {
                 if (Config.Values[i] <= Config.TargetValue)
@@ -48,7 +49,7 @@ namespace Morpheus
                 else if (Config.Values[i] > Config.TargetValue)
                     higherValueIndicies.Add( i );
             }
-            Config.Pool = new ObjectPool<Chromo>( Config.PopulationSize * Config.MutationCount * 2, () => new Chromo( Config ) );
+            Config.Pool = new ObjectPool<Chromosome>( Config.PopulationSize * Config.MutationCount * 2, () => new Chromosome( Config ) );
         }
 
         /// <summary>
@@ -69,7 +70,7 @@ namespace Morpheus
                 var p0 = (Config.TargetValue - vals[1]) / (vals[0] - vals[1]);
                 var p1 = 1.0 - p0;
 
-                Config.Best = new Chromo( Config, p0, p1 );
+                Config.Best = new Chromosome( Config, p0, p1 );
             }
             else
             {
@@ -88,7 +89,7 @@ namespace Morpheus
         private void ApplyHeuristicsAndStochastics()
         {
             var db = Lib.Repeat( Config.PopulationSize, () => Config.Pool.Get() ).OrderBy( _x => _x.Error ).ToList();
-            var nextDb = new List<Chromo>();
+            var nextDb = new List<Chromosome>();
 
             double error = double.MaxValue;
             foreach (var _ in Config.LoopUntilErrorSatisfactory())
