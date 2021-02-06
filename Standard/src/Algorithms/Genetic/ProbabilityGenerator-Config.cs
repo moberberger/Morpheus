@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Morpheus.ProbabilityGeneratorNS
+namespace Morpheus.PGNS
 {
     public class Config
     {
@@ -37,10 +38,17 @@ namespace Morpheus.ProbabilityGeneratorNS
                 return retval;
             }
         }
-        public virtual int DimensionCount => Values.Length;
+        public virtual int ValueCount => Values.Length;
 
         public virtual int IterationCount { get; private set; }
-        public virtual Chromosome Best { get; private set; }
-        public virtual ObjectPool<Chromosome> Pool { get; private set; }
+        public virtual Chromosome Best { get; internal set; }
+        public virtual ObjectPool<Chromosome> Pool { get; internal set; }
+
+        internal IEnumerable<int> LoopUntilErrorSatisfactory()
+        {
+            for (IterationCount = 0; Best.Error > ErrorTolerance; IterationCount++)
+                yield return IterationCount;
+        }
+
     }
 }

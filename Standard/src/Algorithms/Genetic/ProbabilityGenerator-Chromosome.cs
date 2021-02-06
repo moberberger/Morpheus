@@ -4,7 +4,7 @@ using System.Text;
 using System.Linq;
 using System.Collections;
 
-namespace Morpheus.ProbabilityGeneratorNS
+namespace Morpheus.PGNS
 {
     public class Chromosome : IComparable, IComparable<Chromosome>, IEnumerable<double>, IEnumerable
     {
@@ -20,20 +20,27 @@ namespace Morpheus.ProbabilityGeneratorNS
 
 
 
-        public Chromosome( Config config = null )
+        public Chromosome( Config config = null, params double[] probabilities )
         {
             config = config ?? DI.Default.Get<Config>();
 
-            var probArray = Lib.Repeat( config.DimensionCount, () => Math.Abs( Rng.Default.NextGaussian( 0, config.InitialStdev ) ) )
-                               .OrderByDescending( x => x )
-                               .ToArray();
+            if (probabilities == null)
+            {
+                var probArray = Lib.Repeat( config.ValueCount, () => Math.Abs( Rng.Default.NextGaussian( 0, config.InitialStdev ) ) )
+                                   .OrderByDescending( x => x )
+                                   .ToArray();
 
-            var values = Lib.ForLoop( config.DimensionCount )
-                            .Select( _idx => new { index = _idx, diff = Math.Abs( config.Values[_idx] - config.TargetValue ) } )
-                            .OrderBy( _x => _x.diff )
-                            .ToList();
+                var values = Lib.ForLoop( config.ValueCount )
+                                .Select( _idx => new { index = _idx, diff = Math.Abs( config.Values[_idx] - config.TargetValue ) } )
+                                .OrderBy( _x => _x.diff )
+                                .ToList();
 
-            this.probabilities = values.Select( validx => probArray[validx.index] ).ToArray();
+                this.probabilities = values.Select( validx => probArray[validx.index] ).ToArray();
+            }
+            else
+            {
+                this.probabilities = probabilities;
+            }
 
             Calculate();
         }
@@ -42,11 +49,11 @@ namespace Morpheus.ProbabilityGeneratorNS
         {
             var x = config.Pool.Get();
             x.config = config;
-            Array.Copy( probabilities, x.probabilities, config.DimensionCount );
+            Array.Copy( probabilities, x.probabilities, config.ValueCount );
 
             do
             {
-                int idx = Rng.Default.Next( config.DimensionCount );
+                int idx = Rng.Default.Next( config.ValueCount );
 
                 var factor = Math.Abs( (double)Rng.Default.NextGaussian( config.MeanIncrementRate, config.StddevIncrementRate ) );
                 var newVal = x.probabilities[idx] * factor;
@@ -89,7 +96,7 @@ namespace Morpheus.ProbabilityGeneratorNS
         public override string ToString()
         {
             var str = new StringBuilder( $"E: {Error:N5} V: {CalculatedValue:N3} " );
-            for (int i = 0; i < config.DimensionCount; i++)
+            for (int i = 0; i < config.ValueCount; i++)
                 str.Append( $" {probabilities[i]:E6}" );
             return str.ToString();
         }
@@ -126,10 +133,10 @@ namespace Morpheus.ProbabilityGeneratorNS
             double sumAngleSquared = 0;
             int dirChangeCount = 0;
 
-            for (int i = 0; i < config.DimensionCount; i++)
+            for (int i = 0; i < config.ValueCount; i++)
                 sumProb += probabilities[i]; // used to normalize probabilities (0..1)
 
-            for (int i = 0; i < config.DimensionCount; i++)
+            for (int i = 0; i < config.ValueCount; i++)
             {
                 probabilities[i] /= sumProb;
                 var p = probabilities[i];
@@ -141,7 +148,7 @@ namespace Morpheus.ProbabilityGeneratorNS
                     var angle = p - probabilities[i - 1];
                     sumAngleSquared += angle * angle;
 
-                    if (i < config.DimensionCount - 1 && Math.Sign( p - probabilities[i - 1] ) != Math.Sign( probabilities[i + 1] - p ))
+                    if (i < config.ValueCount - 1 && Math.Sign( p - probabilities[i - 1] ) != Math.Sign( probabilities[i + 1] - p ))
                         dirChangeCount++;
                 }
             }
@@ -152,7 +159,7 @@ namespace Morpheus.ProbabilityGeneratorNS
             var valErr = CalculatedValue.DifferenceAsRatioOf( config.TargetValue );
             valErr /= config.TargetValueAcceptableErrorPercent;
             valErr *= valErr;
-            
+
             // I changed this before I could compile the xfer into Morpheus. Make sure this works
             var probErr = sumProbSquared * config.ProbabilityErrorWeight;
             var angleErr = sumAngleSquared * config.AngleErrorWeight;
@@ -164,6 +171,13 @@ namespace Morpheus.ProbabilityGeneratorNS
                 dirChangeErr = Math.Pow( config.DirectionCountPenalty, dirChangeCount );
             }
             Error = Math.Sqrt( valErr + probErr + angleErr ) + dirChangeErr;
+        }
+
+        internal void SetProbabilities( int lowIdx, double probability1, int highIdx, double probability2 )
+        {
+            probabilities[lowIdx] = probability1;
+            probabilities[highIdx] = probability2;
+            Calculate();
         }
     }
 }

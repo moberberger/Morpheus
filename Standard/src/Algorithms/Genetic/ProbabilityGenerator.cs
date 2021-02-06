@@ -1,15 +1,15 @@
-﻿using Morpheus.ProbabilityGeneratorNS;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-using Chromosome = Morpheus.ProbabilityGeneratorNS.Chromosome;
+using Chromo = Morpheus.PGNS.Chromosome;
+
 
 namespace Morpheus
 {
@@ -18,55 +18,58 @@ namespace Morpheus
     /// </summary>
     public class ProbabilityGenerator
     {
+        public PGNS.Config Config { get; set; }
         private List<int> lowerValueIndicies = new List<int>();
         private List<int> higherValueIndicies = new List<int>();
-        public Config Config { get; set; }
 
         /// <summary>
         /// Construct using an expected value and the established set of values.
         /// </summary>
-        /// <param name="expectedValue">
+        /// <param name="targetValue">
         /// Must be greater than the smallest of <see cref="values"/> and less than the largest
         /// of <see cref="values"/>
         /// </param>
         /// <param name="values">The values to associate probabilities with</param>
-        public ProbabilityGenerator( decimal expectedValue, params decimal[] values )
+        public ProbabilityGenerator( double targetValue, params double[] values )
         {
-            this.ExpectedValue = expectedValue;
-            this.values = (decimal[])values.Clone();
+            Config = DI.Default.Get<PGNS.Config>() ?? new PGNS.Config();
+            Config.TargetValue = targetValue;
+            Config.Values = values; // don't allocate more memory- these should never change
 
-            for (int i = 0; i < Dimensionality; i++)
+            Setup();
+        }
+
+        private void Setup()
+        {
+            for (int i = 0; i < Config.ValueCount; i++)
             {
-                if (values[i] < ExpectedValue)
+                if (Config.Values[i] <= Config.TargetValue)
                     lowerValueIndicies.Add( i );
-                else if (values[i] > ExpectedValue)
+                else if (Config.Values[i] > Config.TargetValue)
                     higherValueIndicies.Add( i );
             }
-
-            var cfg = new Config();
-            DI.Default.For<Config>().AsSingleton( cfg );
-            cfg.Pool = new ObjectPool<Chromosome>( cfg.PopulationSize * cfg.MutationCount * 2, () => new Chromosome( cfg ) );
-
+            Config.Pool = new ObjectPool<Chromo>( Config.PopulationSize * Config.MutationCount * 2, () => new Chromo( Config ) );
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public decimal[] Calculate()
+        public double[] Calculate()
         {
             Validate();
-
-            probabilities = new decimal[Dimensionality];
-            tempBuffer = new decimal[Dimensionality];
 
             // special and trivial case which always produces most accurate probabilities. No
             // heuristics possible, nor stochastics necessary- there's always exactly one
             // solution.
-            if (values.Length == 2)
+            if (Config.ValueCount == 2)
             {
-                probabilities[0] = (ExpectedValue - values[1]) / (values[0] - values[1]);
-                probabilities[1] = 1.0m - probabilities[0];
+                var vals = Config.Values;
+
+                var p0 = (Config.TargetValue - vals[1]) / (vals[0] - vals[1]);
+                var p1 = 1.0 - p0;
+
+                Config.Best = new Chromo( Config, p0, p1 );
             }
             else
             {
@@ -75,7 +78,7 @@ namespace Morpheus
             }
 
             ErrorCheck();
-            return probabilities;
+            return Config.Best.ToArray();
         }
 
 
@@ -84,14 +87,12 @@ namespace Morpheus
         /// </summary>
         private void ApplyHeuristicsAndStochastics()
         {
-
             var db = Lib.Repeat( Config.PopulationSize, () => Config.Pool.Get() ).OrderBy( _x => _x.Error ).ToList();
-            var nextDb = new List<Chromosome>();
+            var nextDb = new List<Chromo>();
 
             double error = double.MaxValue;
-            for (int count = 0; error > Config.ErrorTolerance; count++)
+            foreach (var _ in Config.LoopUntilErrorSatisfactory())
             {
-                Config.IterationCount = count;
                 nextDb.Add( db[0] ); // Elitism
 
                 for (int i = 0; i < Config.PopulationSize; i++)
@@ -104,33 +105,31 @@ namespace Morpheus
                     }
                 }
 
+                // ///////////////////////////////////////////////////////////////////////////
+                // This algorithm is dependent on the cartesian product produced above
                 nextDb.Sort();
                 Config.Pool.Return( db.Mid( 1 ) ); // db[0] added as Elitism
                 db.Clear();
                 db.AddRange( nextDb.Take( Config.PopulationSize ) );
                 Config.Pool.Return( nextDb.Mid( Config.PopulationSize ) );
                 nextDb.Clear();
+                // ///////////////////////////////////////////////////////////////////////////
 
                 var smallest = db[0]; // list was sorted
                 error = smallest.Error;
                 Config.Best = smallest;
 
-                Console.WriteLine( $"[{count}] {smallest}" );
+                Console.WriteLine( $"[{Config.IterationCount}] {smallest}" );
             }
-            //// Stochastics with Heuristic function for evaluation
-            //var chromoTemplate = new Chromosome( Dimensionality, 64, ValuePV2Error );
-            //var ga = new GeneticAlgorithm( chromoTemplate );
-            //ga.PoolSize = PoolSize;
-            //ga.ElitismCount = ElitismCount;
-            //ga.MutationRate = MutationRate;
-            //ga.MutationStrength = MutationStrength;
-            //var bestChromo = ga.Run( Generations );
+            /// / Stochastics with Heuristic function for evaluation
+            // var chromoTemplate = new Chromosome( Dimensionality, 64, ValuePV2Error ); var ga
+            // = new GeneticAlgorithm( chromoTemplate ); ga.PoolSize = PoolSize; ga.ElitismCount
+            // = ElitismCount; ga.MutationRate = MutationRate; ga.MutationStrength =
+            // MutationStrength; var bestChromo = ga.Run( Generations );
 
-            //decimal sum = 0;
-            //for (int i = 0; i < Dimensionality; i++)
-            //    sum += bestChromo[i];
-            //for (int i = 0; i < Dimensionality; i++)
-            //    probabilities[i] = (decimal)bestChromo[i] / sum;
+            // decimal sum = 0; for (int i = 0; i Dimensionality; i++) sum += bestChromo[i]; for
+            // (int i = 0; i Dimensionality; i++) probabilities[i] = (decimal)bestChromo[i] /
+            // sum;
         }
 
         /// <summary>
@@ -163,29 +162,27 @@ namespace Morpheus
         private double GetErrorBySwitchingIndicies( int lowIdx, int highIdx )
         {
             var previousVals = FixTwoProbabilities( lowIdx, highIdx );
-            var retval = ValuePV2Error( probabilities );
-            probabilities[lowIdx] = previousVals.Item1;
-            probabilities[highIdx] = previousVals.Item2;
+            var retval = Config.Best.Error;
+            Config.Best.SetProbabilities( lowIdx, previousVals.Item1, highIdx, previousVals.Item2 );
             return retval;
         }
 
-        private (decimal, decimal) FixTwoProbabilities( int lowIdx, int highIdx )
+        private (double, double) FixTwoProbabilities( int lowIdx, int highIdx )
         {
             // Adjust these values based on the dot-product
-            var v1 = values[lowIdx];
-            var v2 = values[highIdx];
-            var p1 = probabilities[lowIdx];
-            var p2 = probabilities[highIdx];
+            var v1 = Config.Values[lowIdx];
+            var v2 = Config.Values[highIdx];
+            var p1 = Config.Best[lowIdx];
+            var p2 = Config.Best[highIdx];
             var c = p1 + p2;
-            var d = p1 * v1 + p2 * v2 + ExpectedValue - CalculatedValue;
+            var d = p1 * v1 + p2 * v2 + Config.TargetValue - Config.Best.CalculatedValue;
             var newP1 = (d - c * v2) / (v1 - v2);
             var newP2 = c - newP1;
 
+            // TODO: this is a translation of old proto code that needs refactoring
             if (newP1 > 0 && newP1 < 1 && newP2 > 0 && newP2 < 1)
-            {
-                probabilities[lowIdx] = newP1;
-                probabilities[highIdx] = newP2;
-            }
+                Config.Best.SetProbabilities( lowIdx, newP1, highIdx, newP2 );
+
             return (p1, p2);
         }
 
@@ -238,7 +235,7 @@ namespace Morpheus
             var sumProb = 0.0;
             var sumValue = 0.0;
 
-            for (int i = 0; i < Config.DimensionCount; i++)
+            for (int i = 0; i < Config.ValueCount; i++)
             {
                 sumProb += Config.Best[i];
                 sumValue += Config.Best[i] * Config.Values[i];
