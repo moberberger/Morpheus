@@ -3,32 +3,66 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using System.Collections;
-
-using State = Morpheus.ProbabilityGenerator.State;
+using System.Runtime.CompilerServices;
 
 namespace Morpheus
 {
-    partial class ProbabilityGenerator
+    /// <summary>
+    /// 
+    /// </summary>
+    public partial class ProbabilityGenerator
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public class Chromosome : IComparable, IComparable<Chromosome>, IEnumerable<double>, IEnumerable
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="index"></param>
+            /// <returns></returns>
             public double this[int index] => probabilities[index];
 
-            private ProbabilityGenerator.State state;
+            /// <summary>
+            /// 
+            /// </summary>
+            private PGState state;
 
+            /// <summary>
+            /// 
+            /// </summary>
             private double[] probabilities;
 
+            /// <summary>
+            /// 
+            /// </summary>
             public double CalculatedValue { get; private set; }
 
+            /// <summary>
+            /// 
+            /// </summary>
             public double Error { get; private set; }
 
+            public double ValueError { get; private set; }
+
+            public double ProbabilityError { get; private set; }
+
+            public double AngleError { get; private set; }
+
+            public double DirChangeError { get; private set; }
 
 
-            public Chromosome( State state = null, params double[] probabilities )
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="state"></param>
+            /// <param name="probabilities"></param>
+            public Chromosome( PGState state = null, params double[] probabilities )
             {
-                state = state ?? DI.Default.Get<State>();
+                this.state = state ?? DI.Default.Get<ProbabilityGenerator>().State;
 
-                if (probabilities == null)
+                if (probabilities == null || probabilities.Length == 0)
                 {
                     var probArray = Lib.Repeat( state.ValueCount, () => Math.Abs( Rng.Default.NextGaussian( 0, state.InitialStdev ) ) )
                                        .OrderByDescending( x => x )
@@ -49,6 +83,10 @@ namespace Morpheus
                 Calculate();
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
             public Chromosome Mutate()
             {
                 var x = state.Pool.Get();
@@ -69,6 +107,20 @@ namespace Morpheus
 
                 x.Calculate();
                 return x;
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="index1"></param>
+            /// <param name="probability1"></param>
+            /// <param name="index2"></param>
+            /// <param name="probability2"></param>
+            internal void SetProbabilities( int index1, double probability1, int index2, double probability2 )
+            {
+                probabilities[index1] = probability1;
+                probabilities[index2] = probability2;
+                Calculate();
             }
 
             /// <summary>
@@ -97,22 +149,24 @@ namespace Morpheus
             /// 
             /// </summary>
             /// <returns></returns>
+            public IEnumerator<double> GetEnumerator() => ((IEnumerable<double>)probabilities).GetEnumerator();
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            IEnumerator IEnumerable.GetEnumerator() => probabilities.GetEnumerator();
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
             public override string ToString()
             {
-                var str = new StringBuilder( $"E: {Error:N5} V: {CalculatedValue:N3} " );
-                for (int i = 0; i < state.ValueCount; i++)
-                    str.Append( $" {probabilities[i]:E6}" );
+                var str = new StringBuilder( $"V: {CalculatedValue:N5}  ERR: {Error:N5}  Verr: {ValueError:N4}  Perr: {ProbabilityError:N4}  Aerr: {AngleError:N4}  Derr: {DirChangeError:N4}" );
+                //for (int i = 0; i < state.ValueCount; i++)
+                //    str.Append( $" {probabilities[i]:E6}" );
                 return str.ToString();
-            }
-
-            public IEnumerator<double> GetEnumerator()
-            {
-                return (IEnumerator<double>)probabilities.GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return probabilities.GetEnumerator();
             }
 
 
@@ -145,8 +199,11 @@ namespace Morpheus
                     probabilities[i] /= sumProb;
                     var p = probabilities[i];
 
-                    sumProbSquared += p * p;
+                    var pp = (p - 1 / state.ValueCount);
+                    sumProbSquared += pp * pp;
+
                     sumValue += p * state.Values[i];
+
                     if (i > 0)
                     {
                         var angle = p - probabilities[i - 1];
@@ -160,28 +217,21 @@ namespace Morpheus
 
                 // ERROR CALCULATION HERE Ratio- ideally this is zero, but is 1 when the target is
                 // at the "Acceptable Error"
-                var valErr = CalculatedValue.DifferenceAsRatioOf( state.TargetValue );
-                valErr /= state.TargetValueAcceptableErrorPercent;
-                valErr *= valErr;
+                ValueError = CalculatedValue.DifferenceAsRatioOf( state.TargetValue );
+                ValueError /= state.TargetValueAcceptableErrorPercent;
+                ValueError *= ValueError;
 
                 // I changed this before I could compile the xfer into Morpheus. Make sure this works
-                var probErr = sumProbSquared * state.ProbabilityErrorWeight;
-                var angleErr = sumAngleSquared * state.AngleErrorWeight;
+                ProbabilityError = sumProbSquared * state.ProbabilityErrorWeight / state.ValueCount;
+                AngleError = sumAngleSquared * state.AngleErrorWeight / (state.ValueCount - 1);
 
-                var dirChangeErr = 0.0;
-                if (dirChangeCount != state.DirectionCountTarget)
+                DirChangeError = 0.0;
+                if (state.DirectionCountTarget >= 0 && dirChangeCount != state.DirectionCountTarget)
                 {
                     dirChangeCount = Math.Abs( state.DirectionCountTarget - dirChangeCount );
-                    dirChangeErr = Math.Pow( state.DirectionCountPenalty, dirChangeCount );
+                    DirChangeError = Math.Pow( state.DirectionCountPenalty, dirChangeCount );
                 }
-                Error = Math.Sqrt( valErr + probErr + angleErr ) + dirChangeErr;
-            }
-
-            internal void SetProbabilities( int lowIdx, double probability1, int highIdx, double probability2 )
-            {
-                probabilities[lowIdx] = probability1;
-                probabilities[highIdx] = probability2;
-                Calculate();
+                Error = Math.Sqrt( ValueError + ProbabilityError + AngleError ) + DirChangeError;
             }
         }
     }

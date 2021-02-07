@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 
 using Chromo = Morpheus.ProbabilityGenerator.Chromosome;
@@ -9,7 +10,7 @@ namespace Morpheus
 {
     public partial class ProbabilityGenerator
     {
-        public class State
+        public class PGState
         {
             public virtual double TargetValue { get; set; } = 222;
             public virtual double[] Values { get; set; } = new double[] { 1, 5, 10, 25, 50, 100, 250, 500, 1000, 5000, 1000000 };
@@ -23,8 +24,8 @@ namespace Morpheus
             public virtual double TargetValueAcceptableErrorPercent { get; set; } = 0.05;
             public virtual double MinimumProbability { get; set; } = 1e-20;
 
-            public virtual double ProbabilityErrorWeight { get; internal set; } = 10;
-            public virtual double AngleErrorWeight { get; internal set; } = 1000;
+            public virtual double ProbabilityErrorWeight { get; set; } = 10;
+            public virtual double AngleErrorWeight { get; set; } = 1000;
 
             public virtual int DirectionCountTarget { get; set; } = 1;
             public virtual double DirectionCountPenalty { get; set; } = 10.0;
@@ -50,10 +51,11 @@ namespace Morpheus
 
             internal IEnumerable<int> LoopUntilErrorSatisfactory()
             {
-                for (IterationCount = 0; Best.Error > ErrorTolerance; IterationCount++)
+                for (IterationCount = 0; (Best == null || Best.Error > ErrorTolerance) && !TerminateCalculation; IterationCount++)
                     yield return IterationCount;
             }
 
+            public bool TerminateCalculation { get; set; }
         }
     }
 }

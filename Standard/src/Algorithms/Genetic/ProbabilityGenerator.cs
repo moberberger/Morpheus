@@ -15,7 +15,8 @@ namespace Morpheus
     /// </summary>
     public partial class ProbabilityGenerator
     {
-        public State Config { get; set; }
+        public PGState State { get; private set; }
+
         private List<int> lowerValueIndicies = new List<int>();
         private List<int> higherValueIndicies = new List<int>();
 
@@ -29,27 +30,36 @@ namespace Morpheus
         /// <param name="values">The values to associate probabilities with</param>
         public ProbabilityGenerator( double targetValue, params double[] values )
         {
-            var cfg = DI.Default.Get<State>() ?? new State();
+            var cfg = DI.Default.Get<PGState>() ?? new PGState();
             cfg.TargetValue = targetValue;
             cfg.Values = values; // don't allocate more memory- these should never change
 
             Setup( cfg );
         }
 
-        public ProbabilityGenerator( State config ) => Setup( config );
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="state"></param>
+        public ProbabilityGenerator( PGState state ) => Setup( state );
 
-        private void Setup( State config )
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="state"></param>
+        private void Setup( PGState state )
         {
-            Config = config;
+            State = state ?? throw new ArgumentNullException( "state" );
 
-            for (int i = 0; i < Config.ValueCount; i++)
+            for (int i = 0; i < State.ValueCount; i++)
             {
-                if (Config.Values[i] <= Config.TargetValue)
+                if (State.Values[i] <= State.TargetValue)
                     lowerValueIndicies.Add( i );
-                else if (Config.Values[i] > Config.TargetValue)
+                else if (State.Values[i] > State.TargetValue)
                     higherValueIndicies.Add( i );
             }
-            Config.Pool = new ObjectPool<Chromosome>( Config.PopulationSize * Config.MutationCount * 2, () => new Chromosome( Config ) );
+
+            State.Pool = new ObjectPool<Chromosome>( State.PopulationSize * State.MutationCount * 2, () => new Chromosome( State ) );
         }
 
         /// <summary>
@@ -63,14 +73,14 @@ namespace Morpheus
             // special and trivial case which always produces most accurate probabilities. No
             // heuristics possible, nor stochastics necessary- there's always exactly one
             // solution.
-            if (Config.ValueCount == 2)
+            if (State.ValueCount == 2)
             {
-                var vals = Config.Values;
+                var vals = State.Values;
 
-                var p0 = (Config.TargetValue - vals[1]) / (vals[0] - vals[1]);
+                var p0 = (State.TargetValue - vals[1]) / (vals[0] - vals[1]);
                 var p1 = 1.0 - p0;
 
-                Config.Best = new Chromosome( Config, p0, p1 );
+                State.Best = new Chromosome( State, p0, p1 );
             }
             else
             {
@@ -79,7 +89,7 @@ namespace Morpheus
             }
 
             ErrorCheck();
-            return Config.Best.ToArray();
+            return State.Best.ToArray();
         }
 
 
@@ -88,39 +98,41 @@ namespace Morpheus
         /// </summary>
         private void ApplyHeuristicsAndStochastics()
         {
-            var db = Lib.Repeat( Config.PopulationSize, () => Config.Pool.Get() ).OrderBy( _x => _x.Error ).ToList();
-            var nextDb = new List<Chromosome>();
+            var sampleSet = Lib.Repeat( State.PopulationSize, () => State.Pool.Get() ).OrderBy( _x => _x.Error ).ToList();
+            var resultSet = new List<Chromosome>();
 
+            State.TerminateCalculation = false;
             double error = double.MaxValue;
-            foreach (var _ in Config.LoopUntilErrorSatisfactory())
+            foreach (var _ in State.LoopUntilErrorSatisfactory())
             {
-                nextDb.Add( db[0] ); // Elitism
-
-                for (int i = 0; i < Config.PopulationSize; i++)
+                for (int i = 0; i < State.PopulationSize; i++)
                 {
-                    var obj = db.Sample( _x => (double)_x.Error, true );
-                    for (int j = 0; j < Config.MutationCount; j++)
+                    var obj = sampleSet.Sample( _x => (double)_x.Error, true );
+                    for (int j = 0; j < State.MutationCount; j++)
                     {
                         var newObj = obj.Mutate();
-                        nextDb.Add( newObj );
+                        resultSet.Add( newObj );
                     }
                 }
 
                 // ///////////////////////////////////////////////////////////////////////////
-                // This algorithm is dependent on the cartesian product produced above
-                nextDb.Sort();
-                Config.Pool.Return( db.Mid( 1 ) ); // db[0] added as Elitism
-                db.Clear();
-                db.AddRange( nextDb.Take( Config.PopulationSize ) );
-                Config.Pool.Return( nextDb.Mid( Config.PopulationSize ) );
-                nextDb.Clear();
+                // very coupled algorithm here- fix
+                resultSet.Add( sampleSet[0] ); // Elitism
+                resultSet.Sort();
+
+                State.Pool.Return( sampleSet.Mid( 1 ) ); // [0] added as Elitism
+                sampleSet.Clear();
+
+                sampleSet.AddRange( resultSet.Take( State.PopulationSize ) );
+                State.Pool.Return( resultSet.Mid( State.PopulationSize ) );
+                resultSet.Clear();
                 // ///////////////////////////////////////////////////////////////////////////
 
-                var smallest = db[0]; // list was sorted
+                var smallest = sampleSet[0]; // list was sorted
                 error = smallest.Error;
-                Config.Best = smallest;
+                State.Best = smallest;
 
-                Console.WriteLine( $"[{Config.IterationCount}] {smallest}" );
+                Console.WriteLine( $"[{State.IterationCount}] {smallest}" );
             }
             /// / Stochastics with Heuristic function for evaluation
             // var chromoTemplate = new Chromosome( Dimensionality, 64, ValuePV2Error ); var ga
@@ -163,26 +175,26 @@ namespace Morpheus
         private double GetErrorBySwitchingIndicies( int lowIdx, int highIdx )
         {
             var previousVals = FixTwoProbabilities( lowIdx, highIdx );
-            var retval = Config.Best.Error;
-            Config.Best.SetProbabilities( lowIdx, previousVals.Item1, highIdx, previousVals.Item2 );
+            var retval = State.Best.Error;
+            State.Best.SetProbabilities( lowIdx, previousVals.Item1, highIdx, previousVals.Item2 );
             return retval;
         }
 
         private (double, double) FixTwoProbabilities( int lowIdx, int highIdx )
         {
             // Adjust these values based on the dot-product
-            var v1 = Config.Values[lowIdx];
-            var v2 = Config.Values[highIdx];
-            var p1 = Config.Best[lowIdx];
-            var p2 = Config.Best[highIdx];
+            var v1 = State.Values[lowIdx];
+            var v2 = State.Values[highIdx];
+            var p1 = State.Best[lowIdx];
+            var p2 = State.Best[highIdx];
             var c = p1 + p2;
-            var d = p1 * v1 + p2 * v2 + Config.TargetValue - Config.Best.CalculatedValue;
+            var d = p1 * v1 + p2 * v2 + State.TargetValue - State.Best.CalculatedValue;
             var newP1 = (d - c * v2) / (v1 - v2);
             var newP2 = c - newP1;
 
             // TODO: this is a translation of old proto code that needs refactoring
             if (newP1 > 0 && newP1 < 1 && newP2 > 0 && newP2 < 1)
-                Config.Best.SetProbabilities( lowIdx, newP1, highIdx, newP2 );
+                State.Best.SetProbabilities( lowIdx, newP1, highIdx, newP2 );
 
             return (p1, p2);
         }
@@ -223,9 +235,9 @@ namespace Morpheus
         /// </summary>
         private void ErrorCheckValidProbabilities()
         {
-            foreach (var p in Config.Best)
+            foreach (var p in State.Best)
                 if (p <= 0 || p >= 1)
-                    throw new InvalidProgramException( $"Generated values which are not valid probabilities: {Config.Best.JoinAsString( ", " )}" );
+                    throw new InvalidProgramException( $"Generated values which are not valid probabilities: {State.Best.JoinAsString( ", " )}" );
         }
 
         /// <summary>
@@ -236,20 +248,20 @@ namespace Morpheus
             var sumProb = 0.0;
             var sumValue = 0.0;
 
-            for (int i = 0; i < Config.ValueCount; i++)
+            for (int i = 0; i < State.ValueCount; i++)
             {
-                sumProb += Config.Best[i];
-                sumValue += Config.Best[i] * Config.Values[i];
+                sumProb += State.Best[i];
+                sumValue += State.Best[i] * State.Values[i];
             }
 
             if (!sumProb.IsClose( 1.0 ))
                 throw new InvalidProgramException( $"Calculated the sum of probabilities to be {sumProb}. It should be 1.0" );
 
-            if (!sumValue.IsClose( Config.Best.CalculatedValue ))
-                throw new InvalidProgramException( $"Calculated an audit Value of {sumProb} that doesn't match the CalculatedValue of {Config.Best.CalculatedValue} found in the chromosome" );
+            if (!sumValue.IsClose( State.Best.CalculatedValue ))
+                throw new InvalidProgramException( $"Calculated an audit Value of {sumProb} that doesn't match the CalculatedValue of {State.Best.CalculatedValue} found in the chromosome" );
 
-            if (!Config.Best.CalculatedValue.IsClose( Config.TargetValue ))
-                throw new InvalidProgramException( $"Calculated a value of {Config.Best.CalculatedValue} which is not equal to {Config.TargetValue}" );
+            if (!State.Best.CalculatedValue.IsClose( State.TargetValue ))
+                throw new InvalidProgramException( $"Calculated a value of {State.Best.CalculatedValue} which is not equal to {State.TargetValue}" );
         }
     }
 }
