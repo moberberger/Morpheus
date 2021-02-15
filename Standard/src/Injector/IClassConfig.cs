@@ -52,11 +52,6 @@ namespace Morpheus.DependencyInjection
         /// parameters for the provided <see cref="MethodInfo"/> .
         /// </summary>
         /// <remarks>This provider has 2nd priority.</remarks>
-        /// <param name="method">
-        /// The method whose return value when Invoked should be returned for a
-        /// <see cref="IDI.New"/> call or for use by an <see cref="IObjectPool"/>
-        /// implementation.
-        /// </param>
         /// <returns>IClassConfig</returns>
         IClassConfig UseFactory( MethodInfo method );
 
@@ -89,14 +84,8 @@ namespace Morpheus.DependencyInjection
         /// configurations are not supported (the object pool will remain unused). Pooling is
         /// OFF by default.
         /// </summary>
-        /// <param name="pool">
-        /// The object pool to use. If NULL, object pooling will be turned off (default).
-        /// 
-        /// IT IS HIGHLY RECOMMENDED THAT THE IMPLEMENTOR OF THIS INTERFACE CREATE AND USE A
-        /// STATIC OBJECT POOL.
-        /// </param>
         /// <returns>IClassConfig</returns>
-        //IClassConfig UseObjectPool( IObjectPool pool );
+        ///IClassConfig UseObjectPool( IObjectPool pool );
 
         /// <summary>
         /// For use when deciding how to create a "new" object of this Type. The constructor
