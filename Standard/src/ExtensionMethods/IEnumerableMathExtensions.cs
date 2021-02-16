@@ -347,29 +347,6 @@ namespace Morpheus
         /// <summary>
         /// Return the sum of the pairwise-products of elements of both arrays.
         /// 
-        /// Optimized for use on double[]. Use Collate for general purpose objects or with
-        /// <see cref="IEnumerable{T}"/> collections
-        /// 
-        /// Also known as the "SUMPRODUCT" in Excel
-        /// </summary>
-        /// <param name="left">
-        /// Length determines how many pairwise-products will be summed
-        /// </param>
-        /// <param name="right">Must contain same number or more elements than -left-</param>
-        /// <returns></returns>
-        public static double DotProduct( this double[] left, double[] right )
-        {
-            double sum = 0;
-            for (int i = 0; i < left.Length; i++)
-            {
-                sum += left[i] * right[i];
-            }
-            return sum;
-        }
-
-        /// <summary>
-        /// Return the sum of the pairwise-products of elements of both arrays.
-        /// 
         /// Optimized for use on decimal[]. Use Collate for general purpose objects or with
         /// <see cref="IEnumerable{T}"/> collections
         /// 

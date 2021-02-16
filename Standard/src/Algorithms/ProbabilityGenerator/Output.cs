@@ -19,7 +19,7 @@ namespace Morpheus.ProbabilityGeneratorNS
         /// 
         /// this and only this field must be set prior to calling the deviation function
         /// </summary>
-        public double[] Probabilities;
+        public readonly double[] Probabilities;
 
         /// <summary>
         /// The value associated with the best deviation found by the algorithm.
@@ -41,7 +41,8 @@ namespace Morpheus.ProbabilityGeneratorNS
         /// <param name="input"></param>
         public Output( Input input )
         {
-            Probabilities = (double[])Lib.CreatePopulatedArray( input.ValueCount, () => DI.Default.Get<Random>().NextDouble() );
+            Probabilities = (double[])Lib.CreatePopulatedArray( input.ValueCount, () => Math.Abs( DI.Default.Get<Random>().NextGaussian( 0, 1 ) ) );
+            Probabilities.ChangeToProbabilities();
         }
 
         /// <summary>

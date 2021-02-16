@@ -10,23 +10,26 @@ namespace Morpheus.ProbabilityGeneratorNS
     /// Evolve by mutating one or more values using a random (with normal distribution)
     /// multiple
     /// </summary>
-    public class FloatingMutatorAlgorithm : EvolutionAlgorithm
+    public class GeneticesqueAlgorithm : EvolutionAlgorithm
     {
-        public FloatingMutatorAlgorithm() : base( VersionInfo.FloatingMutatorAlgorithm ) { }
-        public virtual int PopulationSize { get; set; } = 300;
+        public GeneticesqueAlgorithm() : base( VersionInfo.GeneticesqueAlgorithm ) { }
 
         public virtual double MinimumProbability { get; set; } = 1e-20;
-        public virtual double MultiMutateChance { get; set; } = 0.35;
-        public virtual double MeanIncrementRate { get; set; } = 3;
-        public virtual double MinStddevIncrementRate { get; set; } = 1.0;
-        public virtual double MaxStddevIncrementRate { get; set; } = 20.0;
-        public virtual double StddevIncrementRate
+
+        public virtual int PopulationSize { get; set; } = 300;
+
+        public virtual double MutationChance { get; set; } = 0.05;
+        public virtual double MultiMutateChance { get; set; } = 0.30;
+
+        public virtual double MinMutationStdev { get; set; } = 1.0;
+        public virtual double MaxMutationStdev { get; set; } = 40.0;
+        public virtual double MutationStdev
         { // be more exploratory when the deviation is high
             get
             {
-                if (Best == null) return MaxStddevIncrementRate;
+                if (Best == null) return MaxMutationStdev;
                 var err = Math.Sqrt( Best.Deviation );
-                var retval = err.Clamp( MinStddevIncrementRate, MaxStddevIncrementRate );
+                var retval = err.Clamp( MinMutationStdev, MaxMutationStdev );
                 return retval;
             }
         }
@@ -57,9 +60,8 @@ namespace Morpheus.ProbabilityGeneratorNS
                 // Generate new outputs
                 for (int i = 1; i < PopulationSize; i++)
                 {
-                    var obj = sampleSet.Sample( _x => _x.Deviation, true );
-                    var result = new Output( obj );
-                    Mutate( obj, result );
+                    var result = new Output( input );
+                    Evolve( () => sampleSet.Sample( _x => _x.Deviation, true ), result );
                     deviationFn.CalculateDeviation( input, result );
                     resultSet.Add( result );
                 }
@@ -89,25 +91,46 @@ namespace Morpheus.ProbabilityGeneratorNS
 
 
 
-        private void Mutate( Output _in, Output _out )
+        private void Evolve( Func<Output> generator, Output result )
         {
-            Array.Copy( _in.Probabilities, _out.Probabilities, _in.ProbabilityCount );
-
-            do
+            if (DI.Default.Get<Random>().NextDouble() < MutationChance)
             {
-                int idx = Rng.Default.Next( _in.ProbabilityCount );
+                var basis = generator();
+                Array.Copy( basis.Probabilities, result.Probabilities, basis.ProbabilityCount );
 
-                var factor = Math.Abs( (double)Rng.Default.NextGaussian( MeanIncrementRate, StddevIncrementRate ) );
+                do
+                {
+                    int idx = Rng.Default.Next( basis.ProbabilityCount );
 
-                var newVal = _in.Probabilities[idx] * factor;
+                    var factor = Math.Abs( (double)Rng.Default.NextGaussian( 1, MutationStdev ) );
 
-                newVal = Math.Max( newVal, MinimumProbability );
+                    var newVal = basis.Probabilities[idx] * factor;
 
-                _out.Probabilities[idx] = newVal;
+                    newVal = Math.Max( newVal, MinimumProbability );
 
-            } while (Rng.Default.NextDouble() < MultiMutateChance);
+                    result.Probabilities[idx] = newVal;
 
-            _out.Probabilities.ChangeToProbabilities();
+                } while (Rng.Default.NextDouble() < MultiMutateChance);
+
+            }
+            else
+            {
+                int len = result.ProbabilityCount;
+
+                var p1 = generator();
+                var p2 = generator();
+                var idx1 = DI.Default.Get<Random>().Next( len );
+                var idx2 = DI.Default.Get<Random>().Next( len );
+                for (int i = 0; i < len; i++)
+                {
+                    if (i.IsBetween( idx1, idx2 ))
+                        result.Probabilities[i] = p1.Probabilities[i];
+                    else
+                        result.Probabilities[i] = p2.Probabilities[i];
+                }
+            }
+
+            result.Probabilities.ChangeToProbabilities();
         }
 
 

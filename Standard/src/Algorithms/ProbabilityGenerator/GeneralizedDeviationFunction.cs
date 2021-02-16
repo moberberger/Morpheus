@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Morpheus.ProbabilityGeneratorNS
@@ -12,61 +13,54 @@ namespace Morpheus.ProbabilityGeneratorNS
     {
         public GeneralizedDeviationFunction() : base( VersionInfo.GeneralizedDeviationFunction ) { } // should also be treated as the "default"
 
-        public virtual double TargetValueAcceptableDeviationPercent { get; set; } = 0.05;
+        public virtual double TargetValueAcceptableDeviationPercent { get; set; } = 0.01;
 
-        public virtual double ProbabilityDeviationWeight { get; set; } = 10;
+        public virtual double ProbabilityDeviationWeight { get; set; } = 1;
 
-        public virtual double AngleDeviationWeight { get; set; } = 1000;
+        public virtual double AngleDeviationWeight { get; set; } = 1;
 
         public virtual double DirectionChangePenalty { get; set; } = 10.0;
-        public virtual int DirectionChangeTarget { get; set; } = 1;
-
-
+        public virtual int DirectionChangeTarget { get; set; } = -1;
 
 
 
         public override Output CalculateDeviation( Input _in, Output evalObj, DeviationDetail _detail )
         {
-            double sumProb = 0;
+            int length = _in.ValueCount;
+
+            evalObj.CalculatedValue = _in.Values.DotProduct( evalObj.Probabilities );
+
             double sumProbSquared = 0;
-            double sumValue = 0;
-            double sumAngleSquared = 0;
-            int dirChangeCount = 0;
-
-            for (int i = 0; i < _in.ValueCount; i++)
-                sumProb += evalObj.Probabilities[i]; // used to normalize probabilities (0..1)
-
-            for (int i = 0; i < _in.ValueCount; i++)
+            for (int i = 0; i < length; i++)
             {
-                evalObj.Probabilities[i] /= sumProb;
-                var p = evalObj.Probabilities[i];
-
-                var pp = (p - 1 / _in.ValueCount); // 1/ValueCount is the average probability
-                sumProbSquared += pp * pp;
-
-                sumValue += p * _in.Values[i];
-
-                if (i > 0)
-                {
-                    var angle = p - evalObj.Probabilities[i - 1];
-                    sumAngleSquared += angle * angle;
-
-                    if (i < _in.ValueCount - 1 && Math.Sign( p - evalObj.Probabilities[i - 1] ) != Math.Sign( evalObj.Probabilities[i + 1] - p ))
-                        dirChangeCount++;
-                }
+                double p = evalObj.Probabilities[i];
+                sumProbSquared += p * p;
             }
 
-            evalObj.CalculatedValue = sumValue;
+            double sumAngleSquared = 0;
+            for (int i = 1; i < length; i++)
+            {
+                double p0 = evalObj.Probabilities[i - 1];
+                double p1 = evalObj.Probabilities[i];
+                double diff = p0 - p1;
+                sumAngleSquared += diff * diff;
+            }
 
-            // Deviation and DeviationDetails generated here
-            var valDev = sumValue.DifferenceAsRatioOf( _in.TargetValue );
+            int dirChangeCount = 0;
+            for (int i = 1; i < length - 1; i++)
+            {
+                var p = evalObj.Probabilities[i];
+                if (Math.Sign( p - evalObj.Probabilities[i - 1] ) != Math.Sign( evalObj.Probabilities[i + 1] - p ))
+                    dirChangeCount++;
+            }
+
+            var valDev = evalObj.CalculatedValue.DifferenceAsRatioOf( _in.TargetValue );
             valDev /= TargetValueAcceptableDeviationPercent;
             valDev *= valDev;
 
-            // I changed this before I could compile the xfer into Morpheus. Make sure this
-            // works
-            var probDev = sumProbSquared * ProbabilityDeviationWeight / _in.ValueCount;
-            var angleDev = sumAngleSquared * AngleDeviationWeight / (_in.ValueCount - 1);
+            var probDev = sumProbSquared * ProbabilityDeviationWeight;
+
+            var angleDev = sumAngleSquared * AngleDeviationWeight;
 
             var dirChgDev = 0.0;
             if (DirectionChangeTarget >= 0 && dirChangeCount != DirectionChangeTarget)
@@ -75,7 +69,7 @@ namespace Morpheus.ProbabilityGeneratorNS
                 dirChgDev = Math.Pow( DirectionChangePenalty, dirChangeCount );
             }
 
-            var dev = Math.Sqrt( valDev + probDev + angleDev ) + dirChgDev;
+            var dev = Math.Sqrt( valDev + probDev + angleDev ) / _in.ValueCount + dirChgDev;
             evalObj.Deviation = dev;
 
             if (_detail != null)
@@ -83,6 +77,7 @@ namespace Morpheus.ProbabilityGeneratorNS
                 var detail = (_detail as GeneralizedDeviationDetail)
                              ?? throw new ArgumentException( $"The Deviation Detail must be of type {typeof( GeneralizedDeviationDetail )}, not {_detail.GetType()}." );
 
+                detail.Deviation = dev;
                 detail.ValueDeviation = valDev;
                 detail.ProbabilityDeviation = probDev;
                 detail.AngleDeviation = angleDev;
