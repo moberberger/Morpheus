@@ -9,7 +9,7 @@ namespace Morpheus.ProbabilityGeneratorNS
     /// </summary>
     public class DeviationDetail
     {
-        protected readonly int Version;
+        protected readonly int Version = VersionInfo.GeneralizedDeviationDetail;
         protected DeviationDetail( int version ) => Version = version;
 
         /// <summary>
