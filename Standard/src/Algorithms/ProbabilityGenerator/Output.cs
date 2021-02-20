@@ -49,10 +49,7 @@ namespace Morpheus.ProbabilityGeneratorNS
         /// Construct with the size of the probability array = input value array size
         /// </summary>
         /// <param name="other"></param>
-        public Output( Output other )
-        {
-            Probabilities = (double[])other.Probabilities.Clone();
-        }
+        public Output( Output other ) => CopyFrom( other );
 
 
         /// <summary>
@@ -66,6 +63,17 @@ namespace Morpheus.ProbabilityGeneratorNS
         /// <param name="other"></param>
         /// <returns></returns>
         public int CompareTo( Output other ) => Math.Sign( Deviation - other.Deviation );
+
+        /// <summary>
+        /// Copy the data from another Output object
+        /// </summary>
+        /// <param name="other"></param>
+        public void CopyFrom( Output other )
+        {
+            Array.Copy( other.Probabilities, Probabilities, ProbabilityCount );
+            CalculatedValue = other.CalculatedValue;
+            Deviation = other.Deviation;
+        }
 
         int IComparable.CompareTo( object obj ) => CompareTo( (obj as Output) ?? throw new ArgumentException( $"Invalid type: {obj.GetType()}" ) );
 

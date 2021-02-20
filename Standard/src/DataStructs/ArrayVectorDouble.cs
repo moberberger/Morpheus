@@ -6,7 +6,7 @@ namespace Morpheus
 {
     public static class ArrayVectorDouble
     {
-        public static void tNormalize( this double[] v )
+        public static void Normalize( this double[] v )
         {
             var mag = v.Magnitude();
             for (int i = 0; i < v.Length; i++)
