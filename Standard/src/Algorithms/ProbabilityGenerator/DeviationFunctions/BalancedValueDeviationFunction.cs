@@ -19,18 +19,20 @@ namespace Morpheus.ProbabilityGeneratorNS
         public virtual double AngleDeviationWeight { get; set; } = 1;
 
 
-        public override Output CalculateDeviation( Input _in, Output evalObj, DeviationDetail _detail )
+        public override Chromosome CalculateDeviation( Config _config, Chromosome _chromo, DeviationDetail _detail )
         {
-            int length = _in.ValueCount;
+            var chromo = _chromo as ProbabilityGeneratorChromosome;
+            var config = _config as ProbabilityGeneratorConfig;
+            int length = config.ValueCount;
 
-            evalObj.CalculatedValue = _in.Values.DotProduct( evalObj.Probabilities );
+            chromo.CalculatedValue = config.Values.DotProduct( chromo.Probabilities );
 
-            double avgValue = _in.TargetValue / length;
+            double avgValue = config.TargetValue / length;
 
             double sumValDevSquared = 0;
             for (int i = 0; i < length; i++)
             {
-                double v = evalObj.Probabilities[i] * _in.Values[i];
+                double v = chromo.Probabilities[i] * config.Values[i];
                 double dv = v.DifferenceAsRatioOf( avgValue );
                 sumValDevSquared += dv * dv;
             }
@@ -40,21 +42,21 @@ namespace Morpheus.ProbabilityGeneratorNS
             double sumAngleSquared = 0;
             for (int i = 1; i < length; i++)
             {
-                double p0 = evalObj.Probabilities[i - 1];
-                double p1 = evalObj.Probabilities[i];
+                double p0 = chromo.Probabilities[i - 1];
+                double p1 = chromo.Probabilities[i];
                 double diff = p0 - p1;
                 sumAngleSquared += diff * diff;
             }
             sumAngleSquared *= AngleDeviationWeight;
 
 
-            var valDev = evalObj.CalculatedValue.DifferenceAsRatioOf( _in.TargetValue );
+            var valDev = chromo.CalculatedValue.DifferenceAsRatioOf( config.TargetValue );
             valDev /= TargetValueAcceptableDeviationPercent;
             var valDevSquared = valDev * valDev;
 
 
-            var dev = Math.Sqrt( valDevSquared + sumValDevSquared + sumAngleSquared ) / _in.ValueCount;
-            evalObj.Deviation = dev;
+            var dev = Math.Sqrt( valDevSquared + sumValDevSquared + sumAngleSquared ) / config.ValueCount;
+            chromo.Deviation = dev;
 
             if (_detail != null)
             {
@@ -67,7 +69,7 @@ namespace Morpheus.ProbabilityGeneratorNS
                 detail.AngleDeviation = sumAngleSquared;
             }
 
-            return evalObj;
+            return chromo;
         }
 
         public override DeviationDetail NewDeviationDetailObject() => new BalanceDeviationDetail();

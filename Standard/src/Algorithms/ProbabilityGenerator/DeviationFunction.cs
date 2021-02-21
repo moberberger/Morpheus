@@ -18,7 +18,7 @@ namespace Morpheus.ProbabilityGeneratorNS
         /// <param name="_in"></param>
         /// <param name="_out"></param>
         /// <param name="_detail"></param>
-        public abstract Output CalculateDeviation( Input _in, Output _out, DeviationDetail _detail = null );
+        public abstract Chromosome CalculateDeviation( Config _in, Chromosome _out, DeviationDetail _detail = null );
 
         /// <summary>
         /// Allows the DeviationFunction to create a deviation detail object of the correct type

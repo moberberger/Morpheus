@@ -18,7 +18,7 @@ namespace Morpheus.ProbabilityGeneratorNS
         public double DeviationTolerance = .40;
         public bool TerminateCalculation = false;
 
-        public Output Best { get; internal set; }
+        public Chromosome Best { get; internal set; }
 
         protected IEnumerable<int> Iterate()
         {
@@ -26,7 +26,7 @@ namespace Morpheus.ProbabilityGeneratorNS
                 yield return IterationCount;
         }
 
-        public abstract Output Generate( Input _in, DeviationFunction _deviation );
+        public abstract Chromosome Generate( Config _in, DeviationFunction _deviation );
     }
 
 }

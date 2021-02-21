@@ -10,13 +10,8 @@ namespace Morpheus.ProbabilityGeneratorNS
     /// 
     /// This data is transcendent across all deviation functions.
     /// </summary>
-    public class Input
+    public class ProbabilityGeneratorConfig : Config
     {
-        /// <summary>
-        /// Allows C/Asm to effect polymorphism
-        /// </summary>
-        protected readonly int Version = 0;
-
         /// <summary>
         /// The value that the algorithm should try to achieve
         /// </summary>
@@ -41,7 +36,8 @@ namespace Morpheus.ProbabilityGeneratorNS
         /// probabilities
         /// </param>
         /// <param name="values">The values to determine probabilities for</param>
-        public Input( double targetValue, params double[] values )
+        public ProbabilityGeneratorConfig( double targetValue, params double[] values )
+            : base( VersionInfo.ProbabilityGeneratorConfig )
         {
             this.TargetValue = targetValue;
             this.Values = values ?? throw new ArgumentNullException( "Must pass in an array of values" );
@@ -66,6 +62,14 @@ namespace Morpheus.ProbabilityGeneratorNS
             }
         }
 
-        protected Input( int version ) => Version = version;
+        public override Chromosome CreateEmpty()
+        {
+            return new ProbabilityGeneratorChromosome( ValueCount );
+        }
+
+        public override Chromosome CreateInitialized()
+        {
+            return new ProbabilityGeneratorChromosome( this );
+        }
     }
 }

@@ -12,7 +12,7 @@ namespace Morpheus.ProbabilityGeneratorNS
     /// </summary>
     public class GeneticesqueAlgorithm : EvolutionAlgorithm
     {
-        public GeneticesqueAlgorithm() : base( VersionInfo.GeneticesqueAlgorithm ) { }
+        public GeneticesqueAlgorithm() : base( VersionInfo.GeneticesqueFloatEvolver ) { }
 
         public virtual double MinimumProbability { get; set; } = 1e-20;
 
@@ -41,14 +41,14 @@ namespace Morpheus.ProbabilityGeneratorNS
         /// <param name="input"></param>
         /// <param name="deviationFn"></param>
         /// <returns></returns>
-        public override Output Generate( Input input, DeviationFunction deviationFn )
+        public override Chromosome Generate( Config input, DeviationFunction deviationFn )
         {
-            var sampleSet = Lib.Repeat( PopulationSize, () => new Output( input ) )
+            var sampleSet = Lib.Repeat( PopulationSize, () => new Chromosome( input ) )
                                .Select( _x => deviationFn.CalculateDeviation( input, _x ) )
                                .OrderBy( _x => _x.Deviation )
                                .ToList();
 
-            var resultSet = new List<Output>();
+            var resultSet = new List<Chromosome>();
 
             TerminateCalculation = false;
             var detail = deviationFn.NewDeviationDetailObject();
@@ -60,7 +60,7 @@ namespace Morpheus.ProbabilityGeneratorNS
                 // Generate new outputs
                 for (int i = 1; i < PopulationSize; i++)
                 {
-                    var result = new Output( input );
+                    var result = new Chromosome( input );
                     Evolve( () => sampleSet.Sample( _x => _x.Deviation, true ), result );
                     deviationFn.CalculateDeviation( input, result );
                     resultSet.Add( result );
@@ -91,7 +91,7 @@ namespace Morpheus.ProbabilityGeneratorNS
 
 
 
-        private void Evolve( Func<Output> generator, Output result )
+        private void Evolve( Func<Chromosome> generator, Chromosome result )
         {
             if (DI.Default.Get<Random>().NextDouble() < MutationChance)
             {

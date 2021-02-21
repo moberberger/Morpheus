@@ -12,7 +12,7 @@ namespace Morpheus.ProbabilityGeneratorNS
     /// </summary>
     public class FloatingMutatorAlgorithm : EvolutionAlgorithm
     {
-        public FloatingMutatorAlgorithm() : base( VersionInfo.FloatingMutatorAlgorithm ) { }
+        public FloatingMutatorAlgorithm() : base( VersionInfo.FloatingMutatorEvolver ) { }
         public virtual int PopulationSize { get; set; } = 300;
 
         public virtual double MinimumProbability { get; set; } = 1e-20;
@@ -38,14 +38,14 @@ namespace Morpheus.ProbabilityGeneratorNS
         /// <param name="input"></param>
         /// <param name="deviationFn"></param>
         /// <returns></returns>
-        public override Output Generate( Input input, DeviationFunction deviationFn )
+        public override Chromosome Generate( Config input, DeviationFunction deviationFn )
         {
-            var sampleSet = Lib.Repeat( PopulationSize, () => new Output( input ) )
+            var sampleSet = Lib.Repeat( PopulationSize, () => new Chromosome( input ) )
                                .Select( _x => deviationFn.CalculateDeviation( input, _x ) )
                                .OrderBy( _x => _x.Deviation )
                                .ToList();
 
-            var resultSet = new List<Output>();
+            var resultSet = new List<Chromosome>();
 
             TerminateCalculation = false;
             var detail = deviationFn.NewDeviationDetailObject();
@@ -58,7 +58,7 @@ namespace Morpheus.ProbabilityGeneratorNS
                 for (int i = 1; i < PopulationSize; i++)
                 {
                     var obj = sampleSet.Sample( _x => _x.Deviation, true );
-                    var result = new Output( obj );
+                    var result = new Chromosome( obj );
                     Mutate( obj, result );
                     deviationFn.CalculateDeviation( input, result );
                     resultSet.Add( result );
@@ -89,7 +89,7 @@ namespace Morpheus.ProbabilityGeneratorNS
 
 
 
-        private void Mutate( Output _in, Output _out )
+        private void Mutate( Chromosome _in, Chromosome _out )
         {
             Array.Copy( _in.Probabilities, _out.Probabilities, _in.ProbabilityCount );
 

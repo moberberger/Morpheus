@@ -24,24 +24,26 @@ namespace Morpheus.ProbabilityGeneratorNS
 
 
 
-        public override Output CalculateDeviation( Input _in, Output evalObj, DeviationDetail _detail )
+        public override Chromosome CalculateDeviation( Config _config, Chromosome _chromo, DeviationDetail _detail )
         {
-            int length = _in.ValueCount;
+            var config = _config as ProbabilityGeneratorConfig;
+            var chromo = _chromo as ProbabilityGeneratorChromosome;
+            int length = config.ValueCount;
 
-            evalObj.CalculatedValue = _in.Values.DotProduct( evalObj.Probabilities );
+            chromo.CalculatedValue = config.Values.DotProduct( chromo.Probabilities );
 
             double sumProbSquared = 0;
             for (int i = 0; i < length; i++)
             {
-                double p = evalObj.Probabilities[i];
+                double p = chromo.Probabilities[i];
                 sumProbSquared += p * p;
             }
 
             double sumAngleSquared = 0;
             for (int i = 1; i < length; i++)
             {
-                double p0 = evalObj.Probabilities[i - 1];
-                double p1 = evalObj.Probabilities[i];
+                double p0 = chromo.Probabilities[i - 1];
+                double p1 = chromo.Probabilities[i];
                 double diff = p0 - p1;
                 sumAngleSquared += diff * diff;
             }
@@ -49,12 +51,12 @@ namespace Morpheus.ProbabilityGeneratorNS
             int dirChangeCount = 0;
             for (int i = 1; i < length - 1; i++)
             {
-                var p = evalObj.Probabilities[i];
-                if (Math.Sign( p - evalObj.Probabilities[i - 1] ) != Math.Sign( evalObj.Probabilities[i + 1] - p ))
+                var p = chromo.Probabilities[i];
+                if (Math.Sign( p - chromo.Probabilities[i - 1] ) != Math.Sign( chromo.Probabilities[i + 1] - p ))
                     dirChangeCount++;
             }
 
-            var valDev = evalObj.CalculatedValue.DifferenceAsRatioOf( _in.TargetValue );
+            var valDev = chromo.CalculatedValue.DifferenceAsRatioOf( config.TargetValue );
             valDev /= TargetValueAcceptableDeviationPercent;
             valDev *= valDev;
 
@@ -69,8 +71,8 @@ namespace Morpheus.ProbabilityGeneratorNS
                 dirChgDev = Math.Pow( DirectionChangePenalty, dirChangeCount );
             }
 
-            var dev = Math.Sqrt( valDev + probDev + angleDev ) / _in.ValueCount + dirChgDev;
-            evalObj.Deviation = dev;
+            var dev = Math.Sqrt( valDev + probDev + angleDev ) / config.ValueCount + dirChgDev;
+            chromo.Deviation = dev;
 
             if (_detail != null)
             {
@@ -84,7 +86,7 @@ namespace Morpheus.ProbabilityGeneratorNS
                 detail.DirectionChangeDeviation = dirChgDev;
             }
 
-            return evalObj;
+            return chromo;
         }
 
         public override DeviationDetail NewDeviationDetailObject() => new GeneralizedDeviationDetail();

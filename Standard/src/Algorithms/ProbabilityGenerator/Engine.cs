@@ -6,80 +6,65 @@ using System.Security.Cryptography;
 
 namespace Morpheus.ProbabilityGeneratorNS
 {
-    public class Engine
+    public sealed class Engine<TConfig, TChromosome>
+        where TConfig : Config
+        where TChromosome : Chromosome
     {
-        public class SampleEntry : IComparable, IComparable<SampleEntry>
-        {
-            public double SampleSum;
-            public Output Chromosome;
-
-            public SampleEntry( double sum, Output chromo )
-            {
-                this.SampleSum = sum;
-                this.Chromosome = chromo;
-            }
-
-            public int CompareTo( SampleEntry other )
-            {
-                if (other == null) throw new ArgumentNullException( "Not allowed to compare to NULL" );
-                return Math.Sign( SampleSum - other.SampleSum );
-            }
-
-            int IComparable.CompareTo( object obj )
-            {
-                return CompareTo( obj as SampleEntry );
-            }
-        }
-
+        private readonly LCPRNG _rng = new LCPRNG_MMIX();
 
         public int PopulationSize { get; set; } = 150;
 
         public double AcceptableDeviation { get; set; } = 0.25;
 
-        public bool TerminateGeneration { get; set; }
+        public bool TerminateGeneration { private get; set; }
 
         public int IterationCount { get; private set; }
 
-        public Output Best { get; protected set; }
+
+        public TChromosome Best { get; private set; }
+
+        public TChromosome[] SampleSet { get; private set; }
+
+        public TChromosome[] ResultSet { get; private set; }
+
+        private double[] _sampleSums;
+
+        private double _sampleSetSumDeviations => _sampleSums[PopulationSize - 1];
 
 
-        public SampleEntry[] SampleSet { get; private set; }
-
-        public Output[] ResultSet { get; private set; }
-
-        private double sampleSetSumDeviations;
 
 
-        public Output Generate( Input input, Action<Input, Output, DeviationDetail> deviationFn, Action<Func<Output>, Output> mutator )
+        public TChromosome Generate( Config input, Action<Config, TChromosome, DeviationDetail> deviationFn, Action<Func<TChromosome>, TChromosome> evolver )
         {
-            SampleSet = new SampleEntry[PopulationSize];
-            ResultSet = new Output[PopulationSize];
+            SampleSet = new TChromosome[PopulationSize];
+            ResultSet = new TChromosome[PopulationSize];
+            _sampleSums = new double[PopulationSize];
 
-            double sum = 0;
-            double bestDeviation = double.MaxValue;
+            Initialize( input, deviationFn );
 
+            Iterate( input, deviationFn, evolver );
+
+            return Best;
+        }
+
+
+        void Initialize( Config input, Action<Config, TChromosome, DeviationDetail> deviationFn )
+        {
             for (int i = 0; i < PopulationSize; i++)
             {
-                ResultSet[i] = new Output( input );
-
-                var chromo = new Output( input );
-
+                var chromo = new TChromosome( input.ValueCount );
                 deviationFn( input, chromo, null );
-
-                sum += chromo.Deviation;
-
-                var se = new SampleEntry( sum, chromo );
-
-                SampleSet[i] = se;
-
-                if (chromo.Deviation < bestDeviation)
-                {
-                    bestDeviation = chromo.Deviation;
-                    Best = chromo;
-                }
+                SampleSet[i] = chromo;
+                ResultSet[i] = new TChromosome( input );
             }
-            sampleSetSumDeviations = sum;
 
+            ProcessSampleSet();
+        }
+
+
+        void Iterate( Config input, Action<Config, TChromosome, DeviationDetail> deviationFn, Action<Func<TChromosome>, TChromosome> evolver )
+        {
+            TerminateGeneration = false;
             for (IterationCount = 0; Best.Deviation < AcceptableDeviation && !TerminateGeneration; IterationCount++)
             {
                 // Elitism
@@ -87,56 +72,67 @@ namespace Morpheus.ProbabilityGeneratorNS
 
                 // Generation
                 for (int i = 1; i < PopulationSize; i++) // 1 because of Elitism
-                {
+                { // can be parallel
                     var output = ResultSet[i];
-                    mutator( Sample, output );
+                    evolver( Sample, output );
                     deviationFn( input, output, null );
                 }
 
                 // Transfer back
-                sum = 0;
-                bestDeviation = double.MaxValue;
                 for (int i = 0; i < PopulationSize; i++)
-                {
-                    var chromo = ResultSet[i];
-                    ResultSet[i] = SampleSet[i].Chromosome;
-                    SampleSet[i].Chromosome = chromo;
+                    Lib.Swap( ref ResultSet[i], ref SampleSet[i] );
 
-                    sum += chromo.Deviation;
-                    SampleSet[i].SampleSum = sum;
-
-                    if (chromo.Deviation < bestDeviation)
-                    {
-                        bestDeviation = chromo.Deviation;
-                        Best = chromo;
-                    }
-                }
-                sampleSetSumDeviations = sum;
+                ProcessSampleSet();
             }
-
-            return Best;
         }
 
-        internal Output Sample()
+
+
+        void ProcessSampleSet()
+        {
+            double sumInverses = 0;
+            for (int i = 0; i < PopulationSize; i++)
+                sumInverses += 1.0 / SampleSet[i].Deviation;
+
+            double sum = 0;
+            double bestDeviation = double.MaxValue;
+            for (int i = 0; i < PopulationSize; i++)
+            {
+                var chromo = SampleSet[i];
+                sum += 1.0 / (sumInverses * chromo.Deviation);
+                _sampleSums[i] = sum;
+
+                if (chromo.Deviation < bestDeviation)
+                {
+                    bestDeviation = chromo.Deviation;
+                    Best = chromo;
+                }
+            }
+        }
+
+
+
+        public TChromosome Sample()
         {
             int low = 0;
             int high = PopulationSize;
             int mid = 0;
 
-            var selection = DI.Default.Get<Random>().NextDouble() * sampleSetSumDeviations;
+            var selection = _rng.NextDouble() * _sampleSetSumDeviations;
 
             while (low < high)
             {
                 mid = low + (high - low) / 2;
-                var se = SampleSet[mid];
 
-                if (selection > se.SampleSum)
+                if (selection > _sampleSums[mid])
                     low = mid + 1;
                 else
                     high = mid - 1;
             }
+            if (low == high) mid = low;
 
-            return SampleSet[mid].Chromosome;
+            return SampleSet[mid];
         }
+
     }
 }

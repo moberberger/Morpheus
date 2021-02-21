@@ -10,8 +10,8 @@ namespace Morpheus
     {
 
 
-        public Input _Input;
-        public Output _Output;
+        public Config _Input;
+        public ProbabilityGeneratorNS.Chromosome _Output;
         public DeviationFunction _DeviationFunction;
         public EvolutionAlgorithm _Algorithm;
 
@@ -24,12 +24,12 @@ namespace Morpheus
         /// <param name="values"></param>
         public ProbabilityGenerator( EvolutionAlgorithm algorithm, DeviationFunction deviationFn, double targetValue, params double[] values )
         {
-            _Input = new Input( targetValue, values );
+            _Input = new Config( targetValue, values );
             _DeviationFunction = deviationFn;
             _Algorithm = algorithm;
         }
 
-        public Output Generate()
+        public ProbabilityGeneratorNS.Chromosome Generate()
         {
             _Output = _Algorithm.Generate( _Input, _DeviationFunction );
             return _Output;

@@ -12,6 +12,6 @@ namespace Morpheus.ProbabilityGeneratorNS
         public double ValuesDeviation;
         public double AnglesDeviation;
 
-        public override string ToString() => $"{Deviation:N4}  v:{ValueDeviation:N4}  p:{ProbabilityDeviation:N4}  a:{AngleDeviation:N4}  dc:{DirectionChangeDeviation:N4}";
+        public override string ToString() => $"{Deviation:N4}  v:{ValueDeviation:N4}  pv:{ValuesDeviation:N4}  a:{AnglesDeviation:N4}";
     }
 }

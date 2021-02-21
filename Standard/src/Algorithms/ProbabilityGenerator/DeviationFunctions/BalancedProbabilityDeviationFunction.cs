@@ -24,11 +24,13 @@ namespace Morpheus.ProbabilityGeneratorNS
 
 
 
-        public override Output CalculateDeviation( Input _in, Output evalObj, DeviationDetail _detail )
+        public override Chromosome CalculateDeviation( Config _config, Chromosome _evalObj, DeviationDetail _detail )
         {
-            int length = _in.ValueCount;
+            var evalObj = _evalObj as ProbabilityGeneratorChromosome;
+            var config = _config as ProbabilityGeneratorConfig;
+            int length = config.ValueCount;
 
-            evalObj.CalculatedValue = _in.Values.DotProduct( evalObj.Probabilities );
+            evalObj.CalculatedValue = config.Values.DotProduct( evalObj.Probabilities );
 
             double sumProbSquared = 0;
             for (int i = 0; i < length; i++)
@@ -54,7 +56,7 @@ namespace Morpheus.ProbabilityGeneratorNS
                     dirChangeCount++;
             }
 
-            var valDev = evalObj.CalculatedValue.DifferenceAsRatioOf( _in.TargetValue );
+            var valDev = evalObj.CalculatedValue.DifferenceAsRatioOf( config.TargetValue );
             valDev /= TargetValueAcceptableDeviationPercent;
             valDev *= valDev;
 
@@ -69,7 +71,7 @@ namespace Morpheus.ProbabilityGeneratorNS
                 dirChgDev = Math.Pow( DirectionChangePenalty, dirChangeCount );
             }
 
-            var dev = Math.Sqrt( valDev + probDev + angleDev ) / _in.ValueCount + dirChgDev;
+            var dev = Math.Sqrt( valDev + probDev + angleDev ) / config.ValueCount + dirChgDev;
             evalObj.Deviation = dev;
 
             if (_detail != null)
