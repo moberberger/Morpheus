@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Morpheus.ProbabilityGeneratorNS
+namespace Morpheus.Evolution.ProbabilityGeneratorNS
 {
     /// <summary>
     /// This set of input values represents what every generator must accept, at a minimum.
@@ -10,7 +10,7 @@ namespace Morpheus.ProbabilityGeneratorNS
     /// 
     /// This data is transcendent across all deviation functions.
     /// </summary>
-    public class ProbabilityGeneratorConfig : Config
+    public class Config
     {
         /// <summary>
         /// The value that the algorithm should try to achieve
@@ -36,8 +36,7 @@ namespace Morpheus.ProbabilityGeneratorNS
         /// probabilities
         /// </param>
         /// <param name="values">The values to determine probabilities for</param>
-        public ProbabilityGeneratorConfig( double targetValue, params double[] values )
-            : base( VersionInfo.ProbabilityGeneratorConfig )
+        public Config( double targetValue, params double[] values )
         {
             this.TargetValue = targetValue;
             this.Values = values ?? throw new ArgumentNullException( "Must pass in an array of values" );
@@ -60,16 +59,6 @@ namespace Morpheus.ProbabilityGeneratorNS
                         throw new InvalidOperationException( $"MUST have one Value lower than {TargetValue} and one greater. ALTERNATELY, all Values may EQUAL {TargetValue}." );
                 }
             }
-        }
-
-        public override Chromosome CreateEmpty()
-        {
-            return new ProbabilityGeneratorChromosome( ValueCount );
-        }
-
-        public override Chromosome CreateInitialized()
-        {
-            return new ProbabilityGeneratorChromosome( this );
         }
     }
 }

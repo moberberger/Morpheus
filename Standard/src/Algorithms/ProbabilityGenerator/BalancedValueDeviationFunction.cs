@@ -21,7 +21,7 @@ namespace Morpheus.ProbabilityGeneratorNS
 
         public override Chromosome CalculateDeviation( Config _config, Chromosome _chromo, DeviationDetail _detail )
         {
-            var chromo = _chromo as ProbabilityGeneratorChromosome;
+            var chromo = _chromo as Chromosome;
             var config = _config as ProbabilityGeneratorConfig;
             int length = config.ValueCount;
 

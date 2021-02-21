@@ -2,29 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Morpheus.ProbabilityGeneratorNS
+namespace Morpheus.Evolution
 {
     /// <summary>
-    /// 
+    /// Basic chromosome containing the all-important Deviation value. Also provides ordering
+    /// based on said Deviation. Applications derive from this.
     /// </summary>
     public abstract class Chromosome : IComparable<Chromosome>, IComparable
     {
         /// <summary>
-        /// Allows C/Asm to effect polymorphism
+        /// The deviation found by the provided algorithm for the data found in the chromosome.
         /// </summary>
-        protected readonly int Version = 0;
-
-        /// <summary>
-        /// Construct in subclass
-        /// </summary>
-        /// <param name="version"></param>
-        protected Chromosome( int version ) => Version = version;
-
-        /// <summary>
-        /// The best deviation found by the algorithm prior to fix-up. Just because there's a
-        /// non-zero Deviation does not mean that the probabilities are valid.
-        /// </summary>
-        public double Deviation { get; set; } = double.NaN;
+        public virtual double Deviation { get; set; } = double.NaN;
 
         /// <summary>
         /// Copy the data from another Output object
@@ -34,8 +23,6 @@ namespace Morpheus.ProbabilityGeneratorNS
         {
             if (other == null)
                 throw new ArgumentNullException( "other" );
-            if (Version != other.Version )
-                throw new ArgumentException( $"The chromosome versions are different: this={Version}, other={other.Version}" );
 
             Deviation = other.Deviation;
         }
@@ -58,7 +45,7 @@ namespace Morpheus.ProbabilityGeneratorNS
         /// 
         /// </summary>
         /// <returns></returns>
-        public override string ToString() => $"dev: {Deviation:N6}";
+        public override string ToString() => $"Dev={Deviation:N6}";
 
     }
 

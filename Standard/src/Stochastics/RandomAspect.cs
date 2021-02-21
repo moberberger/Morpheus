@@ -107,10 +107,7 @@ namespace Morpheus
         /// <returns>
         /// An integer in the range [0.. <see cref="int.MaxValue"/> ), just like the base class.
         /// </returns>
-        public override int Next()
-        {
-            return (int) this.ScaleValue( int.MaxValue );
-        }
+        public override int Next() => (int)this.ScaleValue( int.MaxValue );
 
 
         /// <summary>
@@ -119,7 +116,7 @@ namespace Morpheus
         /// <param name="maxValue">One greater than the largest possible return value</param>
         /// <returns>An integer in the range [0..maxValue).</returns>
         public override int Next( int maxValue ) => (maxValue > 0)
-                                                    ? (int) this.ScaleValue( (uint) maxValue )
+                                                    ? (int)this.ScaleValue( (uint)maxValue )
                                                     : throw new ArgumentException( "maxValue" );
 
         /// <summary>
@@ -128,7 +125,7 @@ namespace Morpheus
         /// <param name="minValue">Smallest possible value for the return value</param>
         /// <param name="maxValue">One greater than the largest possible return value</param>
         /// <returns>An integer in the range [minValue..maxValue).</returns>
-        public override int Next( int minValue, int maxValue ) => minValue + (int) this.ScaleValue( (uint) (maxValue - minValue) );
+        public override int Next( int minValue, int maxValue ) => minValue + (int)this.ScaleValue( (uint)(maxValue - minValue) );
 
 
 
@@ -138,7 +135,7 @@ namespace Morpheus
         /// <param name="maxValue">One greater than the largest possible return value</param>
         /// <returns>An integer in the range [0..maxValue).</returns>
         public virtual long NextLong( long maxValue ) => (maxValue > 0)
-                                                    ? (long) this.ScaleValue( (ulong) maxValue )
+                                                    ? (long)this.ScaleValue( (ulong)maxValue )
                                                     : throw new ArgumentException( "maxValue" );
 
         /// <summary>
@@ -147,7 +144,7 @@ namespace Morpheus
         /// <param name="minValue">Smallest possible value for the return value</param>
         /// <param name="maxValue">One greater than the largest possible return value</param>
         /// <returns>An integer in the range [minValue..maxValue).</returns>
-        public virtual long NextLong( long minValue, long maxValue ) => minValue + (long) this.ScaleValue( (ulong) (maxValue - minValue) );
+        public virtual long NextLong( long minValue, long maxValue ) => minValue + (long)this.ScaleValue( (ulong)(maxValue - minValue) );
 
 
 

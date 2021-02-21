@@ -12,9 +12,6 @@ namespace Morpheus.ProbabilityGeneratorNS
     /// </summary>
     public class FloatingMutatorAlgorithm : EvolutionAlgorithm
     {
-        public FloatingMutatorAlgorithm() : base( VersionInfo.FloatingMutatorEvolver ) { }
-        public virtual int PopulationSize { get; set; } = 300;
-
         public virtual double MinimumProbability { get; set; } = 1e-20;
         public virtual double MultiMutateChance { get; set; } = 0.35;
         public virtual double MeanIncrementRate { get; set; } = 3;

@@ -1,12 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 
 namespace Morpheus
 {
+    /// <summary>
+    /// Knuth's MMIX full 64-bit LCPRNG.
+    /// 
+    /// No representation to its spectral characteristics.
+    /// </summary>
     public class LCPRNG_MMIX : LCPRNG
     {
+        /// <summary>
+        /// Create one. Don't worry about it.
+        /// </summary>
         public LCPRNG_MMIX() : base( 6364136223846793005, 1442695040888963407 ) { }
     }
 
@@ -19,88 +28,83 @@ namespace Morpheus
     /// <remarks>
     /// Yes, technically should be called "ACPRNG". there's the acknowledgement.
     /// </remarks>
-    public abstract class LCPRNG
+    public abstract class LCPRNG : Random
     {
-        private static int sm_instanceCount = 3;
+        private const long DOUBLE_MASK = 0xf_ffff_ffff_ffff;
+
+        private static long sm_instanceCount = DateTime.Now.Ticks & 0xffff_ffff;
+
         private ulong _multiplier;
         private ulong _increment;
         private ulong _state;
 
-
+        /// <summary>
+        /// Maybe consider removing the "abstract" and making this public
+        /// </summary>
+        /// <param name="multiplier"></param>
+        /// <param name="increment"></param>
         protected LCPRNG( ulong multiplier, ulong increment )
         {
             _multiplier = multiplier;
             _increment = increment;
 
-            // allows initialization to be multi-threaded
-            var mult = Interlocked.Increment( ref sm_instanceCount );
-            _state = (uint)DateTime.Now.Ticks;
-            _state *= (ulong)mult;
-        }
-
-        /// <summary>
-        /// No bias
-        /// </summary>
-        /// <returns>An unbiased PRNG value</returns>
-        public int NextInt()
-        {
-            _state = _multiplier * _state + _increment;
-            return (int)(_state & 0x7fff_ffff);
-        }
-
-        /// <summary>
-        /// No bias
-        /// </summary>
-        /// <returns>An unbiased PRNG value</returns>
-        public long NextLong()
-        {
-            _state = _multiplier * _state + _increment;
-            return (long)(_state & 0x7fff_ffff_ffff_ffff);
-        }
-
-        /// <summary>
-        /// No bias
-        /// </summary>
-        /// <returns>An unbiased PRNG value</returns>
-        public uint NextUInt()
-        {
-            _state = _multiplier * _state + _increment;
-            return (uint)(_state & 0xffff_ffff);
-        }
-
-        /// <summary>
-        /// No bias
-        /// </summary>
-        /// <returns>An unbiased PRNG value</returns>
-        public ulong NextULong()
-        {
-            return _state = _multiplier * _state + _increment;
+            var factor = Interlocked.Increment( ref sm_instanceCount );
+            _state = (ulong)(DateTime.Now.Ticks * factor);
         }
 
         /// <summary>
         /// Advance the PRNG state using data external to the PRNG. Much (3x+?) slower than
-        /// <see cref="NextULong"/> , so should not be used as a substitute. If you need better
+        /// <see cref="Next64"/> , so should not be used as a substitute. If you need better
         /// randomness, use a differnet class- see <see cref="RandomAspect"/>
         /// </summary>
         /// <returns>A biased PRNG value</returns>
         public ulong Advance()
         {
-            var factor = (ulong)Interlocked.Increment( ref sm_instanceCount );
-            factor += (ulong)DateTime.Now.Ticks;
-            var mask = _multiplier * factor + _increment;
+            var factor = Interlocked.Increment( ref sm_instanceCount ) + DateTime.Now.Ticks;
+            var mask = _multiplier * (ulong)factor + _increment;
             _state ^= mask;
             return _state;
         }
 
         /// <summary>
-        /// An unbiased <see cref="double"/> value in [0..1) with 32 bits of precision. If more
-        /// precision is needed, maybe this isn't the PRNG for you. See <see cref="RandomAspect"/>
+        /// No bias- This is the core generation function for this <see cref="Random"/>
+        /// implementation
         /// </summary>
-        /// <returns></returns>
-        public double NextDouble() => (double)NextUInt() / (1.0 + uint.MaxValue);
+        /// <returns>An unbiased PRNG value</returns>
+        public ulong Next64()
+        {
+            // Race Condition- Don't use this class in a re-entrant manner
+
+            var x = _state;
+            x *= _multiplier;
+            x += _increment;
+            return _state = x;
+
+            // End Race Condition
+        }
+
 
         /// <summary>
-        /// Return a PRN scaled to a specified value.
+        /// Implements <see cref="Random.Next"/> without the bias introduced by the MS
+        /// implementation of <see cref="Random"/>
+        /// </summary>
+        /// <returns></returns>
+        public override int Next()
+        {
+            const int mask = 0x7fff_ffff;
+            int retval;
+
+            // eliminate bias
+            for (retval = mask;
+                 retval == mask;
+                 retval = (int)(Next64() & 0x7fff_ffff))
+                ;
+
+            return retval;
+        }
+
+        /// <summary>
+        /// Return a PRN scaled to a specified value in the range [0..maxPlusOne)
         /// </summary>
         /// <remarks>
         /// Naive in favor of speed.
@@ -112,9 +116,49 @@ namespace Morpheus
         /// For numbers from 0 to 4 inclusive, set maxPlusOne to 5
         /// </param>
         /// <returns></returns>
-        public int Next( int maxPlusOne ) => (int)(NextULong() % (ulong)maxPlusOne);
+        public override int Next( int maxPlusOne ) => (int)(Next64() % (ulong)maxPlusOne);
+
+        /// <summary>
+        /// Return a PRN in the range [min...maxPlusOne) with 32 bits of precision
+        /// </summary>
+        /// <param name="min"></param>
+        /// <param name="maxPlusOne"></param>
+        /// <returns></returns>
+        public override int Next( int min, int maxPlusOne ) => min + Next( maxPlusOne );
+
+        /// <summary>
+        /// An unbiased <see cref="double"/> value in [0..1) with 32 bits of precision. If more
+        /// precision is needed, maybe this isn't the PRNG for you. See
+        /// <see cref="RandomAspect"/>
+        /// </summary>
+        /// <returns></returns>
+        public override double NextDouble() => (Next64() & DOUBLE_MASK) / (1.0 + DOUBLE_MASK);
+
+        /// <summary>
+        /// No bias
+        /// </summary>
+        /// <returns>An unbiased PRNG value</returns>
+        public uint Next32() => (uint)(Next64() & 0xffff_ffff);
+
+        /// <summary>
+        /// No bias
+        /// </summary>
+        /// <returns>An unbiased PRNG value</returns>
+        public long NextLong( long maxPlusOne ) => (long)(Next64() % (ulong)maxPlusOne);
+
+        /// <summary>
+        /// Return a PRN in the range [min...maxPlusOne) with 32 bits of precision
+        /// </summary>
+        /// <param name="min"></param>
+        /// <param name="maxPlusOne"></param>
+        /// <returns></returns>
+        public long NextLong( long min, long maxPlusOne ) => min + NextLong( maxPlusOne );
 
 
-        public int Next( int min, int maxPlusOne ) => min + Next( maxPlusOne );
+        /// <summary>
+        /// Internal better generator
+        /// </summary>
+        /// <returns></returns>
+        protected override double Sample() => NextDouble();
     }
 }

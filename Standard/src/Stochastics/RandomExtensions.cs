@@ -33,14 +33,16 @@ namespace Morpheus
         /// <para> Roughly 99.730% of values will be +/- THREE _standardDeviations of _mean </para>
         /// <para> Roughly 99.994% of values will be +/- FOUR _standardDeviations of _mean </para>
         /// </remarks>
-        public static double NextGaussian( this Random _rng, double _mean = 0.0, double _standardDeviation = 1.0 )
+        public static double NextGaussian( this Random _rng, double _mean = 0.0, double _standardDeviation = 1.0 ) => NextGaussian( _rng.NextDouble, _mean, _standardDeviation );
+
+        public static double NextGaussian( this Func<double> generator, double _mean = 0.0, double _standardDeviation = 1.0 )
         {
             double r1, r2, rsq, fac;
 
             do
             {
-                r1 = _rng.NextDouble() * 2 - 1;
-                r2 = _rng.NextDouble() * 2 - 1;
+                r1 = generator() * 2 - 1;
+                r2 = generator() * 2 - 1;
 
                 // rsq will represent the square of the magnitude of (r1, r2)
                 rsq = r1 * r1 + r2 * r2;
@@ -161,9 +163,9 @@ namespace Morpheus
                     rn = BitConverter.ToUInt32( buffer, 0 );
                 }
 
-                var retval = ScaleValue( rn, (ulong) _exclusiveMax, uint.MaxValue, out var isUnbiased );
+                var retval = ScaleValue( rn, (ulong)_exclusiveMax, uint.MaxValue, out var isUnbiased );
                 if (isUnbiased)
-                    return (uint) retval;
+                    return (uint)retval;
             }
         }
 
@@ -193,9 +195,9 @@ namespace Morpheus
                     rn = BitConverter.ToUInt64( buffer, 0 );
                 }
 
-                var retval = ScaleValue( rn, (ulong) _exclusiveMax, ulong.MaxValue, out var isUnbiased );
+                var retval = ScaleValue( rn, (ulong)_exclusiveMax, ulong.MaxValue, out var isUnbiased );
                 if (isUnbiased)
-                    return (ulong) retval;
+                    return (ulong)retval;
             }
         }
 
@@ -241,7 +243,7 @@ namespace Morpheus
                 }
 
                 // Strip off low order 8 bits
-                _array[i] = (byte) (rngVal & 0xff);
+                _array[i] = (byte)(rngVal & 0xff);
 
                 // Move the next 8 bits into position
                 rngVal >>= 8;
@@ -288,7 +290,7 @@ namespace Morpheus
                 }
 
                 // Strip off low order 8 bits
-                _array[i] = (byte) (rngVal & 0xff);
+                _array[i] = (byte)(rngVal & 0xff);
 
                 // Move the next 8 bits into position
                 rngVal >>= 8;
@@ -324,9 +326,9 @@ namespace Morpheus
             const int shift = 12;
 
             decimal numerator = _number >> shift;
-            var denominator = (decimal) (ulong.MaxValue >> shift) + (decimal) 1.0;
+            var denominator = (decimal)(ulong.MaxValue >> shift) + (decimal)1.0;
             var zeroToOne = numerator / denominator;
-            var retval = (double) zeroToOne;
+            var retval = (double)zeroToOne;
             return retval;
         }
 
@@ -341,12 +343,12 @@ namespace Morpheus
         {
             switch (_rng)
             {
-            case RandomThreadsafeAspect rtsa:
-                return rtsa;
-            case RandomAspectWrapper raw:
-                return new RandomThreadsafeAspect( raw.m_rng );
-            default:
-                return new RandomThreadsafeAspect( _rng );
+                case RandomThreadsafeAspect rtsa:
+                    return rtsa;
+                case RandomAspectWrapper raw:
+                    return new RandomThreadsafeAspect( raw.m_rng );
+                default:
+                    return new RandomThreadsafeAspect( _rng );
             }
         }
 
