@@ -1,11 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
+
+using Morpheus.Evolution;
+using Morpheus.Evolution.PGNS;
 
 namespace Morpheus
 {
     public class ProbabilityGenerator
     {
+        public readonly Config Config;
+        public readonly DeviationFunction Deviation = new DeviationFunction();
+        public readonly FloatMutatorEvolver Evolver = new FloatMutatorEvolver();
+
+        public ProbabilityGenerator( double targetValue, params double[] values )
+        {
+            Config = new Config( targetValue, values );
+
+            var Engine = new Engine<Evolution.PGNS.Chromosome, Config, DeviationDetail>(
+                populationSize: 300,
+                input: Config,
+                deviationFunction: Deviation.CalculateDeviation,
+                evolver: Evolver.Evolve,
+                chromosomeCreator: ( config, initialized ) => Evolution.PGNS.Chromosome.Create( config, initialized )
+                );
+
+        }
     }
 }
 

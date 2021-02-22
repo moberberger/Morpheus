@@ -14,15 +14,39 @@ namespace Morpheus
     /// </summary>
     /// <remarks>
     /// Yes, technically should be called "ACPRNG". there's the acknowledgement.
+    /// 
+    /// When "bias" is mentioned in the comments in this class without clarification, I am
+    /// referring to "additional bias added by this method's implementation". I am emphatically
+    /// NOT referring to any bias inherent in LCPRNGs or in the coefficients used- that is a
+    /// "different bias".
     /// </remarks>
     public abstract class LCPRNG : Random
     {
+        /// <summary>
+        /// Allows 52 bits to be masked off. Useful to create <see cref="double"/> values, which
+        /// have 52 bits of precision.
+        /// </summary>
         private const long DOUBLE_MASK = 0xf_ffff_ffff_ffff;
 
+        /// <summary>
+        /// Allows multiple successive object instantiations to each start with a different
+        /// state.
+        /// </summary>
         private static long sm_instanceCount = DateTime.Now.Ticks & 0xffff_ffff;
 
+        /// <summary>
+        /// The "a" coefficient
+        /// </summary>
         private ulong _multiplier;
+
+        /// <summary>
+        /// The "c" coefficient
+        /// </summary>
         private ulong _increment;
+
+        /// <summary>
+        /// The current state of the LCPRNG- also the last value returned by <see cref="Next64"/>
+        /// </summary>
         private ulong _state;
 
         /// <summary>
@@ -44,6 +68,9 @@ namespace Morpheus
         /// <see cref="Next64"/> , so should not be used as a substitute. If you need better
         /// randomness, use a differnet class- see <see cref="RandomAspect"/>
         /// </summary>
+        /// <remarks>
+        /// it is entirely possible that this method is entirely useless in real life.
+        /// </remarks>
         /// <returns>A biased PRNG value</returns>
         public ulong Advance()
         {

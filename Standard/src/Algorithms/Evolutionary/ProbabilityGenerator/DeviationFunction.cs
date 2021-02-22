@@ -41,6 +41,7 @@ namespace Morpheus.Evolution.PGNS
 
             double prevProb = double.NaN;
             double prevVal = double.NaN;
+            bool dirChangeEnabled = TargetDirectionChangeCount >= 0;
 
             for (int i = 0; i < length; i++)
             {
@@ -64,11 +65,13 @@ namespace Morpheus.Evolution.PGNS
                     double diffV = val - prevVal;
                     sumValueAngleSquared += diffV * diffV;
 
-                    if (i < length - 1
-                        && TargetDirectionChangeCount >= 0
-                        && Math.Sign( p - chromo.Probabilities[i - 1] ) != Math.Sign( chromo.Probabilities[i + 1] - p ))
+                    if (dirChangeEnabled && i < length - 1)
                     {
-                        dirChangeCount++;
+                        bool prev = p > prevProb;
+                        bool next = chromo.Probabilities[i + 1] > p;
+
+                        if (prev != next)
+                            dirChangeCount++;
                     }
                 }
 
@@ -77,16 +80,16 @@ namespace Morpheus.Evolution.PGNS
             }
             chromo.CalculatedValue = sumValue;
 
-            sumProbSquared /= (length - 1).ButNotLessThan( 1 );
-            sumProbErrSquared /= (length - 1).ButNotLessThan( 1 );
-            sumValueErrSquared /= (length - 1).ButNotLessThan( 1 );
-            sumProbAngleSquared /= (length - 2).ButNotLessThan( 1 );
-            sumValueAngleSquared /= (length - 2).ButNotLessThan( 1 );
+            sumProbSquared /= length;
+            sumProbErrSquared /= length;
+            sumValueErrSquared /= length;
+            sumProbAngleSquared /= length - 1;
+            sumValueAngleSquared /= length - 1;
 
             double dirChangeError =
-                (TargetDirectionChangeCount < 0 || dirChangeCount == TargetDirectionChangeCount)
-                ? 0.0
-                : Math.Pow( DirectionChangeMagnitude, Math.Abs( dirChangeCount - TargetDirectionChangeCount ) );
+                (dirChangeEnabled && dirChangeCount != TargetDirectionChangeCount)
+                ? Math.Pow( DirectionChangeMagnitude, Math.Abs( dirChangeCount - TargetDirectionChangeCount ) )
+                : 0.0;
 
 
             var valDev = sumValue.DifferenceAsRatioOf( config.TargetValue );

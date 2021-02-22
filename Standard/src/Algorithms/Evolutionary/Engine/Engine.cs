@@ -5,7 +5,7 @@ namespace Morpheus.Evolution
     public class Engine<TChromosome, TInputType, TDeviationDetailType>
         where TChromosome : Chromosome
     {
-        public delegate void FnDeviationCalculator( TInputType input, TChromosome chromo, TDeviationDetailType detail );
+        public delegate TChromosome FnDeviationCalculator( TInputType input, TChromosome chromo, TDeviationDetailType detail );
         public delegate void FnEvolver( Func<TChromosome> sampler, TChromosome evolveInto );
         public delegate TChromosome FnChromosomeCreator( TInputType input, bool initialized );
 
