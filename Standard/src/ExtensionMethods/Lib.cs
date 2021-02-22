@@ -7,7 +7,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Reflection;
 using System.Linq.Expressions;
-using Morpheus.ProbabilityGeneratorNS;
 
 /// <summary>
 /// A collection of various static functions with no strong correlation.
@@ -71,10 +70,11 @@ public static class Lib
     }
 
     /// <summary>
-    /// 
+    /// Swap two values
     /// </summary>
-    /// <param name="output1"></param>
-    /// <param name="output2"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="val1"></param>
+    /// <param name="val2"></param>
     public static void Swap<T>( ref T val1, ref T val2 )
     {
         T tmp = val1;

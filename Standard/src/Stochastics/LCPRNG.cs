@@ -7,19 +7,6 @@ using System.Threading;
 namespace Morpheus
 {
     /// <summary>
-    /// Knuth's MMIX full 64-bit LCPRNG.
-    /// 
-    /// No representation to its spectral characteristics.
-    /// </summary>
-    public class LCPRNG_MMIX : LCPRNG
-    {
-        /// <summary>
-        /// Create one. Don't worry about it.
-        /// </summary>
-        public LCPRNG_MMIX() : base( 6364136223846793005, 1442695040888963407 ) { }
-    }
-
-    /// <summary>
     /// Abstract base, needing only "a" and "c" a/c (multiplier and increment)
     /// 
     /// Maybe refactor to make non-abstract with a constructor- but bad a/c means really bad
@@ -85,7 +72,7 @@ namespace Morpheus
 
 
         /// <summary>
-        /// Implements <see cref="Random.Next"/> without the bias introduced by the MS
+        /// Implements <see cref="Random.Next()"/> without the bias introduced by the MS
         /// implementation of <see cref="Random"/>
         /// </summary>
         /// <returns></returns>
@@ -134,6 +121,16 @@ namespace Morpheus
         /// <returns></returns>
         public override double NextDouble() => (Next64() & DOUBLE_MASK) / (1.0 + DOUBLE_MASK);
 
+
+
+        /// <summary>
+        /// Internal better generator
+        /// </summary>
+        /// <returns></returns>
+        protected override double Sample() => NextDouble();
+
+
+
         /// <summary>
         /// No bias
         /// </summary>
@@ -153,12 +150,5 @@ namespace Morpheus
         /// <param name="maxPlusOne"></param>
         /// <returns></returns>
         public long NextLong( long min, long maxPlusOne ) => min + NextLong( maxPlusOne );
-
-
-        /// <summary>
-        /// Internal better generator
-        /// </summary>
-        /// <returns></returns>
-        protected override double Sample() => NextDouble();
     }
 }
