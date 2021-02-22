@@ -1257,4 +1257,23 @@ public static class Lib
         for (int i = 0; i < count; i++)
             yield return action( i );
     }
+
+
+    public static T ButNotLessThan<T>( this T _value, T smallest )
+        where T : IComparable
+    {
+        if (_value.CompareTo( smallest ) < 0)
+            return smallest;
+        else
+            return _value;
+    }
+
+    public static T ButNotGreaterThan<T>( this T _value, T largest )
+        where T : IComparable
+    {
+        if (_value.CompareTo( largest ) > 0)
+            return largest;
+        else
+            return _value;
+    }
 }

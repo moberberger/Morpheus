@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-using System.Security.Cryptography;
 
 namespace Morpheus.Evolution
 {
-    public sealed class Engine<TChromosome, TInputType, TDeviationDetailType>
+    public class Engine<TChromosome, TInputType, TDeviationDetailType>
         where TChromosome : Chromosome
     {
         public delegate void FnDeviationCalculator( TInputType input, TChromosome chromo, TDeviationDetailType detail );
@@ -25,6 +21,9 @@ namespace Morpheus.Evolution
 
         public bool UseElitism { get; set; } = true;
 
+        /// <summary>
+        /// Marginally most efficient as an exponent of 2
+        /// </summary>
         public readonly int PopulationSize;
 
         public TInputType InputConfig { get; set; }
@@ -96,7 +95,7 @@ namespace Morpheus.Evolution
         {
             // Elitism
             if (UseElitism)
-                ResultSet[0].CopyFrom( Best );
+                Best.CopyTo( ResultSet[0] );
 
             // Generation
             for (int i = UseElitism ? 1 : 0; i < PopulationSize; i++)
@@ -177,7 +176,7 @@ namespace Morpheus.Evolution
         public TChromosome Sample()
         {
             int low = 0;
-            int mid = 0; // If all failes in the loop, just assume 0 even if array is empty
+            int mid = 0; // If all fails in the loop, just assume 0 even if array is empty
             int high = PopulationSize;
 
             var selection = _rng.NextDouble() * _sampleSetSumDeviations;
@@ -191,7 +190,7 @@ namespace Morpheus.Evolution
                 else
                     high = mid - 1;
             }
-            if (low == high) mid = low;
+            if (low == high) mid = high;
 
             return SampleSet[mid];
         }

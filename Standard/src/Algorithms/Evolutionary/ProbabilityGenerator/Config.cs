@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Morpheus.Evolution.ProbabilityGeneratorNS
+namespace Morpheus.Evolution.PGNS
 {
     /// <summary>
     /// This set of input values represents what every generator must accept, at a minimum.

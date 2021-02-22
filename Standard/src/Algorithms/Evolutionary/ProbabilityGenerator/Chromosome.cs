@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Morpheus.Evolution.ProbabilityGeneratorNS
+namespace Morpheus.Evolution.PGNS
 {
     /// <summary>
     /// 
@@ -14,7 +12,7 @@ namespace Morpheus.Evolution.ProbabilityGeneratorNS
         /// 
         /// this and only this field must be set prior to calling the deviation function
         /// </summary>
-        public double[] Probabilities { get; private set; }
+        public readonly double[] Probabilities;
 
         /// <summary>
         /// The value associated with the best deviation found by the algorithm.
@@ -61,14 +59,13 @@ namespace Morpheus.Evolution.ProbabilityGeneratorNS
         /// identical
         /// </summary>
         /// <param name="other"></param>
-        public override void CopyFrom( Evolution.Chromosome other )
+        public override void CopyTo( Evolution.Chromosome other )
         {
             var chromo = other as Chromosome ?? throw new ArgumentException( $"other is wrong type: {other.GetType()}" );
+            base.CopyTo( other );
 
-            base.CopyFrom( other );
-
-            Array.Copy( chromo.Probabilities, Probabilities, ProbabilityCount );
-            CalculatedValue = chromo.CalculatedValue;
+            Array.Copy( Probabilities, chromo.Probabilities, ProbabilityCount );
+            chromo.CalculatedValue = CalculatedValue;
         }
     }
 

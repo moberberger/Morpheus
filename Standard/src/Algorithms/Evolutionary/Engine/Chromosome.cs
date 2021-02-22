@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Morpheus.Evolution
 {
@@ -19,12 +17,12 @@ namespace Morpheus.Evolution
         /// Copy the data from another Output object
         /// </summary>
         /// <param name="other"></param>
-        public virtual void CopyFrom( Chromosome other )
+        public virtual void CopyTo( Chromosome other )
         {
             if (other == null)
                 throw new ArgumentNullException( "other" );
 
-            Deviation = other.Deviation;
+            other.Deviation = Deviation;
         }
 
         /// <summary>
