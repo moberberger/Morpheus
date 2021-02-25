@@ -12,7 +12,7 @@ namespace Morpheus.Evolution.PGNS
 
         public double ProbabilitiesWeight = 1;
 
-        public double ProbabilitErrorWeight = 1;
+        public double ProbabilityErrorWeight = 1;
 
         public double ProbabilitiesSmoothness = 1;
 
@@ -49,7 +49,7 @@ namespace Morpheus.Evolution.PGNS
                 double v = config.Values[i];
                 double val = p * v;
                 double diffProb = p - 1 / length;
-                double diffValue = v.DifferenceAsRatioOf( expectedAverageValue );
+                double diffValue = val.DifferenceAsRatioOf( expectedAverageValue );
 
 
                 sumValue += val;
@@ -97,12 +97,12 @@ namespace Morpheus.Evolution.PGNS
             valDev *= valDev;
 
             var probDev = sumProbSquared * ProbabilitiesWeight;
-            var probErrDev = sumProbErrSquared * ProbabilitErrorWeight;
+            var probErrDev = sumProbErrSquared * ProbabilityErrorWeight;
             var valueErrDev = sumValueErrSquared * ValuesErrorWeight;
             var probAngleDev = sumProbAngleSquared * ProbabilitiesSmoothness;
             var valAngleDev = sumValueAngleSquared * ValuesSmoothness;
 
-            chromo.Deviation = valDev + probDev + probErrDev + valueErrDev + probAngleDev + valAngleDev + dirChangeError;
+            chromo.Deviation = Math.Sqrt( valDev + probDev + probErrDev + valueErrDev + probAngleDev + valAngleDev ) + dirChangeError;
 
             if (detail != null)
             {
@@ -114,6 +114,9 @@ namespace Morpheus.Evolution.PGNS
                 detail.ProbabilitiesSmoothnessDeviation = probAngleDev;
                 detail.ValuesErrorDeviation = valueErrDev;
                 detail.ValuesSmoothnessDeviation = valAngleDev;
+
+                detail.DirectionChangeCount = dirChangeCount;
+                detail.DirectionChangeDeviation = dirChangeError;
 
                 detail.TargetValue = config.TargetValue;
                 detail.CalculatedValue = chromo.CalculatedValue;

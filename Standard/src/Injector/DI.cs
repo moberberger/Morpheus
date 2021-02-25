@@ -25,6 +25,8 @@ namespace Morpheus
         /// </summary>
         static DI()
         {
+            Default.For<Random>().Use<CryptoRandomNumbers>();
+            Default.For<LCPRNG>().Use<LCPRNG_MMIX>();
         }
 
         /// <summary>

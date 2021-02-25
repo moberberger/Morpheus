@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Threading;
 
 namespace Morpheus.Evolution
 {
     public class Engine<TChromosome, TInputType, TDeviationDetailType>
         where TChromosome : Chromosome
+        where TInputType : class
+        where TDeviationDetailType : class
     {
         public delegate TChromosome FnDeviationCalculator( TInputType input, TChromosome chromo, TDeviationDetailType detail );
         public delegate void FnEvolver( Func<TChromosome> sampler, TChromosome evolveInto );
@@ -24,7 +27,7 @@ namespace Morpheus.Evolution
         /// <summary>
         /// Marginally most efficient as an exponent of 2
         /// </summary>
-        public readonly int PopulationSize;
+        public int PopulationSize { get; private set; }
 
         public TInputType InputConfig { get; set; }
 
@@ -45,24 +48,37 @@ namespace Morpheus.Evolution
         public TChromosome[] ResultSet { get; private set; }
 
 
+        protected Engine()
+        {
+        }
 
         public Engine( int populationSize, TInputType input, FnDeviationCalculator deviationFunction, FnEvolver evolver, FnChromosomeCreator chromosomeCreator )
         {
-            PopulationSize = populationSize;
-            InputConfig = input;
-            DeviationFunction = deviationFunction;
-            Evolver = evolver;
-            ChromosomeCreator = chromosomeCreator;
+            InputConfig = input ?? throw new ArgumentNullException( "input" );
+            DeviationFunction = deviationFunction ?? throw new ArgumentNullException( "deviationFunction" );
+            Evolver = evolver ?? throw new ArgumentNullException( "evolver" ); ;
+            ChromosomeCreator = chromosomeCreator ?? throw new ArgumentNullException( "chromosomeCreator" ); ;
+
+            Resize( populationSize );
+        }
+
+        public int Resize( int newPopulationSize )
+        {
+            var retval = PopulationSize;
+            PopulationSize = newPopulationSize;
 
             SampleSet = new TChromosome[PopulationSize];
             ResultSet = new TChromosome[PopulationSize];
             _sampleSums = new double[PopulationSize];
 
             Initialize();
+
+            return retval;
         }
 
         /// <summary>
-        /// Resets the populations to initial values. Does not re-allocate any memory.
+        /// Resets the populations to initial (randomized) values. Reallocates all chromosomes
+        /// using the <see cref="ChromosomeCreator"/> . Does not reallocate internal arrays.
         /// </summary>
         public void Initialize()
         {
@@ -176,7 +192,7 @@ namespace Morpheus.Evolution
         public TChromosome Sample()
         {
             int low = 0;
-            int mid = 0; // If all fails in the loop, just assume 0 even if array is empty
+            int mid = 0;
             int high = PopulationSize;
 
             var selection = _rng.NextDouble() * _sampleSetSumDeviations;

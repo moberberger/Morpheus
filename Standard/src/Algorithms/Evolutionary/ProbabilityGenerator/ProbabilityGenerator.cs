@@ -4,29 +4,25 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 
-using Morpheus.Evolution;
-using Morpheus.Evolution.PGNS;
-
 namespace Morpheus
 {
-    public class ProbabilityGenerator
+    public class ProbabilityGenerator : Evolution.Engine<Evolution.PGNS.Chromosome, Evolution.PGNS.Config, Evolution.PGNS.DeviationDetail>
     {
-        public readonly Config Config;
-        public readonly DeviationFunction Deviation = new DeviationFunction();
-        public readonly FloatMutatorEvolver Evolver = new FloatMutatorEvolver();
+        public Evolution.PGNS.Config Config;
+        public Evolution.PGNS.DeviationFunction Deviation = new Evolution.PGNS.DeviationFunction();
+        public Evolution.PGNS.FloatMutatorEvolver PGEvolver = new Evolution.PGNS.FloatMutatorEvolver();
 
         public ProbabilityGenerator( double targetValue, params double[] values )
         {
-            Config = new Config( targetValue, values );
+            Config = new Evolution.PGNS.Config( targetValue, values );
 
-            var Engine = new Engine<Evolution.PGNS.Chromosome, Config, DeviationDetail>(
-                populationSize: 300,
-                input: Config,
-                deviationFunction: Deviation.CalculateDeviation,
-                evolver: Evolver.Evolve,
-                chromosomeCreator: ( config, initialized ) => Evolution.PGNS.Chromosome.Create( config, initialized )
-                );
+            InputConfig = Config;
+            DeviationFunction = Deviation.CalculateDeviation;
+            Evolver = PGEvolver.Evolve;
+            ChromosomeCreator = Evolution.PGNS.Chromosome.Create;
 
+            PGEvolver.ProbabilityGenerator = this;
+            Resize( 256 );
         }
     }
 }

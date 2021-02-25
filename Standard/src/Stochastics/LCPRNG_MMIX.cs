@@ -13,10 +13,6 @@ namespace Morpheus
     /// </summary>
     public class LCPRNG_MMIX : LCPRNG
     {
-        static LCPRNG_MMIX()
-        {
-            DI.Default.For<LCPRNG>().Use<LCPRNG_MMIX>();
-        }
         /// <summary>
         /// Create one. Don't worry about it.
         /// </summary>

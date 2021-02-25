@@ -1,7 +1,12 @@
 ﻿namespace Morpheus.Evolution.PGNS
 {
+    using PGEngine = Engine<Evolution.PGNS.Chromosome, Config, DeviationDetail>;
+
     public class DeviationDetail
     {
+        private PGEngine Engine;
+        public DeviationDetail( PGEngine engine = null ) : this( engine.InputConfig.ValueCount ) => Engine = engine;
+
         public double Deviation;
 
         public double CalculationDeviation;
@@ -31,7 +36,13 @@
         }
 
 
-        public override string ToString() => $"dev:{Deviation:N4}  v:{CalculationDeviation:N4}  p:{ProbabilitiesDeviation:N4}  pe:{ProbabilitiesErrorDeviation:N4}  a:{ProbabilitiesSmoothnessDeviation:N4}" +
+        public override string ToString()
+        {
+            if (Engine != null)
+                Engine.DeviationFunction( Engine.InputConfig, Engine.Best, this );
+
+            return $"dev:{Deviation:N4}  v:{CalculationDeviation:N4}  p:{ProbabilitiesDeviation:N4}  pe:{ProbabilitiesErrorDeviation:N4}  a:{ProbabilitiesSmoothnessDeviation:N4}" +
             $"  ve:{ValuesErrorDeviation:N4}  vs:{ValuesSmoothnessDeviation}  dc:{DirectionChangeDeviation:N4}";
+        }
     }
 }

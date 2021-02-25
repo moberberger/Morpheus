@@ -45,7 +45,8 @@ namespace Morpheus
         private ulong _increment;
 
         /// <summary>
-        /// The current state of the LCPRNG- also the last value returned by <see cref="Next64"/>
+        /// The current state of the LCPRNG- also the last value returned by
+        /// <see cref="Next64"/>
         /// </summary>
         private ulong _state;
 
@@ -87,7 +88,8 @@ namespace Morpheus
         /// <returns>An unbiased PRNG value</returns>
         public ulong Next64()
         {
-            // Race Condition- Don't use this class in a re-entrant manner
+            // Race Condition- Don't use this class in a re-entrant manner if you need stable
+            // (repeatable) results
 
             var x = _state;
             x *= _multiplier;
@@ -165,7 +167,7 @@ namespace Morpheus
         public uint Next32() => (uint)(Next64() & 0xffff_ffff);
 
         /// <summary>
-        /// No bias
+        /// Biased- see <see cref="Next(int)"/>
         /// </summary>
         /// <returns>An unbiased PRNG value</returns>
         public long NextLong( long maxPlusOne ) => (long)(Next64() % (ulong)maxPlusOne);

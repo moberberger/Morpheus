@@ -13,6 +13,8 @@ namespace Morpheus.Evolution.PGNS
     public class FloatMutatorEvolver
     {
         public virtual Random Rng { get; set; } = DI.Default.Get<LCPRNG>();
+        public virtual ProbabilityGenerator ProbabilityGenerator { get; set; }
+
 
         public virtual double MinimumProbability { get; set; } = 1e-20;
         public virtual double MultiMutateChance { get; set; } = 0.35;
@@ -24,11 +26,14 @@ namespace Morpheus.Evolution.PGNS
         { // be more exploratory when the deviation is high
             get
             {
-                return MinStddevIncrementRate;
-                //if (Best == null) return MaxStddevIncrementRate;
-                //var err = Math.Sqrt( Best.Deviation );
-                //var retval = err.Clamp( MinStddevIncrementRate, MaxStddevIncrementRate );
-                //return retval;
+                var retval = MinStddevIncrementRate;
+                var best = ProbabilityGenerator?.Best;
+                if (best != null)
+                {
+                    var err = Math.Sqrt( best.Deviation );
+                    retval = err.Clamp( MinStddevIncrementRate, MaxStddevIncrementRate );
+                }
+                return retval;
             }
         }
 
