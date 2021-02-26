@@ -1276,4 +1276,28 @@ public static class Lib
         else
             return _value;
     }
+
+
+    /// <summary>
+    /// Given a <see cref="ulong"/> , assumed to contain 64 valid bits, turn this into the
+    /// ratio of that ulong to <see cref="ulong.MaxValue"/> +1 such that it results in a
+    /// <see cref="double"/> in [0..1).
+    /// </summary>
+    /// <param name="_number">The number to convert</param>
+    /// <returns>A <see cref="double"/> in the range [0..1)</returns>
+    /// <remarks></remarks>
+    public static double LerpZeroToOne( this ulong _number )
+    {
+        const int bitsPrecision = 52;
+        const int shift = (64 - bitsPrecision);
+
+        // drop shift/2 bits from each end, leaving the middle bitsPrecision bits at the low
+        // end of the resulting _number
+        double numerator = (_number << (shift >> 1)) >> shift;
+        double denominator = 1 << bitsPrecision;
+        double retval = numerator / denominator;
+
+        return retval;
+    }
+
 }

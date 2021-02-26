@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Mail;
 using System.Threading;
 
 namespace Morpheus
@@ -33,16 +34,14 @@ namespace Morpheus
         /// <para> Roughly 99.730% of values will be +/- THREE _standardDeviations of _mean </para>
         /// <para> Roughly 99.994% of values will be +/- FOUR _standardDeviations of _mean </para>
         /// </remarks>
-        public static double NextGaussian( this Random _rng, double _mean = 0.0, double _standardDeviation = 1.0 ) => NextGaussian( _rng.NextDouble, _mean, _standardDeviation );
-
-        public static double NextGaussian( this Func<double> generator, double _mean = 0.0, double _standardDeviation = 1.0 )
+        public static double NextGaussian( this Random _rng, double _mean = 0.0, double _standardDeviation = 1.0 )
         {
             double r1, r2, rsq, fac;
 
             do
             {
-                r1 = generator() * 2 - 1;
-                r2 = generator() * 2 - 1;
+                r1 = _rng.NextDouble() * 2 - 1;
+                r2 = _rng.NextDouble() * 2 - 1;
 
                 // rsq will represent the square of the magnitude of (r1, r2)
                 rsq = r1 * r1 + r2 * r2;
@@ -77,9 +76,7 @@ namespace Morpheus
 
             var sum = _numberOfDice; // makes sure is 1-N, not 0-(N-1)
             for (var i = 0; i < _numberOfDice; i++)
-            {
                 sum += _rng.Next( _sidesPerDie );
-            }
 
             return sum;
         }
@@ -302,36 +299,6 @@ namespace Morpheus
         #endregion
 
 
-        /// <summary>
-        /// Given a <see cref="ulong"/> , assumed to contain 64 valid bits, turn this into the
-        /// ratio of that ulong to <see cref="ulong.MaxValue"/> +1 such that it results in a
-        /// <see cref="double"/> in [0..1). Only the upper 52 bits of the provided value
-        /// contribute to the result due to the precision of a <see cref="double"/> value.
-        /// </summary>
-        /// <param name="_number">The number to convert</param>
-        /// <returns>A <see cref="double"/> in the range [0..1)</returns>
-        /// <remarks>
-        /// <para> The return value is calculated using <see cref="decimal"/> , which is
-        /// guaranteed to not lose information from a <see cref="ulong"/> . However, this does
-        /// not change the fact that a <see cref="double"/> can only hold 52 bits of "Fraction"
-        /// data- the rest is Mantissa and Sign. So, we have to discard the lower 12 bits of
-        /// integral data in order to satisfy our constraints of [0..1) because we would
-        /// round-up for half of those values of magnitude 11-12. </para>
-        /// <para> If we don't strip the bottom 12 bits, then the only possible ulong to
-        /// generate a 0 would be 0. This is clearly biased, as around 2^12 values will equal
-        /// the next highest possible <see cref="double"/> values </para>
-        /// </remarks>
-        public static double LerpZeroToOne( this ulong _number )
-        {
-            const int shift = 12;
-
-            decimal numerator = _number >> shift;
-            var denominator = (decimal)(ulong.MaxValue >> shift) + (decimal)1.0;
-            var zeroToOne = numerator / denominator;
-            var retval = (double)zeroToOne;
-            return retval;
-        }
-
 
         /// <summary>
         /// Return a fully featured threadsafe <see cref="RandomAspect"/> from any given
@@ -345,20 +312,10 @@ namespace Morpheus
             {
                 case RandomThreadsafeAspect rtsa:
                     return rtsa;
-                case RandomAspectWrapper raw:
-                    return new RandomThreadsafeAspect( raw.m_rng );
                 default:
                     return new RandomThreadsafeAspect( _rng );
             }
         }
-
-        /// <summary>
-        /// Convert any <see cref="Random"/> object into a wrapper around
-        /// <see cref="RandomAspect"/> relying solely on the provided <see cref="Random"/>
-        /// object's <see cref="Random.NextBytes(byte[])"/> method to generate randomness.
-        /// </summary>
-        /// <param name="_rng">The RNG to wrap</param>
-        public static RandomAspect Aspect( this Random _rng ) => (_rng as RandomAspect) ?? new RandomAspectWrapper( _rng );
 
     }
 }

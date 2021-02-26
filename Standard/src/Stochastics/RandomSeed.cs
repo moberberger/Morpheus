@@ -118,15 +118,15 @@ namespace Morpheus
         /// </remarks>
         public static long RDTSC8()
         {
-            long x = (long) RDTSC; // All the extra bits [b8..b63] will be shifted off
-            x <<= 8; x |= (long) RDTSC & 0xff;
-            x <<= 8; x |= (long) RDTSC & 0xff;
-            x <<= 8; x |= (long) RDTSC & 0xff;
+            long x = (long)RDTSC; // All the extra bits [b8..b63] will be shifted off
+            x <<= 8; x |= (long)RDTSC & 0xff;
+            x <<= 8; x |= (long)RDTSC & 0xff;
+            x <<= 8; x |= (long)RDTSC & 0xff;
 
-            x <<= 8; x |= (long) RDTSC & 0xff;
-            x <<= 8; x |= (long) RDTSC & 0xff;
-            x <<= 8; x |= (long) RDTSC & 0xff;
-            x <<= 8; x |= (long) RDTSC & 0xff;
+            x <<= 8; x |= (long)RDTSC & 0xff;
+            x <<= 8; x |= (long)RDTSC & 0xff;
+            x <<= 8; x |= (long)RDTSC & 0xff;
+            x <<= 8; x |= (long)RDTSC & 0xff;
 
             return x;
         }
@@ -140,7 +140,7 @@ namespace Morpheus
 
             // Temporal: Related to when in time this initialization occurred. Not super
             // accurate ( around 100ns i believe).
-            var medium = (long) DateTime.Now.Ticks;
+            var medium = (long)DateTime.Now.Ticks;
 
             // Temporal: Related to when(-ish) this object was loaded by .NET. This is
             // affected by what other objects in the program have already been instantiated.
@@ -149,10 +149,10 @@ namespace Morpheus
             // GetHashCode for more info on how this value is determined.
             // 
             // This is a boxing operation:
-            var course1 = (long) sm_instantiationSeed.GetHashCode();
+            var course1 = (long)sm_instantiationSeed.GetHashCode();
 
             // This is not a boxing operation:
-            var course2 = (long) sm_lock.GetHashCode();
+            var course2 = (long)sm_lock.GetHashCode();
 
             // These bytes are generated in part based on the crypto seeding algorithm,
             // thereby adding significant randomness
@@ -161,9 +161,11 @@ namespace Morpheus
             var crypto = BitConverter.ToInt64( buf, 0 );
 
             // So merge the two, guessing that we needed the swapped version
-            sm_instantiationSeed = (long) (medium ^ course1 ^ course2 ^ crypto);
+            sm_instantiationSeed = (long)(medium ^ course1 ^ course2 ^ crypto);
         }
 
+
+        public static int Fast() => (int)FastULong();
         /// <summary>
         /// Except for one-time initialization, this consists of one compare, one interlocked
         /// increment, a multiply and add, and a cast. Provides a value affected by
@@ -178,7 +180,7 @@ namespace Morpheus
         /// This is not suitable for cryptography. Knowing when the program was started can
         /// significantly compromise the secret of this algorithm.
         /// </remarks>
-        public static int Fast()
+        public static ulong FastULong()
         {
             // Very quickly attribute the fact that this is a "+1" operation (i.e. allow
             // multiple rapid invocations yield different results)
@@ -189,7 +191,7 @@ namespace Morpheus
             // fast-executing factors.
             sm_instantiationSeed = sm_instantiationSeed * 6364136223846793005L + 1442695040888963407L;
 
-            return (int) (sm_instantiationSeed ^ sm_rdtscAtFirstCall ^ sm_rdtscAtStaticInitialization);
+            return (ulong)(sm_instantiationSeed ^ sm_rdtscAtFirstCall ^ sm_rdtscAtStaticInitialization);
         }
 
         /// <summary>
@@ -199,7 +201,7 @@ namespace Morpheus
         /// time, both of which advance monotonically but at very different rates.
         /// </summary>
         /// <returns></returns>
-        public static int Medium() => (int) ((long) Fast() ^ Stopwatch.GetTimestamp());
+        public static int Medium() => (int)((long)Fast() ^ Stopwatch.GetTimestamp());
 
         /// <summary>
         /// This is a very robust algorithm. It is crypto-secure. It is relatively slow.
@@ -260,7 +262,7 @@ namespace Morpheus
                 {
                     var hash = hasher.ComputeHash( buffer.ToArray() );
 
-                    var index = (int) (RDTSC & 0x1f); // 0-31
+                    var index = (int)(RDTSC & 0x1f); // 0-31
                     var retval = BitConverter.ToInt32( hash, index ); // take 4 bytes from somewhere in the hash
                     return retval;
                 }
@@ -285,13 +287,13 @@ namespace Morpheus
 
             for (var i = -1; i < 8; i++)
             {
-                var counter = sm_rdtscExists ? (long) RDTSC : Stopwatch.GetTimestamp();
+                var counter = sm_rdtscExists ? (long)RDTSC : Stopwatch.GetTimestamp();
 
                 if (i >= 0)
                 {
                     var delta = counter - last;
                     seed <<= 8;
-                    seed |= (byte) (delta & 0xff);
+                    seed |= (byte)(delta & 0xff);
                 }
 
                 last = counter;

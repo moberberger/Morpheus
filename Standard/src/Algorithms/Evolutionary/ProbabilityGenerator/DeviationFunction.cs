@@ -48,7 +48,7 @@ namespace Morpheus.Evolution.PGNS
                 double p = chromo.Probabilities[i];
                 double v = config.Values[i];
                 double val = p * v;
-                double diffProb = p - 1 / length;
+                double diffProb = p.DifferenceAsRatioOf( 1.0 / length );
                 double diffValue = val.DifferenceAsRatioOf( expectedAverageValue );
 
 
@@ -59,10 +59,10 @@ namespace Morpheus.Evolution.PGNS
 
                 if (i > 0)
                 {
-                    double diffP = p - prevProb;
+                    double diffP = p.DifferenceAsRatioOf( prevProb );
                     sumProbAngleSquared += diffP * diffP;
 
-                    double diffV = val - prevVal;
+                    double diffV = val.DifferenceAsRatioOf( prevVal );
                     sumValueAngleSquared += diffV * diffV;
 
                     if (dirChangeEnabled && i < length - 1)

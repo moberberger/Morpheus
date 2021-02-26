@@ -29,12 +29,6 @@ namespace Morpheus
         private const long DOUBLE_MASK = 0xf_ffff_ffff_ffff;
 
         /// <summary>
-        /// Allows multiple successive object instantiations to each start with a different
-        /// state.
-        /// </summary>
-        private static long sm_instanceCount = DateTime.Now.Ticks & 0xffff_ffff;
-
-        /// <summary>
         /// The "a" coefficient
         /// </summary>
         private ulong _multiplier;
@@ -59,9 +53,7 @@ namespace Morpheus
         {
             _multiplier = multiplier;
             _increment = increment;
-
-            var factor = Interlocked.Increment( ref sm_instanceCount );
-            _state = (ulong)(DateTime.Now.Ticks * factor);
+            _state = RandomSeed.FastULong();
         }
 
         /// <summary>
@@ -75,8 +67,7 @@ namespace Morpheus
         /// <returns>A biased PRNG value</returns>
         public ulong Advance()
         {
-            var factor = Interlocked.Increment( ref sm_instanceCount ) + DateTime.Now.Ticks;
-            var mask = _multiplier * (ulong)factor + _increment;
+            var mask = RandomSeed.FastULong();
             _state ^= mask;
             return _state;
         }
@@ -140,7 +131,7 @@ namespace Morpheus
         /// <param name="min"></param>
         /// <param name="maxPlusOne"></param>
         /// <returns></returns>
-        public override int Next( int min, int maxPlusOne ) => min + Next( maxPlusOne );
+        public override int Next( int min, int maxPlusOne ) => min + Next( maxPlusOne - min );
 
         /// <summary>
         /// An unbiased <see cref="double"/> value in [0..1) with 32 bits of precision. If more
@@ -178,6 +169,6 @@ namespace Morpheus
         /// <param name="min"></param>
         /// <param name="maxPlusOne"></param>
         /// <returns></returns>
-        public long NextLong( long min, long maxPlusOne ) => min + NextLong( maxPlusOne );
+        public long NextLong( long min, long maxPlusOne ) => min + NextLong( maxPlusOne - min );
     }
 }

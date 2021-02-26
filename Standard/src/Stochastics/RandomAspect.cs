@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
@@ -26,14 +27,10 @@ namespace Morpheus
     /// to be seeded identically. </item>
     /// </list>
     /// <para> This class is meant to view the <see cref="Random.NextBytes(byte[])"/> method as
-    /// the purest source of random data. It views any potential performance compromise from
-    /// converting </para>
+    /// the purest source of random data. </para>
     /// </remarks>
     public abstract class RandomAspect : Random, IDisposable
     {
-        private readonly ThreadLocal<byte[]> m_scaleBuffer4 = new ThreadLocal<byte[]>( () => new byte[4] );
-        private readonly ThreadLocal<byte[]> m_scaleBuffer8 = new ThreadLocal<byte[]>( () => new byte[8] );
-
         /// <summary>
         /// The subclass must implement this based on how it naturally generates numbers. A
         /// 32-bit algorithm and a 64-bit algorithm should use different means for filling this
@@ -55,7 +52,28 @@ namespace Morpheus
         /// <see cref="RandomExtensions.FromIntegers(byte[], Func{ulong})"/> are part of
         /// Morpheus' RNG library </para>
         /// </remarks>
-        public abstract override void NextBytes( byte[] _buffer );
+        public override void NextBytes( byte[] _buffer )
+        {
+            int blockCount = _buffer.Length / 8;
+            int remaining = _buffer.Length % 8;
+            int endex = blockCount * 8;
+
+            if (blockCount > 0)
+            {
+                var span = new Span<byte>( _buffer, 0, endex );
+                var u64span = MemoryMarshal.Cast<byte, UInt64>( span );
+
+                for (int i = 0; i < blockCount; i++)
+                    u64span[i] = Next64();
+            }
+
+            if (remaining > 0)
+            {
+                for (var x = Next64(); remaining-- > 0; x >>= 8)
+                    _buffer[endex++] = (byte)(x & 0xff);
+            }
+        }
+
 
         /// <summary>
         /// Generate 32 bits of random data. This data must not be biased- That means that the
@@ -63,23 +81,14 @@ namespace Morpheus
         /// really the algorithm you want to use.
         /// </summary>
         /// <returns>32 bits of random data</returns>
-        public virtual uint Next32()
-        {
-            var buf = m_scaleBuffer4.Value;
-            NextBytes( buf );
-            return BitConverter.ToUInt32( buf, 0 );
-        }
+        public virtual uint Next32() => (uint)(Next64() >> 32);
+
 
         /// <summary>
         /// Generate 64 bits of random data
         /// </summary>
         /// <returns>64 bits of random data</returns>
-        public virtual ulong Next64()
-        {
-            var buf = m_scaleBuffer8.Value;
-            NextBytes( buf );
-            return BitConverter.ToUInt64( buf, 0 );
-        }
+        public virtual ulong Next64() => ((ulong)Next32() << 32 | Next32());
 
         /// <summary>
         /// Default implementation takes 52 bits to determine the floating point value as a
@@ -96,7 +105,7 @@ namespace Morpheus
         /// Return TRUE or FALSE randomly.
         /// </summary>
         /// <returns>TRUE or FALSE- You don't know which until you call this method!</returns>
-        public virtual bool NextBool() => (this.Next32() & 1) == 1;
+        public virtual bool NextBool() => (this.Next64() & 1) == 1;
 
 
 

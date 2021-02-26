@@ -15,31 +15,25 @@ namespace Morpheus
         public ProbabilityGenerator( double targetValue, params double[] values )
         {
             Config = new Evolution.PGNS.Config( targetValue, values );
+            PGEvolver.ProbabilityGenerator = this;
 
             InputConfig = Config;
             DeviationFunction = Deviation.CalculateDeviation;
             Evolver = PGEvolver.Evolve;
             ChromosomeCreator = Evolution.PGNS.Chromosome.Create;
 
-            PGEvolver.ProbabilityGenerator = this;
-            Resize( 256 );
+            Resize( 1024 );
         }
     }
 }
-
+/*
+ * 
+ * Stuff below is for post-evolve correction/fixup. DONT DELETE!
+ * 
+ */ 
 
 
 #if false
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Morpheus
 {

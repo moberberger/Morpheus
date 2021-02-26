@@ -1,27 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <Version>2019.9.23.1</Version>
     <Authors>Michael Oberberger</Authors>
     <Company>Daco</Company>
     <Product>Morpheus</Product>
     <Description>A set of common functions and features</Description>
-    <Copyright>Copyright © Michael Oberberger, 2005-2019</Copyright>
+    <Copyright>Copyright © Michael Oberberger, 2005-2021</Copyright>
     <FileVersion>2019.1.1</FileVersion>
-    <RootNamespace>Morpheus.Standard</RootNamespace>
+    <RootNamespace>Morpheus</RootNamespace>
     <PackageId>Morpheus</PackageId>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn>1701;1702;IDE0051</NoWarn>
-    <DocumentationFile>G:\My Drive\Oberberger\Morpheus 2019\Standard\MorpheusStandard.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <NoWarn>1701;1702;IDE0051;CS1591</NoWarn>
-    <DocumentationFile>G:\My Drive\Oberberger\Morpheus 2019\Standard\MorpheusStandard.xml</DocumentationFile>
+    <DocumentationFile></DocumentationFile>
     <WarningsAsErrors>NU1605</WarningsAsErrors>
   </PropertyGroup>
 
@@ -29,11 +28,6 @@
     <Compile Remove="tests\**" />
     <EmbeddedResource Remove="tests\**" />
     <None Remove="tests\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="src\Algorithms\A_Star\CCell.cs" />
-    <Compile Remove="src\Algorithms\A_Star\CGrid.cs" />
   </ItemGroup>
 
 </Project>
