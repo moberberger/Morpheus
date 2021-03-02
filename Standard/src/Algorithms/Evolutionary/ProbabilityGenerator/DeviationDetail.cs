@@ -7,18 +7,18 @@
         private PGEngine Engine;
         public DeviationDetail( PGEngine engine = null ) : this( engine.InputConfig.ValueCount ) => Engine = engine;
 
-        public double Deviation;
+        public float Deviation;
 
-        public double CalculationDeviation;
-        public double ProbabilitiesDeviation;
-        public double ProbabilitiesErrorDeviation;
-        public double ProbabilitiesSmoothnessDeviation;
+        public float CalculationDeviation;
+        public float ProbabilitiesDeviation;
+        public float ProbabilitiesErrorDeviation;
+        public float ProbabilitiesSmoothnessDeviation;
 
-        public double ValuesErrorDeviation;
-        public double ValuesSmoothnessDeviation;
+        public float ValuesErrorDeviation;
+        public float ValuesSmoothnessDeviation;
 
         public int DirectionChangeCount;
-        public double DirectionChangeDeviation;
+        public float DirectionChangeDeviation;
 
         public double TargetValue;
         public double CalculatedValue;

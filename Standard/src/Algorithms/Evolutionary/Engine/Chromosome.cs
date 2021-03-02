@@ -11,7 +11,7 @@ namespace Morpheus.Evolution
         /// <summary>
         /// The deviation found by the provided algorithm for the data found in the chromosome.
         /// </summary>
-        public virtual double Deviation { get; set; } = double.NaN;
+        public virtual float Deviation { get; set; } = float.NaN;
 
         /// <summary>
         /// Copy the data from another Output object

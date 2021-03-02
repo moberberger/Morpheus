@@ -64,7 +64,7 @@ namespace Morpheus
     /// <summary>
     /// Random number generator using Mersenne Twister 19937 algorithm.
     /// </summary>
-    public class MersenneTwister : RandomAspect
+    public class MersenneTwister : Rng
     {
         /// <summary>
         /// The number of integers required to store the state space. Actually this is 1 bit too
@@ -111,7 +111,7 @@ namespace Morpheus
         /// </summary>
         public MersenneTwister()
         {
-            Initialize( (uint) RandomSeed.Robust() );
+            Initialize( (uint)RandomSeed.Robust() );
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace Morpheus
             m_stateSpace[0] = seed & 0xffff_ffff;
             for (m_ssIdx = 1; m_ssIdx < STATE_SIZE_IN_INTS; m_ssIdx++)
             {
-                m_stateSpace[m_ssIdx] = 1812433253 * (m_stateSpace[m_ssIdx - 1] ^ (m_stateSpace[m_ssIdx - 1] >> 30)) + (uint) m_ssIdx;
+                m_stateSpace[m_ssIdx] = 1812433253 * (m_stateSpace[m_ssIdx - 1] ^ (m_stateSpace[m_ssIdx - 1] >> 30)) + (uint)m_ssIdx;
                 /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
                 /* In the previous versions, MSBs of the seed affect   */
                 /* only MSBs of the array _mt[].                        */
@@ -147,7 +147,7 @@ namespace Morpheus
         /// Return an unsigned integer with all bits randomized.
         /// </summary>
         /// <returns>An unsigned integer with all bits randomized</returns>
-        public uint GetUint32()
+        public override uint Next32()
         {
             uint y;
 
@@ -188,11 +188,10 @@ namespace Morpheus
         }
 
         /// <summary>
-        /// Generate random bytes into the provided buffer. May draw more bits from the RNG than
-        /// are used.
+        /// Provide the implementation of this because its more natural than
+        /// <see cref="System.Random.NextBytes(byte[])"/> .
         /// </summary>
-        /// <param name="buffer">The buffer to fill with random data</param>
-        public override void NextBytes( byte[] buffer ) => buffer.FromIntegers( () => GetUint32() );
-
+        /// <returns>64 randomized bits of data</returns>
+        public override ulong Next64() => (ulong)Next32() << 32 | Next32();
     }
 }

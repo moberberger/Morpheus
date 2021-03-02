@@ -606,6 +606,7 @@ namespace Morpheus
         /// <param name="_val"></param>
         /// <param name="_target"></param>
         /// <returns></returns>
+        public static float DifferenceAsRatioOf( this float _val, float _target ) => (_val - _target) / _target;
         public static double DifferenceAsRatioOf( this double _val, double _target ) => (_val - _target) / _target;
 
 

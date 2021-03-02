@@ -16,9 +16,9 @@ namespace Morpheus.Evolution
 
         private readonly LCPRNG _rng = new LCPRNG_MMIX();
 
-        private double[] _sampleSums;
+        private float[] _sampleDeviationsSums;
 
-        private double _sampleSetSumDeviations => _sampleSums[PopulationSize - 1];
+        private float SumOfSampleDeviations => _sampleDeviationsSums[PopulationSize - 1];
 
 
 
@@ -69,7 +69,7 @@ namespace Morpheus.Evolution
 
             SampleSet = new TChromosome[PopulationSize];
             ResultSet = new TChromosome[PopulationSize];
-            _sampleSums = new double[PopulationSize];
+            _sampleDeviationsSums = new float[PopulationSize];
 
             Initialize();
 
@@ -158,17 +158,17 @@ namespace Morpheus.Evolution
         /// </remarks>
         private void ProcessSampleSet()
         {
-            double sumInverses = 0;
+            float sumInverses = 0;
             for (int i = 0; i < PopulationSize; i++)
-                sumInverses += 1.0 / SampleSet[i].Deviation;
+                sumInverses += 1.0f / SampleSet[i].Deviation;
 
-            double sum = 0;
-            double bestDeviation = double.MaxValue;
+            float sum = 0;
+            var bestDeviation = float.MaxValue;
             for (int i = 0; i < PopulationSize; i++)
             {
                 var chromo = SampleSet[i];
-                sum += 1.0 / (sumInverses * chromo.Deviation);
-                _sampleSums[i] = sum;
+                sum += 1.0f / (sumInverses * chromo.Deviation);
+                _sampleDeviationsSums[i] = sum;
 
                 if (chromo.Deviation < bestDeviation)
                 {
@@ -195,20 +195,19 @@ namespace Morpheus.Evolution
             int mid = 0;
             int high = PopulationSize;
 
-            var selection = _rng.NextDouble() * _sampleSetSumDeviations;
+            var selection = _rng.NextDouble() * SumOfSampleDeviations;
 
             while (low < high)
             {
                 mid = low + (high - low) / 2;
 
-                if (selection > _sampleSums[mid])
+                if (selection > _sampleDeviationsSums[mid])
                     low = mid + 1;
                 else
                     high = mid - 1;
             }
-            if (low == high) mid = high;
 
-            return SampleSet[mid];
+            return SampleSet[low];
         }
 
     }

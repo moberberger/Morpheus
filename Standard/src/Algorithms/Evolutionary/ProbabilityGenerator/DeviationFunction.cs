@@ -8,61 +8,65 @@ namespace Morpheus.Evolution.PGNS
     /// </summary>
     public class DeviationFunction
     {
-        public double TargetValueAcceptableDeviationPercent = 0.01;
+        public float TargetValueAcceptableDeviationPercent = 0.01f;
 
-        public double ProbabilitiesWeight = 1;
+        public float ProbabilitiesWeight = 1;
 
-        public double ProbabilityErrorWeight = 1;
+        public float ProbabilityErrorWeight = 1;
 
-        public double ProbabilitiesSmoothness = 1;
+        public float ProbabilitiesSmoothness = 1;
 
-        public double ValuesErrorWeight = 1;
+        public float ValuesErrorWeight = 1;
 
-        public double ValuesSmoothness = 1;
+        public float ValuesSmoothness = 1;
 
         public int TargetDirectionChangeCount = -1;
 
-        public double DirectionChangeMagnitude = 10;
+        public float DirectionChangeMagnitude = 10;
 
 
         public Chromosome CalculateDeviation( Config config, Chromosome chromo, DeviationDetail detail )
         {
             int length = config.ValueCount;
-            double expectedAverageValue = config.TargetValue / config.ValueCount;
+            float expectedAverageProbability = 1 / length;
+            float expectedAverageValue = (float)(config.TargetValue / config.ValueCount);
 
-            double sumValue = 0.0;
-            double sumProbSquared = 0;
-            double sumProbErrSquared = 0;
-            double sumValueErrSquared = 0;
+            float sumValue = 0;
+            float sumProbSquared = 0;
+            float sumProbErrSquared = 0;
+            float sumValueErrSquared = 0;
 
-            double sumProbAngleSquared = 0;
-            double sumValueAngleSquared = 0;
+            float sumProbAngleSquared = 0;
+            float sumValueAngleSquared = 0;
             int dirChangeCount = 0;
 
-            double prevProb = double.NaN;
-            double prevVal = double.NaN;
+            float prevProb = float.NaN;
+            float prevVal = float.NaN;
             bool dirChangeEnabled = TargetDirectionChangeCount >= 0;
 
             for (int i = 0; i < length; i++)
             {
-                double p = chromo.Probabilities[i];
-                double v = config.Values[i];
-                double val = p * v;
-                double diffProb = p.DifferenceAsRatioOf( 1.0 / length );
-                double diffValue = val.DifferenceAsRatioOf( expectedAverageValue );
+                float p = (float)chromo.Probabilities[i];
+                float v = (float)config.Values[i];
+                float val = p * v;
+                float diffProb = p.DifferenceAsRatioOf( expectedAverageProbability );
+                float diffValue = val.DifferenceAsRatioOf( expectedAverageValue );
 
+                var p_2 = p * p;
+                var diffProb_2 = diffProb * diffProb;
+                var diffVal_2 = diffValue * diffValue;
 
                 sumValue += val;
-                sumProbSquared += p * p;
-                sumProbErrSquared += diffProb * diffProb;
-                sumValueErrSquared += diffValue * diffValue;
+                sumProbSquared += p_2;
+                sumProbErrSquared += diffProb_2;
+                sumValueErrSquared += diffVal_2;
 
                 if (i > 0)
                 {
-                    double diffP = p.DifferenceAsRatioOf( prevProb );
+                    float diffP = p.DifferenceAsRatioOf( prevProb );
                     sumProbAngleSquared += diffP * diffP;
 
-                    double diffV = val.DifferenceAsRatioOf( prevVal );
+                    float diffV = val.DifferenceAsRatioOf( prevVal );
                     sumValueAngleSquared += diffV * diffV;
 
                     if (dirChangeEnabled && i < length - 1)
@@ -86,13 +90,13 @@ namespace Morpheus.Evolution.PGNS
             sumProbAngleSquared /= length - 1;
             sumValueAngleSquared /= length - 1;
 
-            double dirChangeError =
+            float dirChangeError = (float)(
                 (dirChangeEnabled && dirChangeCount != TargetDirectionChangeCount)
                 ? Math.Pow( DirectionChangeMagnitude, Math.Abs( dirChangeCount - TargetDirectionChangeCount ) )
-                : 0.0;
+                : 0);
 
 
-            var valDev = sumValue.DifferenceAsRatioOf( config.TargetValue );
+            var valDev = sumValue.DifferenceAsRatioOf( (float)config.TargetValue );
             valDev /= TargetValueAcceptableDeviationPercent;
             valDev *= valDev;
 
@@ -102,7 +106,7 @@ namespace Morpheus.Evolution.PGNS
             var probAngleDev = sumProbAngleSquared * ProbabilitiesSmoothness;
             var valAngleDev = sumValueAngleSquared * ValuesSmoothness;
 
-            chromo.Deviation = Math.Sqrt( valDev + probDev + probErrDev + valueErrDev + probAngleDev + valAngleDev ) + dirChangeError;
+            chromo.Deviation = (float)Math.Sqrt( valDev + probDev + probErrDev + valueErrDev + probAngleDev + valAngleDev ) + dirChangeError;
 
             if (detail != null)
             {

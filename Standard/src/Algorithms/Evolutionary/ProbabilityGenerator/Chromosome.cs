@@ -13,15 +13,16 @@ namespace Morpheus.Evolution.PGNS
         /// this and only this field must be set prior to calling the deviation function
         /// </summary>
         public readonly double[] Probabilities;
+        /// <summary>
+        /// How many probabilities are there?
+        /// </summary>
+        public int ProbabilityCount => Probabilities.Length;
 
         /// <summary>
         /// The value associated with the best deviation found by the algorithm.
         /// </summary>
         public double CalculatedValue { get; internal set; } = double.MinValue;
-        /// <summary>
-        /// How many probabilities are there?
-        /// </summary>
-        public int ProbabilityCount => Probabilities.Length;
+
 
         /// <summary>
         /// Cannot be constructed externally- use creator functions

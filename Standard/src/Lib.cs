@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Reflection;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices;
 
 /// <summary>
 /// A collection of various static functions with no strong correlation.
@@ -1286,18 +1287,16 @@ public static class Lib
     /// <param name="_number">The number to convert</param>
     /// <returns>A <see cref="double"/> in the range [0..1)</returns>
     /// <remarks></remarks>
-    public static double LerpZeroToOne( this ulong _number )
+    public static double AsDoubleZeroToOne( this ulong _number )
     {
         const int bitsPrecision = 52;
         const int shift = (64 - bitsPrecision);
-
-        // drop shift/2 bits from each end, leaving the middle bitsPrecision bits at the low
-        // end of the resulting _number
-        double numerator = (_number << (shift >> 1)) >> shift;
+        double numerator = _number >> shift;
         double denominator = 1 << bitsPrecision;
         double retval = numerator / denominator;
-
         return retval;
     }
+
+    public static Span<TTo> Cast<TFrom, TTo>( this Span<TFrom> _this ) where TTo : struct where TFrom : struct => MemoryMarshal.Cast<TFrom, TTo>( _this );
 
 }

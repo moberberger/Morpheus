@@ -46,9 +46,9 @@ namespace Morpheus.Evolution.PGNS
 
             do
             {
-                int idx = Rng.Next( parent.ProbabilityCount );
-
                 var factor = Math.Abs( Rng.NextGaussian( MeanIncrementRate, StddevIncrementRate ) );
+
+                int idx = Rng.Next( parent.ProbabilityCount );
 
                 var newVal = parent.Probabilities[idx] * factor;
 
