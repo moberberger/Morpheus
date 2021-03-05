@@ -42,7 +42,7 @@
                 Engine.DeviationFunction( Engine.InputConfig, Engine.Best, this );
 
             return $"dev:{Deviation:N4}  v:{CalculationDeviation:N4}  p:{ProbabilitiesDeviation:N4}  pe:{ProbabilitiesErrorDeviation:N4}  ps:{ProbabilitiesSmoothnessDeviation:N4}" +
-            $"  ve:{ValuesErrorDeviation:N4}  vs:{ValuesSmoothnessDeviation}  dc:{DirectionChangeDeviation:N4}";
+            $"  ve:{ValuesErrorDeviation:N4}  vs:{ValuesSmoothnessDeviation:N4}  dc:{DirectionChangeDeviation:N4}";
         }
     }
 }

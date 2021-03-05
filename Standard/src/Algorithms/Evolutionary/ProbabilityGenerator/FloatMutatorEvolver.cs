@@ -7,21 +7,20 @@ using System.Runtime.CompilerServices;
 namespace Morpheus.Evolution.PGNS
 {
     /// <summary>
-    /// Evolve by mutating one or more values using a random (with normal distribution)
-    /// multiple
+    /// Evolve by mutating one or more values using a random (with normal distribution) multiple
     /// </summary>
     public class FloatMutatorEvolver
     {
-        public virtual Random Rng { get; set; } = DI.Default.Get<LCPRNG>();
+        public readonly Rng Rng = new LCPRNG_MMIX();
         public virtual ProbabilityGenerator ProbabilityGenerator { get; set; }
 
 
-        public virtual double MinimumProbability { get; set; } = 1e-20;
-        public virtual double MultiMutateChance { get; set; } = 0.35;
+        public readonly double MinimumProbability = 1e-20;
+        public double MultiMutateChance = 0.35;
 
-        public virtual double MeanIncrementRate { get; set; } = 3;
-        public virtual double MinStddevIncrementRate { get; set; } = 1.0;
-        public virtual double MaxStddevIncrementRate { get; set; } = 20.0;
+        public double MeanIncrementRate = 3;
+        public double MinStddevIncrementRate = 1.0;
+        public double MaxStddevIncrementRate = 20.0;
         public virtual double StddevIncrementRate
         { // be more exploratory when the deviation is high
             get
@@ -37,6 +36,7 @@ namespace Morpheus.Evolution.PGNS
             }
         }
 
+        public FloatMutatorEvolver() => Rng.UseFastScale = true;
 
         public void Evolve( Func<Chromosome> sampler, Chromosome output )
         {
@@ -46,7 +46,9 @@ namespace Morpheus.Evolution.PGNS
 
             do
             {
-                var factor = Math.Abs( Rng.NextGaussian( MeanIncrementRate, StddevIncrementRate ) );
+                double rn = Rng.NextGaussian();
+                rn *= StddevIncrementRate;
+                var factor = Math.Abs( rn );
 
                 int idx = Rng.Next( parent.ProbabilityCount );
 
@@ -58,7 +60,7 @@ namespace Morpheus.Evolution.PGNS
 
             } while (Rng.NextDouble() < MultiMutateChance);
 
-            output.Probabilities.ChangeToProbabilities();
+            //output.Probabilities.ChangeToProbabilities();
         }
 
 

@@ -13,30 +13,19 @@ namespace Morpheus
     /// mismatch to expectations. So for now I'm forcing a level of purpose when setting a/c
     /// </summary>
     /// <remarks>
-    /// Yes, technically should be called "ACPRNG". there's the acknowledgement.
-    /// 
-    /// When "bias" is mentioned in the comments in this class without clarification, I am
-    /// referring to "additional bias added by this method's implementation". I am emphatically
-    /// NOT referring to any bias inherent in LCPRNGs or in the coefficients used- that is a
-    /// "different bias".
+    /// Technically should be called "ACPRNG". there's the acknowledgement.
     /// </remarks>
     public abstract class LCPRNG : Rng
     {
         /// <summary>
-        /// Allows 52 bits to be masked off. Useful to create <see cref="double"/> values, which
-        /// have 52 bits of precision.
-        /// </summary>
-        private const long DOUBLE_MASK = 0xf_ffff_ffff_ffff;
-
-        /// <summary>
         /// The "a" coefficient
         /// </summary>
-        private ulong _multiplier;
+        private readonly ulong _multiplier;
 
         /// <summary>
         /// The "c" coefficient
         /// </summary>
-        private ulong _increment;
+        private readonly ulong _increment;
 
         /// <summary>
         /// The current state of the LCPRNG- also the last value returned by
@@ -55,8 +44,6 @@ namespace Morpheus
             _increment = increment;
             _state = RandomSeed.FastULong();
         }
-
-
 
         /// <summary>
         /// No bias- This is the core generation function for this <see cref="Random"/>

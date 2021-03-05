@@ -28,7 +28,7 @@ namespace Morpheus.Evolution.PGNS
         public Chromosome CalculateDeviation( Config config, Chromosome chromo, DeviationDetail detail )
         {
             int length = config.ValueCount;
-            float expectedAverageProbability = 1 / length;
+            float expectedAverageProbability = 1.0F / length;
             float expectedAverageValue = (float)(config.TargetValue / config.ValueCount);
 
             float sumValue = 0;

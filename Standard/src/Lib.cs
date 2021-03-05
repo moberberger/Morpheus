@@ -1292,7 +1292,7 @@ public static class Lib
         const int bitsPrecision = 52;
         const int shift = (64 - bitsPrecision);
         double numerator = _number >> shift;
-        double denominator = 1 << bitsPrecision;
+        double denominator = 1L << bitsPrecision;
         double retval = numerator / denominator;
         return retval;
     }

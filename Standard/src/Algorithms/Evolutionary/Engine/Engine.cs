@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 
 namespace Morpheus.Evolution
@@ -14,12 +15,9 @@ namespace Morpheus.Evolution
 
 
 
-        private readonly LCPRNG _rng = new LCPRNG_MMIX();
+        public readonly LCPRNG Rng = new LCPRNG_MMIX();
 
-        private float[] _sampleDeviationsSums;
-
-        private float SumOfSampleDeviations => _sampleDeviationsSums[PopulationSize - 1];
-
+        private float[] sampleDeviationsSums;
 
 
         public bool UseElitism { get; set; } = true;
@@ -64,12 +62,14 @@ namespace Morpheus.Evolution
 
         public int Resize( int newPopulationSize )
         {
+            Rng.UseFastScale = true;
+
             var retval = PopulationSize;
             PopulationSize = newPopulationSize;
 
             SampleSet = new TChromosome[PopulationSize];
             ResultSet = new TChromosome[PopulationSize];
-            _sampleDeviationsSums = new float[PopulationSize];
+            sampleDeviationsSums = new float[PopulationSize];
 
             Initialize();
 
@@ -158,23 +158,25 @@ namespace Morpheus.Evolution
         /// </remarks>
         private void ProcessSampleSet()
         {
-            float sumInverses = 0;
-            for (int i = 0; i < PopulationSize; i++)
-                sumInverses += 1.0f / SampleSet[i].Deviation;
+            Best = SampleSet[0];
+            float max = Best.Deviation;
+
+            for (int i = 1; i < PopulationSize; i++)
+            {
+                var dev = SampleSet[i].Deviation;
+                if (dev > max)
+                    max = dev;
+                if (dev < Best.Deviation)
+                    Best = SampleSet[i];
+            }
 
             float sum = 0;
-            var bestDeviation = float.MaxValue;
             for (int i = 0; i < PopulationSize; i++)
             {
-                var chromo = SampleSet[i];
-                sum += 1.0f / (sumInverses * chromo.Deviation);
-                _sampleDeviationsSums[i] = sum;
-
-                if (chromo.Deviation < bestDeviation)
-                {
-                    bestDeviation = chromo.Deviation;
-                    Best = chromo;
-                }
+                var dev = SampleSet[i].Deviation;
+                var x = max / dev;
+                sum += x;
+                sampleDeviationsSums[i] = sum;
             }
         }
 
@@ -195,13 +197,14 @@ namespace Morpheus.Evolution
             int mid = 0;
             int high = PopulationSize;
 
-            var selection = _rng.NextDouble() * SumOfSampleDeviations;
+            var max = sampleDeviationsSums.Last();
+            var selection = Rng.NextDouble() * max;
 
             while (low < high)
             {
                 mid = low + (high - low) / 2;
 
-                if (selection > _sampleDeviationsSums[mid])
+                if (selection > sampleDeviationsSums[mid])
                     low = mid + 1;
                 else
                     high = mid - 1;

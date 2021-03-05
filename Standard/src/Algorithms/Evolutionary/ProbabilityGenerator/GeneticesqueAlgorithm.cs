@@ -76,7 +76,7 @@ namespace Morpheus.Evolution.PGNS
                 }
             }
 
-            result.Probabilities.ChangeToProbabilities();
+            //result.Probabilities.ChangeToProbabilities();
         }
 
 

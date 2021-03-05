@@ -122,10 +122,10 @@ namespace Morpheus
         /// Assert.AreEqual( scaled, expected );
         /// </code>
         /// </remarks>
-        public static ulong ScaleValue( this ulong _value, ulong _exclusiveMax, ulong _maxValue, out bool _isUnbiased )
+        public static ulong ScaleValue( this ulong _value, ulong _exclusiveMax, out bool _isUnbiased )
         {
             // Each "Window" for "frame" contains exactly _exclusiveMax integers
-            var windowCount = _maxValue / _exclusiveMax;
+            var windowCount = ulong.MaxValue / _exclusiveMax;
             var maxOKValue = windowCount * _exclusiveMax;
 
             // If the random bits are small enough to provide a full "window", then the value is

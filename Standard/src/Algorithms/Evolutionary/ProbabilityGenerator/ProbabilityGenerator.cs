@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
-
-namespace Morpheus
+﻿namespace Morpheus
 {
     public class ProbabilityGenerator : Evolution.Engine<Evolution.PGNS.Chromosome, Evolution.PGNS.Config, Evolution.PGNS.DeviationDetail>
     {
@@ -22,7 +16,7 @@ namespace Morpheus
             Evolver = PGEvolver.Evolve;
             ChromosomeCreator = Evolution.PGNS.Chromosome.Create;
 
-            Resize( 1024 );
+            Resize( 256 );
         }
     }
 }
