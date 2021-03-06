@@ -42,7 +42,7 @@ namespace Morpheus.Evolution.PGNS
             if (Rng.NextDouble() < MutationChance)
             {
                 var basis = generator();
-                Array.Copy( basis.Probabilities, result.Probabilities, basis.ProbabilityCount );
+                Array.Copy( basis.RawProbabilities, result.RawProbabilities, basis.ProbabilityCount );
 
                 do
                 {
@@ -50,11 +50,11 @@ namespace Morpheus.Evolution.PGNS
 
                     var factor = Math.Abs( Rng.NextGaussian( 1, MutationStdev ) );
 
-                    var newVal = basis.Probabilities[idx] * factor;
+                    var newVal = basis.RawProbabilities[idx] * factor;
 
                     newVal = Math.Max( newVal, MinimumProbability );
 
-                    result.Probabilities[idx] = newVal;
+                    result.RawProbabilities[idx] = newVal;
 
                 } while (Rng.NextDouble() < MultiMutateChance);
 
@@ -70,9 +70,9 @@ namespace Morpheus.Evolution.PGNS
                 for (int i = 0; i < len; i++)
                 {
                     if (i.IsBetween( idx1, idx2 ))
-                        result.Probabilities[i] = p1.Probabilities[i];
+                        result.RawProbabilities[i] = p1.RawProbabilities[i];
                     else
-                        result.Probabilities[i] = p2.Probabilities[i];
+                        result.RawProbabilities[i] = p2.RawProbabilities[i];
                 }
             }
 

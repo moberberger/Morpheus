@@ -42,7 +42,7 @@ namespace Morpheus.Evolution.PGNS
         {
             var parent = sampler();
 
-            Array.Copy( parent.Probabilities, output.Probabilities, parent.ProbabilityCount );
+            Array.Copy( parent.RawProbabilities, output.RawProbabilities, parent.ProbabilityCount );
 
             do
             {
@@ -52,11 +52,11 @@ namespace Morpheus.Evolution.PGNS
 
                 int idx = Rng.Next( parent.ProbabilityCount );
 
-                var newVal = parent.Probabilities[idx] * factor;
+                var newVal = parent.RawProbabilities[idx] * factor;
 
                 newVal = newVal.ButNotLessThan( MinimumProbability );
 
-                output.Probabilities[idx] = newVal;
+                output.RawProbabilities[idx] = newVal;
 
             } while (Rng.NextDouble() < MultiMutateChance);
 

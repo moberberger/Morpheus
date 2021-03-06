@@ -31,6 +31,11 @@ namespace Morpheus.Evolution.PGNS
             float expectedAverageProbability = 1.0F / length;
             float expectedAverageValue = (float)(config.TargetValue / config.ValueCount);
 
+            double _sumRawProb = 0;
+            for (int i = 0; i < length; i++)
+                _sumRawProb += chromo.RawProbabilities[i];
+            float sumRawProb = (float)_sumRawProb; // cast once, tight loop
+
             float sumValue = 0;
             float sumProbSquared = 0;
             float sumProbErrSquared = 0;
@@ -46,7 +51,7 @@ namespace Morpheus.Evolution.PGNS
 
             for (int i = 0; i < length; i++)
             {
-                float p = (float)chromo.Probabilities[i];
+                float p = (float)chromo.RawProbabilities[i] / sumRawProb;
                 float v = (float)config.Values[i];
                 float val = p * v;
                 float diffProb = p.DifferenceAsRatioOf( expectedAverageProbability );
@@ -72,7 +77,7 @@ namespace Morpheus.Evolution.PGNS
                     if (dirChangeEnabled && i < length - 1)
                     {
                         bool prev = p > prevProb;
-                        bool next = chromo.Probabilities[i + 1] > p;
+                        bool next = chromo.RawProbabilities[i + 1] > p;
 
                         if (prev != next)
                             dirChangeCount++;
@@ -125,7 +130,7 @@ namespace Morpheus.Evolution.PGNS
                 detail.TargetValue = config.TargetValue;
                 detail.CalculatedValue = chromo.CalculatedValue;
                 Array.Copy( config.Values, detail.Values, length );
-                Array.Copy( chromo.Probabilities, detail.Probabilities, length );
+                Array.Copy( chromo.RawProbabilities, detail.Probabilities, length );
             }
 
             return chromo;

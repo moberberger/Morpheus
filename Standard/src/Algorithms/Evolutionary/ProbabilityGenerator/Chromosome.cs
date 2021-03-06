@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+
+using System.Linq;
 
 namespace Morpheus.Evolution.PGNS
 {
@@ -12,11 +15,12 @@ namespace Morpheus.Evolution.PGNS
         /// 
         /// this and only this field must be set prior to calling the deviation function
         /// </summary>
-        public readonly double[] Probabilities;
+        private readonly double[] RawProbabilities;
+
         /// <summary>
         /// How many probabilities are there?
         /// </summary>
-        public int ProbabilityCount => Probabilities.Length;
+        public int ProbabilityCount => RawProbabilities.Length;
 
         /// <summary>
         /// The value associated with the best deviation found by the algorithm.
@@ -27,7 +31,7 @@ namespace Morpheus.Evolution.PGNS
         /// <summary>
         /// Cannot be constructed externally- use creator functions
         /// </summary>
-        private Chromosome( int size ) => Probabilities = new double[size];
+        private Chromosome( int size ) => RawProbabilities = new double[size];
 
 
         /// <summary>
@@ -46,9 +50,9 @@ namespace Morpheus.Evolution.PGNS
                 {
                     var x = DI.Default.Get<Random>().NextGaussian( 0, 1 );
                     x = Math.Abs( x );
-                    ch.Probabilities[i] = x;
+                    ch.RawProbabilities[i] = x;
                 }
-                ch.Probabilities.ChangeToProbabilities();
+                ch.RawProbabilities.ChangeToProbabilities();
             }
 
             return ch;
@@ -65,9 +69,11 @@ namespace Morpheus.Evolution.PGNS
             var chromo = other as Chromosome ?? throw new ArgumentException( $"other is wrong type: {other.GetType()}" );
             base.CopyTo( other );
 
-            Array.Copy( Probabilities, chromo.Probabilities, ProbabilityCount );
+            Array.Copy( RawProbabilities, chromo.RawProbabilities, ProbabilityCount );
             chromo.CalculatedValue = CalculatedValue;
         }
+
+        public IEnumerable<
     }
 
 }

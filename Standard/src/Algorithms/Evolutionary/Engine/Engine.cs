@@ -48,9 +48,11 @@ namespace Morpheus.Evolution
 
         protected Engine()
         {
+            Rng.UseFastScale = true;
         }
 
         public Engine( int populationSize, TInputType input, FnDeviationCalculator deviationFunction, FnEvolver evolver, FnChromosomeCreator chromosomeCreator )
+            : this()
         {
             InputConfig = input ?? throw new ArgumentNullException( "input" );
             DeviationFunction = deviationFunction ?? throw new ArgumentNullException( "deviationFunction" );
@@ -60,10 +62,15 @@ namespace Morpheus.Evolution
             Resize( populationSize );
         }
 
+
+        /// <summary>
+        /// Reallocates and Initializes (where appropriate) a new population of chromosomes
+        /// while keeping the specified deviation, evolution and creation functions
+        /// </summary>
+        /// <param name="newPopulationSize"></param>
+        /// <returns></returns>
         public int Resize( int newPopulationSize )
         {
-            Rng.UseFastScale = true;
-
             var retval = PopulationSize;
             PopulationSize = newPopulationSize;
 
@@ -90,10 +97,55 @@ namespace Morpheus.Evolution
 
                 ResultSet[i] = ChromosomeCreator( InputConfig, false );
             }
+            Best = ChromosomeCreator( InputConfig, false );
 
             // Make sure new SampleSet is ready for a binary search
             ProcessSampleSet();
             IterationCount = 0;
+        }
+
+
+        /// <summary>
+        /// Primary function is to create the _sampleSums array so that the
+        /// <see cref="SampleSet"/> can be searched using a simple binary search.
+        /// 
+        /// Secondarily finds the <see cref="Best"/> <see cref="Chromosome"/> in the
+        /// <see cref="SampleSet"/> .
+        /// </summary>
+        /// <remarks>
+        /// TODO: Refactor to handle a <see cref="Chromosome.Deviation"/> ==0 situation, which
+        /// would <see cref="DivideByZeroException"/> now.
+        /// 
+        /// Propose to immediately return Best = First chromosome where Deviation ==0, leaving
+        /// SampleSet in an invalid state. This is tail-wagging-dog justified by stating that
+        /// there could not possibly be a better chromosome, therefore the sample set's state is
+        /// irrelevant.
+        /// 
+        /// This of course leaves the debugging of the invalid SampleSet more interesting...
+        /// </remarks>
+        private void ProcessSampleSet()
+        {
+            var best = SampleSet[0];
+            float max = best.Deviation;
+
+            for (int i = 1; i < PopulationSize; i++)
+            {
+                var dev = SampleSet[i].Deviation;
+                if (dev > max)
+                    max = dev;
+                if (dev < best.Deviation)
+                    best = SampleSet[i];
+            }
+            best.CopyTo( Best );
+
+            float sum = 0;
+            for (int i = 0; i < PopulationSize; i++)
+            {
+                var dev = SampleSet[i].Deviation;
+                var x = max / dev;
+                sum += x;
+                sampleDeviationsSums[i] = sum;
+            }
         }
 
 
@@ -135,49 +187,6 @@ namespace Morpheus.Evolution
             IterationCount++;
 
             return Best;
-        }
-
-
-        /// <summary>
-        /// Primary function is to create the _sampleSums array so that the
-        /// <see cref="SampleSet"/> can be searched using a simple binary search.
-        /// 
-        /// Secondarily finds the <see cref="Best"/> <see cref="Chromosome"/> in the
-        /// <see cref="SampleSet"/> .
-        /// </summary>
-        /// <remarks>
-        /// TODO: Refactor to handle a <see cref="Chromosome.Deviation"/> ==0 situation, which
-        /// would <see cref="DivideByZeroException"/> now.
-        /// 
-        /// Propose to immediately return Best = First chromosome where Deviation ==0, leaving
-        /// SampleSet in an invalid state. This is tail-wagging-dog justified by stating that
-        /// there could not possibly be a better chromosome, therefore the sample set's state is
-        /// irrelevant.
-        /// 
-        /// This of course leaves the debugging of the invalid SampleSet more interesting...
-        /// </remarks>
-        private void ProcessSampleSet()
-        {
-            Best = SampleSet[0];
-            float max = Best.Deviation;
-
-            for (int i = 1; i < PopulationSize; i++)
-            {
-                var dev = SampleSet[i].Deviation;
-                if (dev > max)
-                    max = dev;
-                if (dev < Best.Deviation)
-                    Best = SampleSet[i];
-            }
-
-            float sum = 0;
-            for (int i = 0; i < PopulationSize; i++)
-            {
-                var dev = SampleSet[i].Deviation;
-                var x = max / dev;
-                sum += x;
-                sampleDeviationsSums[i] = sum;
-            }
         }
 
 
