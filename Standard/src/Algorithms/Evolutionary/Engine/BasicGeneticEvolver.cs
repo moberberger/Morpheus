@@ -22,7 +22,7 @@ namespace Morpheus.Evolution
         /// 
         /// </summary>
         /// <param name="deviationFunction"></param>
-        public BasicGeneticEvolver( Func<ulong[], float> deviationFunction )
+        public BasicGeneticEvolver( Func<ulong[], float> deviationFunction = null )
         {
             DeviationFunction = deviationFunction;
         }

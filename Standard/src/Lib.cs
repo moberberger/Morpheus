@@ -1324,7 +1324,7 @@ public static class Lib
         int secondUlong = bitIndex2 >> 6; // /64
         int secondBit = bitIndex2 & 63;
 
-        if (firstUlong == secondUlong) // bits are in same Ulong
+        if (firstUlong == secondUlong) // bits are in same Ulong so try to optimize using Array.CopyTo
         {
             array1.CopyTo( output );
             if (bitIndex1 != bitIndex2) // width==0 is kinda a nop

@@ -4,23 +4,28 @@ using Morpheus.Evolution;
 
 namespace Morpheus
 {
+    using TintType = UInt32;
+
     public class ProbabilityGenerator
     {
-        public ProbGenInput Config;
-        public ProbGenDeviation Deviation;
+        public ProbGenInput InputConfig;
+        public ProbGenDeviation DeviationFn;
         public BasicGeneticEvolver Evolver;
         public readonly Engine<ulong[]> Engine;
 
         public ProbabilityGenerator( double targetValue, params double[] values )
         {
-            Config = new ProbGenInput( targetValue, values );
-            Deviation = new ProbGenDeviation( Config );
-            Evolver = new BasicGeneticEvolver( Deviation.CalculateDeviation );
+            int geneCount = values.Length;
+            int geneSize = sizeof( TintType );
+            int requiredBytes = geneCount * geneSize;
+            int requiredU64s = (requiredBytes + 7) / 8;
 
-            Engine = new Engine<ulong[]>( 256, Evolver.Evolve );
-
-
+            InputConfig = new ProbGenInput( targetValue, values );
+            DeviationFn = new ProbGenDeviation( InputConfig );
+            Evolver = new BasicGeneticEvolver( DeviationFn.CalculateDeviation );
+            Engine = new Engine<ulong[]>( 256, () => Lib.CreatePopulatedArray<ulong>( requiredU64s, Rng.Default.Next64 ), Evolver.Evolve );
         }
+
     }
 }
 /*

@@ -1,13 +1,17 @@
 ﻿using System;
+using System.Linq;
 
 namespace Morpheus.Evolution
 {
+    using TintType = UInt32;
+
     /// <summary>
     /// A function designed to put pressure on having the probabilities brought as close to the
     /// theoretical average as possible.
     /// </summary>
     public class ProbGenDeviation
     {
+
         public float TargetValueAcceptableDeviationPercent = 0.01f;
 
         public float ProbabilitiesWeight = 1;
@@ -22,7 +26,8 @@ namespace Morpheus.Evolution
 
         public readonly ProbGenInput InputConfig;
 
-        public ProbGenDeviation( ProbGenInput input ) => InputConfig = input;
+        public ProbGenDeviation( ProbGenInput input ) => InputConfig = input ?? throw new ArgumentNullException( "input" );
+
 
 
         public float CalculateDeviation( ulong[] chromo )
@@ -31,8 +36,13 @@ namespace Morpheus.Evolution
             float expectedAverageProbability = 1.0F / length;
             float expectedAverageValue = (float)(InputConfig.TargetValue / InputConfig.ValueCount);
 
-            Span<double> probabilities = stackalloc double[InputConfig.ValueCount];
-            //chromo.SetProbabilities( probabilities );
+            Span<float> probabilities = stackalloc float[InputConfig.ValueCount];
+            Span<TintType> rawValues = new Span<ulong>( chromo ).Cast<ulong, TintType>();
+
+            float sumRaw = 0;
+            for (int i = 0; i < length; i++) sumRaw += rawValues[i];
+            for (int i = 0; i < length; i++) probabilities[i] = rawValues[i] / sumRaw;
+
 
             float sumValue = 0;
             float sumProbSquared = 0;
@@ -47,7 +57,7 @@ namespace Morpheus.Evolution
 
             for (int i = 0; i < length; i++)
             {
-                float p = (float)probabilities[i];
+                float p = probabilities[i];
                 float v = (float)InputConfig.Values[i];
                 float val = p * v;
                 float diffProb = p.DifferenceAsRatioOf( expectedAverageProbability );

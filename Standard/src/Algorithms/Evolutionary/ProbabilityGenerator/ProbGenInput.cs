@@ -36,6 +36,7 @@ namespace Morpheus.Evolution
         /// <param name="values">The values to determine probabilities for</param>
         public ProbGenInput( double targetValue, params double[] values )
         {
+            if (!targetValue.IsBetween( double.Epsilon, double.PositiveInfinity )) throw new ArgumentException( $"TargetValue must be a positive number, not {targetValue}" );
             this.TargetValue = targetValue;
             this.Values = values ?? throw new ArgumentNullException( "Must pass in an array of values" );
             this.ValueCount = values.Length;
