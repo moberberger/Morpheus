@@ -1,10 +1,12 @@
-﻿using System;
+﻿#if false
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Morpheus.Evolution.PGNS
+namespace Morpheus.Evolution
 {
     /// <summary>
     /// Evolve by mutating one or more values using a random (with normal distribution) multiple
@@ -38,7 +40,7 @@ namespace Morpheus.Evolution.PGNS
 
         public FloatMutatorEvolver() => Rng.UseFastScale = true;
 
-        public void Evolve( Func<Chromosome> sampler, Chromosome output )
+        public void Evolve( Func<ProbabilityChromosome> sampler, ProbabilityChromosome output )
         {
             var parent = sampler();
 
@@ -69,3 +71,5 @@ namespace Morpheus.Evolution.PGNS
 
     }
 }
+
+#endif

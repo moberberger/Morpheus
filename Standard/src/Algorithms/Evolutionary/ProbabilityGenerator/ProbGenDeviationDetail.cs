@@ -1,11 +1,9 @@
-﻿namespace Morpheus.Evolution.PGNS
+﻿namespace Morpheus.Evolution
 {
-    using PGEngine = Engine<Evolution.PGNS.Chromosome, Config, DeviationDetail>;
-
-    public class DeviationDetail
+    public class ProbGenDeviationDetail
     {
-        private PGEngine Engine;
-        public DeviationDetail( PGEngine engine = null ) : this( engine.InputConfig.ValueCount ) => Engine = engine;
+        //private PGEngine Engine;
+        //public DeviationDetail( PGEngine engine = null ) : this( engine.InputConfig.ValueCount ) => Engine = engine;
 
         public float Deviation;
 
@@ -29,7 +27,7 @@
         /// Must be constructed to match the Input configuration's size
         /// </summary>
         /// <param name="size"></param>
-        public DeviationDetail( int size )
+        public ProbGenDeviationDetail( int size )
         {
             Values = new double[size];
             Probabilities = new double[size];
@@ -38,8 +36,8 @@
 
         public override string ToString()
         {
-            if (Engine != null)
-                Engine.DeviationFunction( Engine.InputConfig, Engine.Best, this );
+            //if (Engine != null)
+            //    Engine.DeviationFunction( Engine.InputConfig, Engine.Best, this );
 
             return $"dev:{Deviation:N4}  v:{CalculationDeviation:N4}  p:{ProbabilitiesDeviation:N4}  pe:{ProbabilitiesErrorDeviation:N4}  ps:{ProbabilitiesSmoothnessDeviation:N4}" +
             $"  ve:{ValuesErrorDeviation:N4}  vs:{ValuesSmoothnessDeviation:N4}  dc:{DirectionChangeDeviation:N4}";

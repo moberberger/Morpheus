@@ -1,10 +1,12 @@
-﻿using System;
+﻿#if false
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Morpheus.Evolution.PGNS
+namespace Morpheus.Evolution
 {
     /// <summary>
     /// Evolve by mutating one or more values using a random (with normal distribution)
@@ -37,7 +39,7 @@ namespace Morpheus.Evolution.PGNS
 
 
 
-        private void Evolve( Func<Chromosome> generator, Chromosome result )
+        private void Evolve( Func<ProbabilityChromosome> generator, ProbabilityChromosome result )
         {
             if (Rng.NextDouble() < MutationChance)
             {
@@ -85,3 +87,5 @@ namespace Morpheus.Evolution.PGNS
 
     }
 }
+
+#endif

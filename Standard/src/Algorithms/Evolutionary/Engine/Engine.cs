@@ -4,105 +4,120 @@ using System.Threading;
 
 namespace Morpheus.Evolution
 {
-    public class Engine<TChromosome, TInputType, TDeviationDetailType>
-        where TChromosome : Chromosome
-        where TInputType : class
-        where TDeviationDetailType : class
+    public class Engine<TChromosome>
+        where TChromosome : class
     {
-        public delegate TChromosome FnDeviationCalculator( TInputType input, TChromosome chromo, TDeviationDetailType detail );
-        public delegate void FnEvolver( Func<TChromosome> sampler, TChromosome evolveInto );
-        public delegate TChromosome FnChromosomeCreator( TInputType input, bool initialized );
+        public delegate float FnEvolver( TChromosome evolveInto, Func<double, TChromosome> sampler );
 
-
-
-        public readonly LCPRNG Rng = new LCPRNG_MMIX();
-
+        private float[] sampleDeviations;
         private float[] sampleDeviationsSums;
 
+        private int baseIndex;
+        private int bestIndex;
 
+
+        /// <summary>
+        /// When TRUE, the best chromosome from each generation is automatically moved into the
+        /// next generation. When FALSE, the next generation may be worse than the current one.
+        /// </summary>
         public bool UseElitism { get; set; } = true;
 
         /// <summary>
-        /// Marginally most efficient as an exponent of 2
+        /// The evolver used to both evolve and determine deviation.
         /// </summary>
-        public int PopulationSize { get; private set; }
-
-        public TInputType InputConfig { get; set; }
-
-        public FnDeviationCalculator DeviationFunction { get; set; }
-
         public FnEvolver Evolver { get; set; }
 
-        public FnChromosomeCreator ChromosomeCreator { get; set; }
-
-
-
+        /// <summary>
+        /// Current iteration count within the evolution.
+        /// </summary>
         public int IterationCount { get; private set; }
 
-        public TChromosome Best { get; private set; }
 
-        public TChromosome[] SampleSet { get; private set; }
+        /// <summary>
+        /// References the currently best chromosome in the SamplePopulation
+        /// </summary>
+        public TChromosome Best => Population[bestIndex];
 
-        public TChromosome[] ResultSet { get; private set; }
+        /// <summary>
+        /// Single piece of allocated memory- hopefully more CPU cache hits
+        /// </summary>
+        public TChromosome[] Population { get; private set; }
+
+        /// <summary>
+        /// The population size. The actual working population array is twice this size.
+        /// </summary>
+        public int PopulationSize => Population.Length >> 1;
 
 
-        protected Engine()
+
+
+
+
+        public Engine( int populationSize, FnEvolver evolver )
         {
-            Rng.UseFastScale = true;
+            Evolver = evolver;
+            Reset( populationSize );
         }
 
-        public Engine( int populationSize, TInputType input, FnDeviationCalculator deviationFunction, FnEvolver evolver, FnChromosomeCreator chromosomeCreator )
-            : this()
+        public Engine( int populationSize, Func<TChromosome> chromosomeGenerator, FnEvolver evolver )
         {
-            InputConfig = input ?? throw new ArgumentNullException( "input" );
-            DeviationFunction = deviationFunction ?? throw new ArgumentNullException( "deviationFunction" );
-            Evolver = evolver ?? throw new ArgumentNullException( "evolver" ); ;
-            ChromosomeCreator = chromosomeCreator ?? throw new ArgumentNullException( "chromosomeCreator" ); ;
-
-            Resize( populationSize );
+            Evolver = evolver;
+            Reset( populationSize, chromosomeGenerator );
         }
+
+        public Engine( TChromosome[] doubleInitialPopulation, FnEvolver evolver )
+        {
+            Evolver = evolver;
+            Reset( doubleInitialPopulation );
+        }
+
 
 
         /// <summary>
-        /// Reallocates and Initializes (where appropriate) a new population of chromosomes
-        /// while keeping the specified deviation, evolution and creation functions
+        /// Reset assuming that we can use <see cref="Activator.CreateInstance(Type)"/> to
+        /// generate chromosomes. Twice as many chromosomes will be generated than the
+        /// PopulationSize provided.
         /// </summary>
-        /// <param name="newPopulationSize"></param>
-        /// <returns></returns>
-        public int Resize( int newPopulationSize )
-        {
-            var retval = PopulationSize;
-            PopulationSize = newPopulationSize;
-
-            SampleSet = new TChromosome[PopulationSize];
-            ResultSet = new TChromosome[PopulationSize];
-            sampleDeviationsSums = new float[PopulationSize];
-
-            Initialize();
-
-            return retval;
-        }
+        /// <param name="populationSize"></param>
+        public void Reset( int populationSize ) =>
+            Reset( populationSize, () => Activator.CreateInstance<TChromosome>() );
 
         /// <summary>
-        /// Resets the populations to initial (randomized) values. Reallocates all chromosomes
-        /// using the <see cref="ChromosomeCreator"/> . Does not reallocate internal arrays.
+        /// Construct using a chromosome generator
         /// </summary>
-        public void Initialize()
+        /// <param name="chromosomeGenerator"></param>
+        /// <param name="evolver"></param>
+        public void Reset( int populationSize, Func<TChromosome> chromosomeGenerator ) =>
+            Reset( Lib.CreatePopulatedArray<TChromosome>( populationSize * 2, chromosomeGenerator ) );
+
+        /// <summary>
+        /// Reset using pre-created chromosomes. Twice as many chromosomes must be provided to
+        /// allow evolution to go from one population to the next.
+        /// </summary>
+        /// <param name="doubleInitialPopulation">
+        /// PopulationCount * 2 <see cref="TChromosome"/> 's. The first half should be
+        /// appropriately initialized. The second half probably don't need to be initialized to
+        /// any values.
+        /// </param>
+        public void Reset( TChromosome[] doubleInitialPopulation )
         {
-            for (int i = 0; i < PopulationSize; i++)
-            {
-                var chromo = ChromosomeCreator( InputConfig, true );
-                DeviationFunction( InputConfig, chromo, default );
-                SampleSet[i] = chromo;
+            Population = doubleInitialPopulation;
+            int len = doubleInitialPopulation.Length;
 
-                ResultSet[i] = ChromosomeCreator( InputConfig, false );
-            }
-            Best = ChromosomeCreator( InputConfig, false );
+            sampleDeviations = Enumerable.
+                Range( 0, len ).
+                Select( idx => Evolver( Population[idx], null ) ).
+                ToArray();
 
-            // Make sure new SampleSet is ready for a binary search
-            ProcessSampleSet();
+            sampleDeviationsSums = new float[len];
+
             IterationCount = 0;
+            baseIndex = 0;
+            bestIndex = 0;
+
+            ProcessSampleSet();
         }
+
 
 
         /// <summary>
@@ -125,28 +140,68 @@ namespace Morpheus.Evolution
         /// </remarks>
         private void ProcessSampleSet()
         {
-            var best = SampleSet[0];
-            float max = best.Deviation;
+            float min = sampleDeviations[baseIndex], max = min;
+            int endIndex = baseIndex + PopulationSize;
+            bestIndex = baseIndex;
 
-            for (int i = 1; i < PopulationSize; i++)
+            // handed [0] in previous initialization
+            for (int i = baseIndex + 1; i < endIndex; i++)
             {
-                var dev = SampleSet[i].Deviation;
+                float dev = sampleDeviations[i];
+
                 if (dev > max)
                     max = dev;
-                if (dev < best.Deviation)
-                    best = SampleSet[i];
-            }
-            best.CopyTo( Best );
 
-            float sum = 0;
-            for (int i = 0; i < PopulationSize; i++)
+                if (dev < min)
+                {
+                    min = dev;
+                    bestIndex = i;
+                }
+            }
+
+            float sum = 0.0f;
+            for (int i = baseIndex; i < endIndex; i++)
             {
-                var dev = SampleSet[i].Deviation;
-                var x = max / dev;
+                float dev = sampleDeviations[i];
+
+                float x = max / dev;
                 sum += x;
+
                 sampleDeviationsSums[i] = sum;
             }
         }
+
+
+        /// <summary>
+        /// Callback provided to the Evolver when it needs to sample the set for a chromosome.
+        /// 
+        /// Executes in O(ln) time.
+        /// 
+        /// This routine is re-entrant, but depends on a stable SampleSet. The application must
+        /// coordinate access to the SampleSet, as this routine ASSUMES stability for the sake
+        /// of performance.
+        /// </summary>
+        /// <returns>A chromosome selected (pseudo)randomly from the set</returns>
+        public TChromosome Sample( double _selection )
+        {
+            int low = baseIndex;
+            int high = low + PopulationSize;
+            float max = sampleDeviationsSums[high - 1];
+            float selection = (float)_selection * max; // target for vectorization
+
+            while (low < high)
+            {
+                int mid = low + (high - low) / 2; // assumed const-2 optimized to shift in JIT
+
+                if (selection > sampleDeviationsSums[mid])
+                    low = mid + 1;
+                else
+                    high = mid - 1;
+            }
+
+            return Population[low];
+        }
+
 
 
         /// <summary>
@@ -161,26 +216,27 @@ namespace Morpheus.Evolution
         /// </returns>
         public TChromosome EvolveOneGeneration()
         {
+            int start = PopulationSize - baseIndex;
+            int end = start + PopulationSize;
+
             // Elitism
             if (UseElitism)
-                Best.CopyTo( ResultSet[0] );
+                Population.SwapElements( bestIndex, start++ );
 
             // Generation
-            for (int i = UseElitism ? 1 : 0; i < PopulationSize; i++)
+            for (int i = start; i < end; i++)
             {
                 // start can be parallel
 
-                var output = ResultSet[i];
-                Evolver( Sample, output );
-                DeviationFunction( InputConfig, output, default );
+                var output = Population[i];
+                var deviation = Evolver( output, Sample );
+                sampleDeviations[i] = deviation;
 
                 // end can be parallel
             }
 
-            // swap lists
-            var tmp = SampleSet;
-            SampleSet = ResultSet;
-            ResultSet = tmp;
+            // Swap base index
+            baseIndex = PopulationSize - baseIndex;
 
             // Make sure new SampleSet is ready for a binary search
             ProcessSampleSet();
@@ -188,39 +244,5 @@ namespace Morpheus.Evolution
 
             return Best;
         }
-
-
-        /// <summary>
-        /// Callback provided to the Evolver when it needs to sample the set for a chromosome.
-        /// 
-        /// Executes in O(ln) time.
-        /// 
-        /// This routine is re-entrant, but depends on a stable SampleSet. The application must
-        /// coordinate access to the SampleSet, as this routine ASSUMES stability for the sake
-        /// of performance.
-        /// </summary>
-        /// <returns>A chromosome selected (pseudo)randomly from the set</returns>
-        public TChromosome Sample()
-        {
-            int low = 0;
-            int mid = 0;
-            int high = PopulationSize;
-
-            var max = sampleDeviationsSums.Last();
-            var selection = Rng.NextDouble() * max;
-
-            while (low < high)
-            {
-                mid = low + (high - low) / 2;
-
-                if (selection > sampleDeviationsSums[mid])
-                    low = mid + 1;
-                else
-                    high = mid - 1;
-            }
-
-            return SampleSet[low];
-        }
-
     }
 }

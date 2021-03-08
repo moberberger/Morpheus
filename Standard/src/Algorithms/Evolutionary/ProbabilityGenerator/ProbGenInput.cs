@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Morpheus.Evolution.PGNS
+namespace Morpheus.Evolution
 {
     /// <summary>
     /// This set of input values represents what every generator must accept, at a minimum.
@@ -8,7 +8,7 @@ namespace Morpheus.Evolution.PGNS
     /// 
     /// This data is transcendent across all deviation functions.
     /// </summary>
-    public class Config
+    public class ProbGenInput
     {
         /// <summary>
         /// The value that the algorithm should try to achieve
@@ -34,7 +34,7 @@ namespace Morpheus.Evolution.PGNS
         /// probabilities
         /// </param>
         /// <param name="values">The values to determine probabilities for</param>
-        public Config( double targetValue, params double[] values )
+        public ProbGenInput( double targetValue, params double[] values )
         {
             this.TargetValue = targetValue;
             this.Values = values ?? throw new ArgumentNullException( "Must pass in an array of values" );

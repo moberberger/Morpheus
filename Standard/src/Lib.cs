@@ -1290,13 +1290,75 @@ public static class Lib
     public static double AsDoubleZeroToOne( this ulong _number )
     {
         const int bitsPrecision = 52;
+        const double denominator = 1L << bitsPrecision;
         const int shift = (64 - bitsPrecision);
+
         double numerator = _number >> shift;
-        double denominator = 1L << bitsPrecision;
         double retval = numerator / denominator;
         return retval;
     }
 
     public static Span<TTo> Cast<TFrom, TTo>( this Span<TFrom> _this ) where TTo : struct where TFrom : struct => MemoryMarshal.Cast<TFrom, TTo>( _this );
+
+    public static ReadOnlySpan<TTo> Cast<TFrom, TTo>( this ReadOnlySpan<TFrom> _this ) where TTo : struct where TFrom : struct => MemoryMarshal.Cast<TFrom, TTo>( _this );
+
+
+
+    public static void Splice( ReadOnlySpan<ulong> _array1, ReadOnlySpan<ulong> _array2, int _bitIndex1, int _bitIndex2, Span<ulong> output )
+    {
+        var array1 = _array1;
+        var array2 = _array2;
+        int bitIndex1 = _bitIndex1;
+        int bitIndex2 = _bitIndex2;
+
+        if (bitIndex1 > bitIndex2) // ends of new chromo come from array2
+        {
+            bitIndex1 = _bitIndex2;
+            bitIndex2 = _bitIndex1;
+            array1 = _array2;
+            array2 = _array1;
+        }
+
+        int firstUlong = bitIndex1 >> 6; // /64
+        int firstBit = bitIndex1 & 63;
+        int secondUlong = bitIndex2 >> 6; // /64
+        int secondBit = bitIndex2 & 63;
+
+        if (firstUlong == secondUlong) // bits are in same Ulong
+        {
+            array1.CopyTo( output );
+            if (bitIndex1 != bitIndex2) // width==0 is kinda a nop
+            {
+                int idx = firstUlong;
+                var tmp = Splice( array1[idx], array2[idx], firstBit );
+                output[idx] = Splice( tmp, array1[idx], secondBit );
+            }
+        }
+        else
+        {
+            for (int i = 0; i < firstUlong; i++)
+                output[i] = array1[i];
+
+            output[firstUlong] = Splice( array1[firstUlong], array2[firstUlong], firstBit );
+
+            for (int i = firstUlong + 1; i < secondUlong; i++)
+                output[i] = array2[i];
+
+            output[secondUlong] = Splice( array2[secondUlong], array1[secondUlong], secondBit );
+
+            for (int i = secondUlong + 1; i < output.Length; i++)
+                output[i] = array1[i];
+        }
+    }
+
+    public static ulong Splice( ulong first, ulong second, int split )
+    {
+        ulong mask = (1UL << split) - 1;
+        ulong result = first & mask;
+        mask = ~mask;
+        result |= (second & mask);
+        return result;
+    }
+
 
 }

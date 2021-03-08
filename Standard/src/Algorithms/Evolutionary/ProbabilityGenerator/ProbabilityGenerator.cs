@@ -1,22 +1,25 @@
-﻿namespace Morpheus
+﻿using System;
+
+using Morpheus.Evolution;
+
+namespace Morpheus
 {
-    public class ProbabilityGenerator : Evolution.Engine<Evolution.PGNS.Chromosome, Evolution.PGNS.Config, Evolution.PGNS.DeviationDetail>
+    public class ProbabilityGenerator
     {
-        public Evolution.PGNS.Config Config;
-        public Evolution.PGNS.DeviationFunction Deviation = new Evolution.PGNS.DeviationFunction();
-        public Evolution.PGNS.FloatMutatorEvolver PGEvolver = new Evolution.PGNS.FloatMutatorEvolver();
+        public ProbGenInput Config;
+        public ProbGenDeviation Deviation;
+        public BasicGeneticEvolver Evolver;
+        public readonly Engine<ulong[]> Engine;
 
         public ProbabilityGenerator( double targetValue, params double[] values )
         {
-            Config = new Evolution.PGNS.Config( targetValue, values );
-            PGEvolver.ProbabilityGenerator = this;
+            Config = new ProbGenInput( targetValue, values );
+            Deviation = new ProbGenDeviation( Config );
+            Evolver = new BasicGeneticEvolver( Deviation.CalculateDeviation );
 
-            InputConfig = Config;
-            DeviationFunction = Deviation.CalculateDeviation;
-            Evolver = PGEvolver.Evolve;
-            ChromosomeCreator = Evolution.PGNS.Chromosome.Create;
+            Engine = new Engine<ulong[]>( 256, Evolver.Evolve );
 
-            Resize( 256 );
+
         }
     }
 }
@@ -24,7 +27,7 @@
  * 
  * Stuff below is for post-evolve correction/fixup. DONT DELETE!
  * 
- */ 
+ */
 
 
 #if false

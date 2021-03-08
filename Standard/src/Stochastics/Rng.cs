@@ -87,7 +87,7 @@ namespace Morpheus
         public sealed override void NextBytes( byte[] buffer ) => NextBytes( new Span<byte>( buffer ) );
 
         /// <summary>
-        /// Return a <see cref="double"/> using all 52 bits of precision in [0..1)
+        /// Return a <see cref="double"/> in [0..1) using all 52 bits of precision
         /// </summary>
         /// <returns>A <see cref="double"/> using all 52 bits of precision in [0..1)</returns>
         public sealed override double NextDouble() => Next64().AsDoubleZeroToOne();
@@ -168,6 +168,12 @@ namespace Morpheus
         public bool NextBool() => (Next64() & 1) == 1;
 
         /// <summary>
+        /// Return a <see cref="float"/> in [0..1) using all bits of precision
+        /// </summary>
+        /// <returns>A <see cref="float"/> in [0..1)</returns>
+        public float NextFloat() => (float)NextDouble();
+
+        /// <summary>
         /// 32 bits of random data
         /// </summary>
         /// <remarks>
@@ -232,6 +238,7 @@ namespace Morpheus
                 }
             }
         }
+
         #endregion
 
 

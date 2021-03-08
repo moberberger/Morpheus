@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 
 namespace Morpheus
 {
@@ -135,6 +137,18 @@ namespace Morpheus
 
             // This is the same regardless of the presence of bias
             return _value % _exclusiveMax;
+        }
+
+        #endregion
+
+
+        #region Fluent
+
+        public static T SetFastScalingFlag<T>( this T rng, bool flag )
+            where T : Rng
+        {
+            rng.UseFastScale = flag;
+            return rng;
         }
 
         #endregion
