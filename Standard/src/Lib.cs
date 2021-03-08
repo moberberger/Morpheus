@@ -1344,7 +1344,8 @@ public static class Lib
             for (int i = firstUlong + 1; i < secondUlong; i++)
                 output[i] = array2[i];
 
-            output[secondUlong] = Splice( array2[secondUlong], array1[secondUlong], secondBit );
+            if (secondUlong < output.Length)
+                output[secondUlong] = Splice( array2[secondUlong], array1[secondUlong], secondBit );
 
             for (int i = secondUlong + 1; i < output.Length; i++)
                 output[i] = array1[i];
