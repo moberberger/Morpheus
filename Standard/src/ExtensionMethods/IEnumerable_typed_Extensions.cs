@@ -256,8 +256,6 @@ namespace Morpheus
         }
 
         /// <summary>
-        /// Why isn't this there? just because it should be? sheesh. be kind. please rewind.
-        /// yeah I know i can do it. why didn't you though, for the rest of us?
         /// </summary>
         /// <typeparam name="TKey"></typeparam>
         /// <typeparam name="TValue"></typeparam>

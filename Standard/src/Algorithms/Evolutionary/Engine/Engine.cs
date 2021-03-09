@@ -88,7 +88,7 @@ namespace Morpheus.Evolution
         /// <param name="chromosomeGenerator"></param>
         /// <param name="evolver"></param>
         public void Reset( int populationSize, Func<TChromosome> chromosomeGenerator ) =>
-            Reset( Lib.CreatePopulatedArray<TChromosome>( populationSize * 2, chromosomeGenerator ) );
+            Reset( new TChromosome[populationSize * 2].Fill( chromosomeGenerator ) );
 
         /// <summary>
         /// Reset using pre-created chromosomes. Twice as many chromosomes must be provided to

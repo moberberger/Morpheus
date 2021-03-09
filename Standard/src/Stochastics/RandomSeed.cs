@@ -122,7 +122,7 @@ namespace Morpheus
             x <<= 8; x |= (long)RDTSC & 0xff;
             x <<= 8; x |= (long)RDTSC & 0xff;
             x <<= 8; x |= (long)RDTSC & 0xff;
-
+            Thread.Sleep( 0 );
             x <<= 8; x |= (long)RDTSC & 0xff;
             x <<= 8; x |= (long)RDTSC & 0xff;
             x <<= 8; x |= (long)RDTSC & 0xff;
@@ -136,7 +136,7 @@ namespace Morpheus
         /// </summary>
         private static void Initialize()
         {
-            sm_rdtscAtFirstCall = RDTSC8();
+            sm_rdtscAtFirstCall = LCPRNG_MMIX.Next( RDTSC8() );
 
             // Temporal: Related to when in time this initialization occurred. Not super
             // accurate ( around 100ns i believe).
@@ -149,10 +149,10 @@ namespace Morpheus
             // GetHashCode for more info on how this value is determined.
             // 
             // This is a boxing operation:
-            var course1 = (long)sm_instantiationSeed.GetHashCode();
+            var course1 = LCPRNG_MMIX.Next( sm_instantiationSeed.GetHashCode() );
 
             // This is not a boxing operation:
-            var course2 = (long)sm_lock.GetHashCode();
+            var course2 = LCPRNG_MMIX.Next( sm_lock.GetHashCode() );
 
             // These bytes are generated in part based on the crypto seeding algorithm,
             // thereby adding significant randomness
@@ -161,7 +161,7 @@ namespace Morpheus
             var crypto = BitConverter.ToInt64( buf, 0 );
 
             // So merge the two, guessing that we needed the swapped version
-            sm_instantiationSeed = (long)(medium ^ course1 ^ course2 ^ crypto);
+            sm_instantiationSeed = LCPRNG_MMIX.Next( medium ^ course1 ^ course2 ^ crypto );
         }
 
 
@@ -185,11 +185,7 @@ namespace Morpheus
             // Very quickly attribute the fact that this is a "+1" operation (i.e. allow
             // multiple rapid invocations yield different results)
             Interlocked.Increment( ref sm_instantiationSeed );
-
-            // These are Knuth numbers, i believe from MMIX. This is a simple linear
-            // congruential formula designed to give reasonable seeds based on a few
-            // fast-executing factors.
-            sm_instantiationSeed = sm_instantiationSeed * 6364136223846793005L + 1442695040888963407L;
+            sm_instantiationSeed = LCPRNG_MMIX.Next( sm_instantiationSeed );
 
             return (ulong)(sm_instantiationSeed ^ sm_rdtscAtFirstCall ^ sm_rdtscAtStaticInitialization);
         }

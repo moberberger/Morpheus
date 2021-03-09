@@ -21,5 +21,6 @@ namespace Morpheus
         public override ulong Next64() => State = State * Multiplier + Increment;
 
         public static ulong Next( ulong state ) => state * Multiplier + Increment;
+        public static long Next( long state ) => (long)((ulong)state * Multiplier + Increment);
     }
 }

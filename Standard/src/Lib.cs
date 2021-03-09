@@ -793,97 +793,6 @@ public static class Lib
 
 
 
-    /// <summary>
-    /// A Helper function that will not only allocate an array of type T, but it will also
-    /// construct objects for each element in the array using whatever parameters for the
-    /// constructor were specified by the caller. The same rules for constructor parameters
-    /// apply here as do for <see cref="CreateWithConstructor"/>
-    /// </summary>
-    /// <typeparam name="T">
-    /// The Type of objects in the array to create- All objects are of this type, so this
-    /// can't be an interface or abstract type
-    /// </typeparam>
-    /// <param name="_size">
-    /// The number of elements in the array- All of these elements will be constructed
-    /// </param>
-    /// <param name="_constructorParams">
-    /// A list of parameters which are to be passed to the constructors for all objects in
-    /// the array
-    /// </param>
-    /// <returns>
-    /// A new array of type T containing objects of type T constructed using the specified
-    /// constructor parameters
-    /// </returns>
-    public static T[] CreatePopulatedArray<T>( int _size, params object[] _constructorParams )
-    {
-        var arr = new T[_size];
-        var typ = typeof( T );
-
-        for (var i = 0; i < _size; i++)
-            arr[i] = (T)CreateWithConstructor( typ, _constructorParams );
-
-        return arr;
-    }
-
-    /// <summary>
-    /// A Helper function that will not only allocate an array of type T, but it will also
-    /// construct objects for each element in the array using whatever constructor function
-    /// provided by the caller
-    /// </summary>
-    /// <typeparam name="T">
-    /// The Type of objects in the array to create- All objects are of this type, so this
-    /// can't be an interface or abstract type
-    /// </typeparam>
-    /// <param name="_size">
-    /// The number of elements in the array- All of these elements will be constructed
-    /// </param>
-    /// <param name="_creator">The function used to create new objects of type T</param>
-    /// <returns>
-    /// A new array of type T containing objects of type T constructed using the specified
-    /// creation function
-    /// </returns>
-    public static T[] CreatePopulatedArray<T>( int _size, Func<T> _creator )
-    {
-        var arr = new T[_size];
-
-        for (var i = 0; i < _size; i++)
-            arr[i] = _creator();
-
-        return arr;
-    }
-
-    /// <summary>
-    /// A Helper function that will not only allocate an array of type T, but it will also
-    /// construct objects for each element in the array using whatever constructor function
-    /// provided by the caller
-    /// </summary>
-    /// <typeparam name="T">
-    /// The Type of objects in the array to create- All objects are of this type, so this
-    /// can't be an interface or abstract type
-    /// </typeparam>
-    /// <param name="_size">
-    /// The number of elements in the array- All of these elements will be constructed
-    /// </param>
-    /// <param name="_creator">
-    /// The function used to create new objects of type T. The index of the element to be
-    /// created is passed to this function.
-    /// </param>
-    /// <returns>
-    /// A new array of type T containing objects of type T constructed using the specified
-    /// creation function
-    /// </returns>
-    public static T[] CreatePopulatedArray<T>( int _size, Func<int, T> _creator )
-    {
-        var arr = new T[_size];
-
-        for (var i = 0; i < _size; i++)
-            arr[i] = _creator( i );
-
-        return arr;
-    }
-
-
-
 
 
     /// <summary>
@@ -1360,6 +1269,117 @@ public static class Lib
         result |= (second & mask);
         return result;
     }
+
+
+
+    public static T[] Fill<T>( this T[] array, Func<T> populator )
+    {
+        for (int i = 0; i < array.Length; i++)
+            array[i] = populator();
+        return array;
+    }
+
+    public static T[] Fill<T>( this T[] array, Func<int, T> populator )
+    {
+        for (int i = 0; i < array.Length; i++)
+            array[i] = populator( i );
+        return array;
+    }
+
+
+#if false
+    /// <summary>
+    /// A Helper function that will not only allocate an array of type T, but it will also
+    /// construct objects for each element in the array using whatever parameters for the
+    /// constructor were specified by the caller. The same rules for constructor parameters
+    /// apply here as do for <see cref="CreateWithConstructor"/>
+    /// </summary>
+    /// <typeparam name="T">
+    /// The Type of objects in the array to create- All objects are of this type, so this
+    /// can't be an interface or abstract type
+    /// </typeparam>
+    /// <param name="_size">
+    /// The number of elements in the array- All of these elements will be constructed
+    /// </param>
+    /// <param name="_constructorParams">
+    /// A list of parameters which are to be passed to the constructors for all objects in
+    /// the array
+    /// </param>
+    /// <returns>
+    /// A new array of type T containing objects of type T constructed using the specified
+    /// constructor parameters
+    /// </returns>
+    public static T[] CreatePopulatedArray<T>( int _size, params object[] _constructorParams )
+    {
+        var arr = new T[_size];
+        var typ = typeof( T );
+
+        for (var i = 0; i < _size; i++)
+            arr[i] = (T)CreateWithConstructor( typ, _constructorParams );
+
+        return arr;
+    }
+
+    /// <summary>
+    /// A Helper function that will not only allocate an array of type T, but it will also
+    /// construct objects for each element in the array using whatever constructor function
+    /// provided by the caller
+    /// </summary>
+    /// <typeparam name="T">
+    /// The Type of objects in the array to create- All objects are of this type, so this
+    /// can't be an interface or abstract type
+    /// </typeparam>
+    /// <param name="_size">
+    /// The number of elements in the array- All of these elements will be constructed
+    /// </param>
+    /// <param name="_creator">The function used to create new objects of type T</param>
+    /// <returns>
+    /// A new array of type T containing objects of type T constructed using the specified
+    /// creation function
+    /// </returns>
+    public static T[] CreatePopulatedArray<T>( int _size, Func<T> _creator )
+    {
+        var arr = new T[_size];
+
+        for (var i = 0; i < _size; i++)
+            arr[i] = _creator();
+
+        return arr;
+    }
+
+    /// <summary>
+    /// A Helper function that will not only allocate an array of type T, but it will also
+    /// construct objects for each element in the array using whatever constructor function
+    /// provided by the caller
+    /// </summary>
+    /// <typeparam name="T">
+    /// The Type of objects in the array to create- All objects are of this type, so this
+    /// can't be an interface or abstract type
+    /// </typeparam>
+    /// <param name="_size">
+    /// The number of elements in the array- All of these elements will be constructed
+    /// </param>
+    /// <param name="_creator">
+    /// The function used to create new objects of type T. The index of the element to be
+    /// created is passed to this function.
+    /// </param>
+    /// <returns>
+    /// A new array of type T containing objects of type T constructed using the specified
+    /// creation function
+    /// </returns>
+    public static T[] CreatePopulatedArray<T>( int _size, Func<int, T> _creator )
+    {
+        var arr = new T[_size];
+
+        for (var i = 0; i < _size; i++)
+            arr[i] = _creator( i );
+
+        return arr;
+    }
+#endif
+
+
+
 
 
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.Intrinsics;
 
 namespace Morpheus.Evolution
 {
@@ -36,11 +37,11 @@ namespace Morpheus.Evolution
             float expectedAverageProbability = 1.0F / length;
             float expectedAverageValue = (float)(InputConfig.TargetValue / InputConfig.ValueCount);
 
-            Span<float> probabilities = stackalloc float[InputConfig.ValueCount];
             Span<TintType> rawValues = new Span<ulong>( chromo ).Cast<ulong, TintType>();
-
             float sumRaw = 0;
             for (int i = 0; i < length; i++) sumRaw += rawValues[i];
+
+            Span<float> probabilities = stackalloc float[InputConfig.ValueCount];
             for (int i = 0; i < length; i++) probabilities[i] = rawValues[i] / sumRaw;
 
 

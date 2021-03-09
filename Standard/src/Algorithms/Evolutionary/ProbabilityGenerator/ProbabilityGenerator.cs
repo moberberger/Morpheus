@@ -8,6 +8,8 @@ namespace Morpheus
 
     public class ProbabilityGenerator
     {
+        public const int PopulationSize = 256;
+
         public ProbGenInput InputConfig;
         public ProbGenDeviation DeviationFn;
         public BasicGeneticEvolver Evolver;
@@ -23,7 +25,10 @@ namespace Morpheus
             InputConfig = new ProbGenInput( targetValue, values );
             DeviationFn = new ProbGenDeviation( InputConfig );
             Evolver = new BasicGeneticEvolver( DeviationFn.CalculateDeviation );
-            Engine = new Engine<ulong[]>( 256, () => Lib.CreatePopulatedArray<ulong>( requiredU64s, Rng.Default.Next64 ), Evolver.Evolve );
+            Engine = new Engine<ulong[]>(
+                PopulationSize,
+                () => new ulong[requiredU64s].Fill( Rng.Default.Next64 ),
+                Evolver.Evolve );
         }
 
     }
