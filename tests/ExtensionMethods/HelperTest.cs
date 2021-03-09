@@ -11,12 +11,12 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         public void TestConvertArrayToString()
         {
-            var actual = CHelper.ConvertArrayToString( new int[] { 1, 2, 3 } );
+            var actual = Lib.ConvertArrayToString( new int[] { 1, 2, 3 } );
             var expected = "1,2,3";
 
             Assert.AreEqual<string>( expected, actual, "Array not converted correctly" );
 
-            actual = CHelper.ConvertArrayToString( null );
+            actual = Lib.ConvertArrayToString( null );
             expected = "";
             Assert.AreEqual<string>( expected, actual, "String not correct for a null array" );
         }
@@ -24,12 +24,12 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         public void TestConvertStringToArray()
         {
-            Assert.AreEqual( null, CHelper.ConvertStringToArray( null, typeof( string ) ), "NULL Conversion incorrect" );
+            Assert.AreEqual( null, Lib.ConvertStringToArray( null, typeof( string ) ), "NULL Conversion incorrect" );
 
-            var actual = (string[]) CHelper.ConvertStringToArray( "", typeof( string ) );
+            var actual = (string[]) Lib.ConvertStringToArray( "", typeof( string ) );
             Assert.AreEqual<int>( 0, actual.Length, "Length of array is not correct for zero-len string" );
 
-            var actual2 = (int[]) CHelper.ConvertStringToArray( "1,22, 333", typeof( int ) );
+            var actual2 = (int[]) Lib.ConvertStringToArray( "1,22, 333", typeof( int ) );
             Assert.AreEqual<int>( 3, actual2.Length, "Length of INT array incorrect" );
             Assert.AreEqual<int>( 1, actual2[0], "Index 0 is incorrect" );
             Assert.AreEqual<int>( 22, actual2[1], "Index 0 is incorrect" );
@@ -39,12 +39,12 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         public void TestConvertStringToArrayGeneric()
         {
-            Assert.AreEqual( null, CHelper.ConvertStringToArray<string>( null, ',' ), "NULL Conversion incorrect" );
+            Assert.AreEqual( null, Lib.ConvertStringToArray<string>( null, ',' ), "NULL Conversion incorrect" );
 
-            var actual = CHelper.ConvertStringToArray<string>( "", ',' );
+            var actual = Lib.ConvertStringToArray<string>( "", ',' );
             Assert.AreEqual<int>( 0, actual.Length, "Length of array is not correct for zero-len string" );
 
-            var actual2 = CHelper.ConvertStringToArray<int>( "1|22| 333", '|' );
+            var actual2 = Lib.ConvertStringToArray<int>( "1|22| 333", '|' );
             Assert.AreEqual<int>( 3, actual2.Length, "Length of INT array incorrect" );
             Assert.AreEqual<int>( 1, actual2[0], "Index 0 is incorrect" );
             Assert.AreEqual<int>( 22, actual2[1], "Index 0 is incorrect" );
@@ -66,7 +66,7 @@ namespace Morpheus.Standard.UnitTests
             var resultIdx = 0;
             do
             {
-                token = CHelper.ParseNextSegment( _sentence, ' ', ref idx, ref len );
+                token = Lib.ParseNextSegment( _sentence, ' ', ref idx, ref len );
                 if (token != null)
                 {
                     Assert.AreEqual<string>( _results[resultIdx++], token, "Result at index " + (resultIdx - 1) + " is not correct." );
@@ -80,7 +80,7 @@ namespace Morpheus.Standard.UnitTests
         public void TestAppendElementToArray()
         {
             var arr = new int[3] { 1, 2, 3 };
-            CHelper.AppendElementToArray<int>( ref arr, 4 );
+            Lib.AppendElementToArray<int>( ref arr, 4 );
 
             Assert.AreEqual<int>( 4, arr.Length, "Length of resultant array is wrong" );
             Assert.AreEqual<int>( 1, arr[0], "Index 0 is incorrect" );
@@ -89,7 +89,7 @@ namespace Morpheus.Standard.UnitTests
             Assert.AreEqual<int>( 4, arr[3], "Index 3 is incorrect" );
 
             arr = null;
-            CHelper.AppendElementToArray<int>( ref arr, 111 );
+            Lib.AppendElementToArray<int>( ref arr, 111 );
             Assert.AreEqual<int>( 1, arr.Length, "New length from NULL array is incorrect" );
             Assert.AreEqual<int>( 111, arr[0], "Added element is incorrect from NULL array" );
         }
@@ -98,13 +98,13 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         public void TestGetFirstNumberInString()
         {
-            var x = CHelper.GetFirstNumberInString( "homer is 45 years old" );
+            var x = Lib.GetFirstNumberInString( "homer is 45 years old" );
             Assert.AreEqual<int>( 45, x, "Incorrect number found in string" );
         }
 
         [TestMethod]
         [ExpectedException( typeof( FormatException ) )]
-        public void TestInvalidFirstNumberInString() => CHelper.GetFirstNumberInString( "homer is cool" );
+        public void TestInvalidFirstNumberInString() => Lib.GetFirstNumberInString( "homer is cool" );
 
 
         [TestMethod]
@@ -113,19 +113,19 @@ namespace Morpheus.Standard.UnitTests
             var msg =
                 "The quick brown fox jumped over the lazy dog. To whom it may concern. Eat more meat. How can you have any pudding if you don't eat your meat? ";
 
-            var compressed = CHelper.CompressString( msg );
+            var compressed = Lib.CompressString( msg );
             Console.WriteLine( "Compressed Length: " + compressed.Length );
 
-            var result = CHelper.DecompressString( compressed );
+            var result = Lib.DecompressString( compressed );
             Assert.AreEqual( msg, result, "The resulting string is invalid." );
 
             var one = new byte[1];
             one[0] = 0x55;
 
-            var oneCompressed = CHelper.Compress( one );
+            var oneCompressed = Lib.Compress( one );
             Console.WriteLine( "One byte in an array Compressed Length:" + oneCompressed.Length );
 
-            var bResult = CHelper.Decompress( oneCompressed );
+            var bResult = Lib.Decompress( oneCompressed );
             Assert.AreEqual( 1, bResult.Length, "Expected one byte decompressed" );
             Assert.AreEqual( (byte) 0x55, bResult[0], "The byte was wrong" );
         }
@@ -145,7 +145,7 @@ namespace Morpheus.Standard.UnitTests
 
             sSource.Position = OFFSET;
             var sDest = new MemoryStream();
-            CHelper.TransferStream( sSource, sDest, 64 );
+            Lib.TransferStream( sSource, sDest, 64 );
 
             Assert.AreEqual<long>( expectedCount, sDest.Length, "Length of destination stream is wrong" );
             var dest = sDest.GetBuffer();
@@ -171,7 +171,7 @@ namespace Morpheus.Standard.UnitTests
 
             sSource.Position = OFFSET;
             var sDest = new MemoryStream();
-            CHelper.TransferStream( sSource, sDest );
+            Lib.TransferStream( sSource, sDest );
 
             Assert.AreEqual<long>( expectedCount, sDest.Length, "Length of destination stream is wrong" );
             var dest = sDest.GetBuffer();
@@ -197,7 +197,7 @@ namespace Morpheus.Standard.UnitTests
 
             sSource.Position = OFFSET;
             var sDest = new MemoryStream();
-            CHelper.TransferStream( sSource, sDest, 64, COUNT );
+            Lib.TransferStream( sSource, sDest, 64, COUNT );
 
             Assert.AreEqual<long>( COUNT, sDest.Length, "Length of destination stream is wrong" );
             var dest = sDest.GetBuffer();
@@ -223,7 +223,7 @@ namespace Morpheus.Standard.UnitTests
 
             sSource.Position = OFFSET;
             var sDest = new MemoryStream();
-            CHelper.TransferStream( sSource, sDest, 64, COUNT );
+            Lib.TransferStream( sSource, sDest, 64, COUNT );
 
             Assert.AreEqual<long>( COUNT, sDest.Length, "Length of destination stream is wrong" );
         }
@@ -266,7 +266,7 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         public void AddSomethingToFilenameTest()
         {
-            var s = CHelper.AddSomethingToFilename( @"c:\temp\holy.txt", "cow" );
+            var s = Lib.AddSomethingToFilename( @"c:\temp\holy.txt", "cow" );
             Assert.AreEqual( @"c:\temp\holy.cow.txt", s, "Didn't add COW correctly" );
         }
 

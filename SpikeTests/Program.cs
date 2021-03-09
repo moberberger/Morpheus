@@ -34,20 +34,7 @@ namespace Morpheus
         {
             //RunTests(); return;
 
-
-            var buf = new byte[1 << 17];
-            buf.FromIntegers( () => (uint) RandomSeed.Robust() );
-
-            // var mem = new MemoryStream(); var writer = new BinaryWriter( mem );
-
-            // for (int i = 0; i 1024 * 256; i++) {
-
-            // }
-
-
-            using (var ofp = File.Create( @"D:\Temp\Robust.bin" ))
-                ofp.Write( buf, 0, buf.Length );
-            return;
+            Console.WriteLine( $"hi" );
         }
 
 
@@ -71,73 +58,5 @@ namespace Morpheus
         public const string CompileMode = "RELEASE";
 #endif
 
-        static void Test()
-        {
-            using (var ifp = File.OpenRead( @"D:\\Temp\\TimerSeed.bin" ))
-            {
-                var array = new byte[ifp.Length];
-                ifp.Read( array, 0, array.Length );
-
-                var rngArray = new byte[array.Length];
-                using (var rng = new Morpheus.MersenneTwister())
-                    rng.NextBytes( rngArray );
-
-                for (int i = 0; i < array.Length; i++)
-                {
-                    array[i] ^= rngArray[i];
-                }
-
-                using (var ofp = File.OpenWrite( @"D:\\Temp\\TimerRng.bin" ))
-                    ofp.Write( array, 0, array.Length );
-            }
-        }
-
-        static void FoldWithRandomNumberGenerator()
-        {
-            using (var ifp = File.OpenRead( @"D:\\Temp\\TimerSeed.bin" ))
-            {
-                var array = new byte[ifp.Length];
-                ifp.Read( array, 0, array.Length );
-
-                var rngArray = new byte[array.Length];
-                using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
-                    rng.GetBytes( rngArray );
-
-                for (int i = 0; i < array.Length; i++)
-                {
-                    array[i] ^= rngArray[i];
-                }
-
-                using (var ofp = File.OpenWrite( @"D:\\Temp\\TimerRng.bin" ))
-                    ofp.Write( array, 0, array.Length );
-            }
-        }
-
-
-        static void CreateTimerSeedData()
-        {
-            const int SIZE = 200_000;
-
-            var last = Stopwatch.GetTimestamp();
-            var array = new byte[SIZE];
-
-            for (int i = -1; i < array.Length; i++)
-            {
-                var counter = Stopwatch.GetTimestamp();
-
-                if (i >= 0)
-                {
-                    var delta = counter - last;
-                    array[i] = (byte) (delta & 0xff);
-                }
-
-                last = counter;
-                Thread.Sleep( 1 );
-                if (i % 1000 == 0) Console.WriteLine( i );
-            }
-
-            using (var ofp = File.Create( @"D:\\Temp\\TimerSeed.bin" ))
-                ofp.Write( array, 0, array.Length );
-        }
     }
 }

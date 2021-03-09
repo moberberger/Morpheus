@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Reflection;
 using System.Linq;
 
@@ -17,7 +16,7 @@ using CFieldTransfer = Morpheus.Core.CFieldTransfer;
 namespace Morpheus.Standard.UnitTests.Reflection
 {
     [TestClass]
-    [TestCategory("Reflection")]
+    [TestCategory( "Reflection" )]
     public class ReflectionTests
     {
 
@@ -328,7 +327,7 @@ namespace Morpheus.Standard.UnitTests.Reflection
         [TestCategory( "Reflection" )]
         public void GetTypesWithAttributeTest()
         {
-            var types = ReflectionExtenstions.GetTypesWithAttribute<Attr>();
+            var types = Lib.GetTypesWithAttribute<Attr>();
             Assert.AreEqual( 3, types.Count(), "Expected 2 types with that attribute" );
         }
 
@@ -336,7 +335,7 @@ namespace Morpheus.Standard.UnitTests.Reflection
         [TestCategory( "Reflection" )]
         public void GetTypesWithAttributeFilteredTest()
         {
-            var types = ReflectionExtenstions.GetTypesWithAttribute<Attr>( a => a.Name == "Homer" );
+            var types = Lib.GetTypesWithAttribute<Attr>( a => a.Name == "Homer" );
             Assert.AreEqual( 1, types.Count(), "Expected 1 type with that attribute" );
             var t = types.First();
             Assert.AreEqual( "A", t.Name, "Expected type 'A' to have the attribute" );
@@ -350,10 +349,10 @@ namespace Morpheus.Standard.UnitTests.Reflection
             var t = GetType();
             var mi = t.GetMember( "TestHasAttribute" );
 
-            var actual = ReflectionExtenstions.HasAttribute( mi[0], typeof( TestMethodAttribute ) );
+            var actual = Lib.HasAttribute( mi[0], typeof( TestMethodAttribute ) );
             Assert.AreEqual<bool>( true, actual, "This method DOES have the attribute in question (Type as method parameter)" );
 
-            actual = ReflectionExtenstions.HasAttribute<TestMethodAttribute>( mi[0] );
+            actual = Lib.HasAttribute<TestMethodAttribute>( mi[0] );
             Assert.AreEqual<bool>( true, actual, "This method DOES have the attribute in question (Type as generic parameter)" );
         }
 
@@ -362,33 +361,25 @@ namespace Morpheus.Standard.UnitTests.Reflection
         [TestCategory( "Reflection" )]
         public void CreateWithConstructorTest()
         {
-            object o = ReflectionExtenstions.CreateWithConstructor( typeof( C ), new A() );
+            object o = Lib.CreateWithConstructor( typeof( C ), new A() );
             Assert.IsInstanceOfType( o, typeof( C ), "Expected a type of C when using TYPE" );
             Assert.AreEqual( 2, (o as C).constructorType, "Should have used constructor for B" );
 
-            o = ReflectionExtenstions.CreateWithConstructor( typeof( C ) );
+            o = Lib.CreateWithConstructor( typeof( C ) );
             Assert.IsInstanceOfType( o, typeof( C ), "Expected a type of C for default constructor when using TYPE" );
             Assert.AreEqual( 0, (o as C).constructorType, "Should have used default constructor" );
         }
 
         [TestMethod]
         [TestCategory( "Reflection" )]
-        public void CreatePopulatedArrayTest()
+        public void ArrayFillTest()
         {
-            var arr = ReflectionExtenstions.CreatePopulatedArray<C>( 10, 69 );
+            var arr = new C[10].Fill( () => new C( 69 ) );
             Assert.IsNotNull( arr, "created array" );
             Assert.AreEqual( 10, arr.Length, "Length" );
             for (var i = 0; i < arr.Length; i++)
             {
                 Assert.AreEqual( 69, arr[i].constructorValue, "Constructor Value at index: " + i );
-            }
-
-            arr = ReflectionExtenstions.CreatePopulatedArray<C>( 5 );
-            Assert.IsNotNull( arr, "Second array" );
-            Assert.AreEqual( 5, arr.Length, "second array length" );
-            for (var i = 0; i < arr.Length; i++)
-            {
-                Assert.AreEqual( 0, arr[i].constructorValue, "Constructor Value at index: " + i );
             }
         }
 
@@ -543,34 +534,34 @@ namespace Morpheus.Standard.UnitTests.Reflection
             var tString = "System.String";
 
             var expected = tString.GetType();
-            var actual = ReflectionExtenstions.BetterGetType( tString );
+            var actual = Lib.BetterGetType( tString );
 
             Assert.AreEqual<IntPtr>( expected.TypeHandle.Value, actual.TypeHandle.Value, "Test of basic Type getting is wrong" );
 
             expected = typeof( ReflectionTests );
             tString = expected.FullName;
-            actual = ReflectionExtenstions.BetterGetType( tString );
+            actual = Lib.BetterGetType( tString );
             Assert.IsNotNull( actual, "Actual from Reflection is NULL" );
 
             Assert.AreEqual<IntPtr>( expected.TypeHandle.Value, actual.TypeHandle.Value, "Test of advanced Type getting is wrong" );
 
             tString = "UnitTestMorpheus.CReflectionTestNothing";
-            actual = ReflectionExtenstions.BetterGetType( tString );
+            actual = Lib.BetterGetType( tString );
 
             Assert.IsNull( actual, "NULL Expected from fictious type name" );
 
             // Re-test here to make sure we check the "Cached" version
             expected = typeof( ReflectionTests );
             tString = expected.FullName;
-            actual = ReflectionExtenstions.BetterGetType( tString, true );
+            actual = Lib.BetterGetType( tString, true );
             Assert.IsNotNull( actual, "Actual from Reflection is NULL" );
             Assert.AreEqual<IntPtr>( expected.TypeHandle.Value, actual.TypeHandle.Value, "Test of advanced Type getting is wrong using Cache" );
 
-            actual = ReflectionExtenstions.BetterGetType( tString, true );
+            actual = Lib.BetterGetType( tString, true );
             Assert.IsNotNull( actual, "Actual from Reflection is NULL" );
             Assert.AreEqual<IntPtr>( expected.TypeHandle.Value, actual.TypeHandle.Value, "Test of advanced Type getting is wrong using Cache" );
 
-            actual = ReflectionExtenstions.BetterGetType( tString, false );
+            actual = Lib.BetterGetType( tString, false );
             Assert.IsNotNull( actual, "Actual from Reflection is NULL" );
             Assert.AreEqual<IntPtr>( expected.TypeHandle.Value, actual.TypeHandle.Value, "Test of advanced Type getting is wrong using Cache" );
         }

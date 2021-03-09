@@ -29,10 +29,23 @@ namespace Morpheus
         /// </returns>
         /// <remarks>
         /// <code>
-        /// var expected = new HashSet&lt;string> { "01", "12", "02" };        /// 
-        /// // Should return all combinations of {0, 1, 2}        /// foreach (var x in Combinations.Integers( 3, 2 ))        /// {        ///     int lower = Math.Min( x[0], x[1] );        ///     int higher = Math.Max( x[0], x[1] );        ///     var str = $"{lower}{higher}";        /// 
-        ///     if (expected.Contains( str ))        ///         expected.Remove( str );        ///     else        ///         Assert.Fail( $"{str} was not in the set when it should be" );        /// }        /// 
-        /// Assert.AreEqual( 0, expected.Count );        /// </code>
+        /// var expected = new HashSet&lt;string> { "01", "12", "02" };
+        /// 
+        /// // Should return all combinations of {0, 1, 2}
+        /// foreach (var x in Combinations.Integers( 3, 2 ))
+        /// {
+        ///     int lower = Math.Min( x[0], x[1] );
+        ///     int higher = Math.Max( x[0], x[1] );
+        ///     var str = $"{lower}{higher}";
+        /// 
+        ///     if (expected.Contains( str ))
+        ///         expected.Remove( str );
+        ///     else
+        ///         Assert.Fail( $"{str} was not in the set when it should be" );
+        /// }
+        /// 
+        /// Assert.AreEqual( 0, expected.Count );
+        /// </code>
         /// </remarks>
         public static IEnumerable<int[]> Integers( int _N, int _K )
         {
@@ -71,10 +84,27 @@ namespace Morpheus
     /// state of the permutation generator. If its modified, then the generator will not work
     /// correctly.
     /// <code>
-    /// var expected = new HashSet&lt;string>    /// {    ///     "01", "12", "02",    ///     "10", "21", "20",    /// };    /// 
-    /// // Should return all combinations of {0, 1, 2}    /// foreach (var x in Permutations.Integers( 3, 2 ))    /// {    ///     int first = x[0];    ///     int second = x[1];    ///     var str = $"{first}{second}";    /// 
-    ///     if (expected.Contains( str ))    ///         expected.Remove( str );    ///     else    ///         Assert.Fail( $"{str} was not in the set when it should be" );    /// }    /// 
-    /// Assert.AreEqual( 0, expected.Count );    /// </code>
+    /// var expected = new HashSet&lt;string>
+    /// {
+    ///     "01", "12", "02",
+    ///     "10", "21", "20",
+    /// };
+    /// 
+    /// // Should return all combinations of {0, 1, 2}
+    /// foreach (var x in Permutations.Integers( 3, 2 ))
+    /// {
+    ///     int first = x[0];
+    ///     int second = x[1];
+    ///     var str = $"{first}{second}";
+    /// 
+    ///     if (expected.Contains( str ))
+    ///         expected.Remove( str );
+    ///     else
+    ///         Assert.Fail( $"{str} was not in the set when it should be" );
+    /// }
+    /// 
+    /// Assert.AreEqual( 0, expected.Count );
+    /// </code>
     /// </remarks>
     public static class Permutations
     {

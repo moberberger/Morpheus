@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿#if false
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -90,3 +92,4 @@ namespace Morpheus.Standard.UnitTests.Stochastics
         }
     }
 }
+#endif

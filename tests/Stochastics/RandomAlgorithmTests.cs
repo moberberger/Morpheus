@@ -11,17 +11,6 @@ namespace Morpheus.Standard.UnitTests.Stochastics
     public class RandomAlgorithmTests
     {
         [TestMethod]
-        public void MersenneTwisterTest()
-        {
-            var mt = new MersenneTwister( 0 );
-            var x = mt.Next64();
-
-            var expected = 10936052916359727788;
-            Assert.AreEqual( expected, x );
-        }
-
-
-        [TestMethod]
         public void MersenneDisposeTest()
         {
             using (var rng = new MersenneTwister())
