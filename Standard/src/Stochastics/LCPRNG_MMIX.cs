@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 
@@ -20,7 +21,9 @@ namespace Morpheus
 
         public override ulong Next64() => State = State * Multiplier + Increment;
 
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public static ulong Next( ulong state ) => state * Multiplier + Increment;
+        [MethodImpl( MethodImplOptions.AggressiveInlining )] 
         public static long Next( long state ) => (long)((ulong)state * Multiplier + Increment);
     }
 }

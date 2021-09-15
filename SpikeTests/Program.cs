@@ -7,6 +7,7 @@ using System.Threading;
 using Morpheus.PerformanceTests;
 using System.Linq;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Morpheus
 {
@@ -26,6 +27,31 @@ namespace Morpheus
         };
 
 
+        public class TestInlining
+        {
+            public const ulong Multiplier = 6364136223846793005UL;
+            public const ulong Increment = 1442695040888963407UL;
+            public ulong State;
+            public double Sum;
+
+
+            [MethodImpl( MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization )]
+            public static ulong Next( ulong state ) => state * Multiplier + Increment;
+
+            [MethodImpl( MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization )]
+            public static long Next( long state ) => (long)((ulong)state * Multiplier + Increment);
+
+            [MethodImpl( MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization )]
+            public ulong Next() => State = Next( State );
+
+            [MethodImpl( MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization )]
+            public virtual double NextDouble() => Next() / (1.0 + uint.MaxValue);
+
+            [MethodImpl( MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization )]
+            public double Add( double x ) => Sum += Next() * x;
+
+        }
+
         /// <summary>
         /// Entry point for Console use
         /// </summary>
@@ -34,7 +60,20 @@ namespace Morpheus
         {
             //RunTests(); return;
 
-            Console.WriteLine( $"hi" );
+            double sum = 0;
+            long state = DateTime.Now.Ticks;
+
+            Evolution.Engine<LCPRNG_MMIX> e = default;
+            var rng = new TestInlining();
+
+            for (int i = 0; i < 1000000; i++)
+            {
+                var smp = rng.NextDouble();
+                sum += rng.Add( smp );
+            }
+
+
+            Console.WriteLine( $"hi {sum - rng.Sum}" );
         }
 
 

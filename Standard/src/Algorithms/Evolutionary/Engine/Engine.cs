@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Security;
 using System.Threading;
 
 namespace Morpheus.Evolution
@@ -10,10 +11,15 @@ namespace Morpheus.Evolution
         public delegate float FnEvolver( TChromosome evolveInto, Func<double, TChromosome> sampler );
 
         private float[] sampleDeviations;
-        private float[] sampleDeviationsSums;
+        private float[] sampleDeviationsSums1;
+        private float[] sampleDeviationsSums2;
+        private float[] sampleDeviationsSums3;
 
-        private int baseIndex;
-        private int bestIndex;
+        private int baseIndex = -1;
+        private int bestIndex = -1;
+        private float minDeviation = float.MaxValue;
+        private float maxDeviation = float.MinValue;
+        private float sumDeviations = 0;
 
 
         /// <summary>
@@ -102,14 +108,21 @@ namespace Morpheus.Evolution
         public void Reset( TChromosome[] doubleInitialPopulation )
         {
             Population = doubleInitialPopulation;
-            int len = doubleInitialPopulation.Length;
 
-            sampleDeviations = Enumerable.
-                Range( 0, len ).
-                Select( idx => Evolver( Population[idx], null ) ).
-                ToArray();
+            sampleDeviations = new float[PopulationSize];
+            sampleDeviationsSums1 = new float[PopulationSize >> 6];
+            sampleDeviationsSums2 = new float[PopulationSize >> 3];
+            sampleDeviationsSums3 = new float[PopulationSize];
 
-            sampleDeviationsSums = new float[len];
+            sumDeviations = 0;
+            for (int i = 0; i < PopulationSize; i++)
+            {
+                var dev = Evolver( Population[i], null );
+                sampleDeviations[i] = dev;
+                sumDeviations += dev;
+                minDeviation = Math.Min( minDeviation, dev );
+                maxDeviation = Math.Max( maxDeviation, dev );
+            }
 
             IterationCount = 0;
             baseIndex = 0;
@@ -138,36 +151,21 @@ namespace Morpheus.Evolution
         /// 
         /// This of course leaves the debugging of the invalid SampleSet more interesting...
         /// </remarks>
-        private void ProcessSampleSet()
+        public void ProcessSampleSet()
         {
-            float min = sampleDeviations[baseIndex], max = min;
             int endIndex = baseIndex + PopulationSize;
-            bestIndex = baseIndex;
-
-            // handed [0] in previous initialization
-            for (int i = baseIndex + 1; i < endIndex; i++)
-            {
-                float dev = sampleDeviations[i];
-
-                if (dev > max)
-                    max = dev;
-
-                if (dev < min)
-                {
-                    min = dev;
-                    bestIndex = i;
-                }
-            }
-
             float sum = 0.0f;
             for (int i = baseIndex; i < endIndex; i++)
             {
                 float dev = sampleDeviations[i];
 
-                float x = max / dev;
+                float x = maxDeviation / dev;
+
                 sum += x;
 
-                sampleDeviationsSums[i] = sum;
+                sampleDeviationsSums3[i] = sum;
+                sampleDeviationsSums2[i >> 3] = sum;
+                sampleDeviationsSums1[i >> 6] = sum;
             }
         }
 
@@ -186,14 +184,13 @@ namespace Morpheus.Evolution
         {
             int low = baseIndex;
             int high = low + PopulationSize;
-            float max = sampleDeviationsSums[high - 1];
-            float selection = (float)_selection * max; // target for vectorization
+            float selection = (float)_selection * sumDeviations;
 
             while (low < high)
             {
                 int mid = low + (high - low) / 2; // assumed const-2 optimized to shift in JIT
 
-                if (selection > sampleDeviationsSums[mid])
+                if (selection > sampleDeviationsSums3[mid])
                     low = mid + 1;
                 else
                     high = mid - 1;
@@ -219,20 +216,40 @@ namespace Morpheus.Evolution
             int start = PopulationSize - baseIndex;
             int end = start + PopulationSize;
 
+            minDeviation = float.MaxValue;
+            maxDeviation = float.MinValue;
+            sumDeviations = 0;
+
             // Elitism
             if (UseElitism)
-                Population.SwapElements( bestIndex, start++ );
+            {
+                Population.SwapElements( bestIndex, start );
+                bestIndex = start;
+                sampleDeviations[start] =
+                    minDeviation =
+                    maxDeviation =
+                    sumDeviations = Evolver( Population[start], null );
+
+                start++;
+            }
 
             // Generation
             for (int i = start; i < end; i++)
             {
-                // start can be parallel
-
                 var output = Population[i];
                 var deviation = Evolver( output, Sample );
                 sampleDeviations[i] = deviation;
 
-                // end can be parallel
+                sumDeviations += deviation;
+
+                if (deviation > maxDeviation)
+                    maxDeviation = deviation;
+
+                if (deviation < minDeviation)
+                {
+                    minDeviation = deviation;
+                    bestIndex = i;
+                }
             }
 
             // Swap base index
