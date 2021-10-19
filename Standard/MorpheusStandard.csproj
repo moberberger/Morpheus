@@ -1,44 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>2019.9.23.1</Version>
-    <Authors>Michael Oberberger</Authors>
-    <Company>Daco</Company>
-    <Product>Morpheus</Product>
-    <Description>A set of common functions and features</Description>
-    <Copyright>Copyright © Michael Oberberger, 2005-2021</Copyright>
-    <FileVersion>2019.1.1</FileVersion>
-    <RootNamespace>Morpheus</RootNamespace>
-    <PackageId>Morpheus</PackageId>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Configurations>Debug;Release;Core3.1-Debug;Core3.1-Release</Configurations>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net5.0-windows</TargetFramework>
+        <UseWindowsForms>true</UseWindowsForms>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <RootNamespace>Morpheus</RootNamespace>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <NoWarn>1701;1702;IDE0051</NoWarn>
-  </PropertyGroup>
+    </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Core3.1-Release|AnyCPU'">
-    <NoWarn>1701;1702;IDE0051</NoWarn>
-  </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn>1701;1702;IDE0051;CS1591</NoWarn>
-    <DocumentationFile></DocumentationFile>
-    <WarningsAsErrors>NU1605</WarningsAsErrors>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Core3.1-Debug|AnyCPU'">
-    <NoWarn>1701;1702;IDE0051;CS1591</NoWarn>
-    <DocumentationFile />
-    <WarningsAsErrors>NU1605</WarningsAsErrors>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="tests\**" />
-    <EmbeddedResource Remove="tests\**" />
-    <None Remove="tests\**" />
-  </ItemGroup>
+    <PropertyGroup>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    </PropertyGroup>
 
 </Project>

@@ -63,7 +63,6 @@ namespace Morpheus
             double sum = 0;
             long state = DateTime.Now.Ticks;
 
-            Evolution.Engine<LCPRNG_MMIX> e = default;
             var rng = new TestInlining();
 
             for (int i = 0; i < 1000000; i++)

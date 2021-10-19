@@ -134,15 +134,14 @@ namespace Morpheus
             if (_list is null)
                 throw new ArgumentNullException( nameof( _list ) );
 
-            _rng = _rng ?? Rng.Default;
+            _rng ??= Rng.Default;
 
             var count = _list.Count;
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count-1; i++)
             {
-                var idx = _rng.Next( count );
-                var tmp = _list[i];
-                _list[i] = _list[idx];
-                _list[idx] = tmp;
+                var range = count - i;
+                var idx = _rng.Next( range );
+                _list.SwapElements( i, idx );
             }
             return _list;
         }

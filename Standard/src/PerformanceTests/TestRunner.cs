@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading;
 
 #pragma warning disable 169
+#pragma warning disable CA2200 // Rethrow to preserve stack details
 
 namespace Morpheus.PerformanceTests
 {
