@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Linq;
+using System.Collections;
 
 #pragma warning disable IDE1006 // Naming Styles
 
@@ -72,6 +73,44 @@ namespace Morpheus
                     i = 0; // breaks first "while" loop if not handled.
 
             } while (current[0] <= _N - _K);
+        }
+
+        /// <summary>
+        /// Return each of the combinations of elements from each of a set of enumerations.
+        /// </summary>
+        /// <param name="lists"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static IEnumerable<object[]> ObjectLists( params IEnumerable[] lists )
+        {
+            foreach (var obj in ObjectLists( lists, new object[lists.Length], 0 ))
+                yield return obj;
+        }
+
+        private static IEnumerable<object[]> ObjectLists( IEnumerable[] lists, object[] current, int index )
+        {
+            if (lists == null) throw new ArgumentNullException( "lists cannot be null" );
+
+            int dim = lists.Length;
+            if (current == null)
+            {
+                current = new object[dim];
+                index = 0;
+            }
+
+            if (index == dim)
+            {
+                yield return current;
+            }
+            else
+            {
+                foreach (object item in lists[index])
+                {
+                    current[index] = item;
+                    foreach (var obj in ObjectLists( lists, current, index + 1 ))
+                        yield return obj;
+                }
+            }
         }
     }
 

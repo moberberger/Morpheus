@@ -463,6 +463,8 @@ namespace Morpheus
         }
 
 
+        public static IEnumerable<T> ApplyIndicies<T>( this IList<T> theArray, IEnumerable<int> indicies )
+            => indicies.Select( i => theArray[i] );
 
 
         #region Really Specific Enumerations
