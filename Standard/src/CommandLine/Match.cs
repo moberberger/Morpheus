@@ -4,8 +4,9 @@ namespace Morpheus.CommandLine
 {
     public class Match
     {
-        public static Regex Regex { get; } = new Regex( @"^\s* (?'negated'no)? (?'param'[\w\d]+) (\s*=\s*|\s+) (?'value'[\w\d]+)? \s*$", 
-                                                         RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace );
+        public static Regex Regex { get; }
+            = new Regex( @"^\s* (?'negated'no)? (?'param'[\w\d]+) (\s*=\s*|\s+) (?'value'[\w\d]+)? \s*$",
+                RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace );
         public Parameter Parameter { get; init; }
         public string Token { get; init; }
         public bool IsNegated { get; init; }
@@ -14,6 +15,7 @@ namespace Morpheus.CommandLine
         public string Value => string.IsNullOrWhiteSpace( DeducedValue ) ? Parameter.DefaultValue : DeducedValue;
         public bool IsMatch => Parameter.Name.StartsWith( ParamFound, !Parameter.Parser.CaseSensitive, null );
         public static bool IsSeparator( char ch ) => char.IsWhiteSpace( ch ) || ch == '=';
+        public void Execute() => Parameter.Executor( this );
 
         public Match( Parameter parameter, string token )
         {

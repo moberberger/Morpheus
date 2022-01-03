@@ -11,16 +11,11 @@ namespace Morpheus.CommandLine
         public bool IsNegatable { get; init; }
         public string SubparamUsage { get; init; }
         public string DefaultValue { get; init; }
-
         public Action<Match> Executor { get; init; }
         public Parser Parser { get; internal set; }
 
 
-        public override string ToString()
-            => $"{UsageLeftSide()}   {Usage}";
-
-
-        public string UsageLeftSide()
+        public string UsageLeftSide
             => new StringBuilder()
                 .AppendIf( !IsRequired, "[" )
                 .Append( Parser.Delimiter.Trim() )
@@ -29,5 +24,9 @@ namespace Morpheus.CommandLine
                 .AppendIf( !string.IsNullOrWhiteSpace( SubparamUsage ), $" <{SubparamUsage}>" )
                 .AppendIf( !IsRequired, "]" )
                 .ToString();
+
+
+        public override string ToString()
+            => $"{UsageLeftSide}   {Usage}";
     }
 }

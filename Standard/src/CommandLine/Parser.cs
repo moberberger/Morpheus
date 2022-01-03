@@ -10,11 +10,10 @@ namespace Morpheus.CommandLine
         public string Delimiter { get; set; } = " -";
         public bool CaseSensitive { get; set; } = false;
         public string CommandLine { get; set; } = Environment.CommandLine;
-
         public List<Parameter> ParameterDefinitions { get; private set; }
 
-        public Parser() { }
 
+        public Parser() { }
         public Parser( IEnumerable<Parameter> parameterDefinitions )
             => ParameterDefinitions = parameterDefinitions
                     .Apply( p => p.Parser = this )
@@ -42,16 +41,14 @@ namespace Morpheus.CommandLine
                 } );
 
 
-
-
         public IDictionary<string, IEnumerable<Match>> Parse( string commandLine = null )
             => (commandLine ?? CommandLine)
                 .Split( Delimiter )
                 .Skip( 1 )
                 .ToDictionary( token => token,
-                                token => ParameterDefinitions
-                                            .Select( pdef => new Match( pdef, token ) )
-                                            .Where( match => match.IsMatch ) );
+                               token => ParameterDefinitions
+                                           .Select( pdef => new Match( pdef, token ) )
+                                           .Where( match => match.IsMatch ) );
 
 
         public IEnumerable<string> Validate( string commandLine = null )
@@ -72,5 +69,12 @@ namespace Morpheus.CommandLine
                 .AppendLine( "USAGE:" )
                 .AppendLines( ParameterDefinitions )
                 .ToString();
+
+        public void Execute( string commandLine = null )
+        {
+            Parse( commandLine ?? CommandLine )
+                .Apply( kv => kv.Value.Single().Execute() )
+                .Run();
+        }
     }
 }
