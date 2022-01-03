@@ -34,6 +34,8 @@ namespace Morpheus
         public static TextGridBorders Thick => new TextGridBorders( "Thick", "━┃┏┳┓┣╋┫┗┻┛" );
         public static TextGridBorders Simple => new TextGridBorders( "Simple", "─│┌┬┐├┼┤└┴┘" );
         public static TextGridBorders Double => new TextGridBorders( "Double", "═║╔╦╗╠╬╣╚╩╝" );
+
+        public enum Alignments { Left, Top = Left, Right, Bottom = Right, Center };
         #endregion
 
         string[,] strings;
@@ -46,6 +48,8 @@ namespace Morpheus
         public TextGridBorders Borders { get; set; } = Simple;
         public int RowPadding { get; set; } = 0;
         public int ColumnPadding { get; set; } = 0;
+        public Alignments HorizontalAlign { get; set; } = Alignments.Center;
+        public Alignments VerticalAlign { get; set; } = Alignments.Center;
 
 
         public TextGrid( IEnumerable<IEnumerable<object>> objects )
