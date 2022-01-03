@@ -467,6 +467,22 @@ namespace Morpheus
             => indicies.Select( i => theArray[i] );
 
 
+        /// <summary>
+        /// Apply an action to each element of an enumeration
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns>
+        /// The same enumeration after <see cref="action"/> has been applied to each element
+        /// </returns>
+        public static IEnumerable<T> Apply<T>( this IEnumerable<T> stuff, Action<T> action )
+        {
+            foreach (var item in stuff)
+            {
+                action( item );
+                yield return item;
+            }
+        }
+
         #region Really Specific Enumerations
 #if _KERNEL32_OK_
         /// <summary>

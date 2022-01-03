@@ -11,7 +11,7 @@ namespace Morpheus
     /// </summary>
     public class Crypto
     {
-        private readonly SymmetricAlgorithm m_algo = new RijndaelManaged();
+        private readonly SymmetricAlgorithm m_algo = Aes.Create();
         // SymmetricAlgorithm m_algo = new TripleDESCryptoServiceProvider(); SymmetricAlgorithm
         // m_algo = new RC2CryptoServiceProvider(); SymmetricAlgorithm m_algo = new
         // DESCryptoServiceProvider();

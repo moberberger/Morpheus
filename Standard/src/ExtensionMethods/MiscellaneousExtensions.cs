@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -85,7 +86,7 @@ namespace Morpheus
         /// </remarks>
         public static T Swap<T>( this object _this, ref T _other )
             where T : class
-            => Interlocked.Exchange( ref _other, (T) _this );
+            => Interlocked.Exchange( ref _other, (T)_this );
 
 
         /// <summary>
@@ -109,6 +110,17 @@ namespace Morpheus
                 if (_predicate( val ))
                     return val;
             }
+        }
+
+
+        public static StringBuilder AppendIf( this StringBuilder sb, bool condition, string ifTrue, string ifFalse = "" )
+            => sb.Append( condition ? ifTrue : ifFalse );
+
+        public static StringBuilder AppendLines( this StringBuilder sb, IEnumerable objects )
+        {
+            foreach (var obj in objects)
+                sb.AppendLine( obj.ToString() );
+            return sb;
         }
     }
 }
