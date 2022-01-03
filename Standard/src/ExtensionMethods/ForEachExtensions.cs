@@ -153,5 +153,61 @@ namespace Morpheus
         {
             foreach (var _ in stuff) ;
         }
+
+        /// <summary>
+        /// Apply an action to each element of an enumeration
+        /// </summary>
+        public static void Run<T>( this IEnumerable<T> stuff, Action<T> action )
+        {
+            foreach (var item in stuff)
+                action( item );
+        }
+
+        /// <summary>
+        /// Apply an action to each element of an enumeration. Does not yield an
+        /// <see cref="IEnumerable"/> , so the action will actually be run on the stuff when
+        /// this method is called. See <see cref="Apply"/> for the alternative model.
+        /// </summary>
+        public static void Run<T>( this IEnumerable<T> stuff, Action<T, int> action )
+        {
+            int index = 0;
+            foreach (var item in stuff)
+                action( item, index++ );
+        }
+
+        /// <summary>
+        /// Apply an action to each element of an enumeration
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns>
+        /// The same enumeration after <see cref="action"/> has been applied to each element
+        /// </returns>
+        public static IEnumerable<T> Apply<T>( this IEnumerable<T> stuff, Action<T> action )
+        {
+            foreach (var item in stuff)
+            {
+                action( item );
+                yield return item;
+            }
+        }
+
+        /// <summary>
+        /// Apply an action to each element of an enumeration
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns>
+        /// The same enumeration after <see cref="action"/> has been applied to each element
+        /// </returns>
+        public static IEnumerable<T> Apply<T>( this IEnumerable<T> stuff, Action<T, int> action )
+        {
+            int index = 0;
+            foreach (var item in stuff)
+            {
+                action( item, index++ );
+                yield return item;
+            }
+        }
+
+
     }
 }
