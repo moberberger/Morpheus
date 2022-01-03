@@ -471,6 +471,15 @@ namespace Morpheus
             => indicies.Select( i => theArray[i] );
 
 
+
+        public static int Count( this IEnumerable stuff )
+        {
+            int count = 0;
+            foreach (var item in stuff) count++;
+            return count;
+        }
+
+
         #region Really Specific Enumerations
 #if _KERNEL32_OK_
         /// <summary>
