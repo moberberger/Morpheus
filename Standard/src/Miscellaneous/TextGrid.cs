@@ -31,9 +31,9 @@ namespace Morpheus
             public char BottomRight => orderedBorderChars[10];
         }
 
-        public static TextGridBorders Thick => new TextGridBorders( "Thick", "━┃┏┳┓┣╋┫┗┻┛" );
-        public static TextGridBorders Simple => new TextGridBorders( "Simple", "─│┌┬┐├┼┤└┴┘" );
+        public static TextGridBorders Single => new TextGridBorders( "Single", "─│┌┬┐├┼┤└┴┘" );
         public static TextGridBorders Double => new TextGridBorders( "Double", "═║╔╦╗╠╬╣╚╩╝" );
+        public static TextGridBorders Thick => new TextGridBorders( "Thick", "━┃┏┳┓┣╋┫┗┻┛" );
 
         public enum Alignments { Left, Top = Left, Right, Bottom = Right, Center };
         #endregion
@@ -45,21 +45,23 @@ namespace Morpheus
         public int Height { get; private set; }
 
 
-        public TextGridBorders Borders { get; set; } = Simple;
+        public TextGridBorders Borders { get; set; } = Single;
         public int RowPadding { get; set; } = 0;
         public int ColumnPadding { get; set; } = 0;
         public Alignments HorizontalAlign { get; set; } = Alignments.Center;
         public Alignments VerticalAlign { get; set; } = Alignments.Center;
 
 
-        public TextGrid( IEnumerable<IEnumerable<object>> objects )
+        public TextGrid( IEnumerable<IEnumerable> objects )
         {
             (Width, Height) = BoxSize( objects );
-            strings = new string[Height, Width]; // row-major
+
+            strings = new string[Height, Width];
+            (Height, Width).ForEach( ( r, c ) => strings[r, c] = "" );
 
             objects
-                .Run( ( row, rowIndex )
-                    => row.Run( ( obj, colIndex )
+                .ForEach( ( row, rowIndex )
+                    => row.ForEach( ( obj, colIndex )
                         => strings[rowIndex, colIndex] = obj.ToString()
                 )
             );
@@ -71,5 +73,13 @@ namespace Morpheus
 
         public static (int, int) BoxSize( string multiLineString )
             => BoxSize( multiLineString.Split( '\n' ) );
+
+
+
+        //<code>
+        //public override string ToString()
+        //{
+        //    (Height, Width).ForEach( ( r, c ) =>
+        //}
     }
 }

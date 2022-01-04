@@ -10,7 +10,7 @@ namespace Morpheus
     /// <summary>
     /// A bunch of extensions for <see cref="IEnumerable{T}"/> objects.
     /// </summary>
-    public static class IEnumerable_typed_Extensions
+    public static class ArrayExtensions
     {
         /// <summary>
         /// Return the last item in a strongly typed array.

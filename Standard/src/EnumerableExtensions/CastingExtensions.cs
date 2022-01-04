@@ -7,10 +7,9 @@ namespace Morpheus
 {
     /// <summary>
     /// A bunch of extensions for <see cref="IEnumerable{T}"/> objects that operate on the
-    /// <see cref="Type"/> s of the objects. Operations such as casting, detection, etc. can be
-    /// found in this class.
+    /// <see cref="Type"/> s of the objects.
     /// </summary>
-    public static class IEnumerable_casting_Extensions
+    public static class CastingExtensions
     {
         /// <summary>
         /// Return all items in the enumeration that are NOT of a specific type

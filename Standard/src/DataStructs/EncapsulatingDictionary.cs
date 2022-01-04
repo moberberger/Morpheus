@@ -212,7 +212,7 @@ namespace Morpheus
         /// </summary>
         /// <param name="array"></param>
         /// <param name="arrayIndex"></param>
-        public void CopyTo( KeyValuePair<TKey, TValue>[] array, int arrayIndex ) => this.Select( x => array[arrayIndex++] = x ).Run();
+        public void CopyTo( KeyValuePair<TKey, TValue>[] array, int arrayIndex ) => this.Select( x => array[arrayIndex++] = x ).ForEach();
 
         /// <summary>
         /// Pass-through to the enumeration algorithm

@@ -74,7 +74,7 @@ namespace Morpheus.CommandLine
         {
             Parse( commandLine ?? CommandLine )
                 .Apply( kv => kv.Value.Single().Execute() )
-                .Run();
+                .ForEach();
         }
     }
 }

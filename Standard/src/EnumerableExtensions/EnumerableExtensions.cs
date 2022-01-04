@@ -18,7 +18,7 @@ namespace Morpheus
     /// I/O and/or User Input is involved, any performance penalty for using these extensions
     /// will almost always be negligible in comparison.
     /// </summary>
-    public static class IEnumerableExtensions
+    public static class EnumerableExtensions
     {
         /// <summary>
         /// Like <see cref="string.Join(string, object[])"/> , but uses an enumeration instead
@@ -168,7 +168,8 @@ namespace Morpheus
         /// <param name="_items">The items to test for the condition</param>
         /// <param name="_condition">The boolean condition to be tested</param>
         /// <returns>TRUE if the condition is true for any item in the enumeration</returns>
-        public static bool Contains<T>( this IEnumerable<T> _items, Func<T, bool> _condition ) => _items.Any( _condition );
+        public static bool Contains<T>( this IEnumerable<T> _items, Func<T, bool> _condition )
+            => _items.Any( _condition );
 
 
         /// <summary>
@@ -373,16 +374,16 @@ namespace Morpheus
             foreach (var obj in _collection)
             {
                 var val = default( U );
-                var skip = false;
+                var doYield = true;
                 try
                 {
                     val = _selector( obj );
                 }
                 catch
                 {
-                    skip = true;
+                    doYield = false;
                 }
-                if (!skip)
+                if (doYield)
                     yield return val;
             }
         }
@@ -478,6 +479,10 @@ namespace Morpheus
             foreach (var item in stuff) count++;
             return count;
         }
+
+
+
+
 
 
         #region Really Specific Enumerations

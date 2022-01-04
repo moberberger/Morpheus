@@ -9,7 +9,7 @@ namespace Morpheus
     /// <summary>
     /// Some extension methods that operate on numbers.
     /// </summary>
-    public static class MathRelatedExtensions
+    public static class StatisticsExtensions
     {
         #region Data Types
 
@@ -143,12 +143,12 @@ namespace Morpheus
         /// of doubles. The generalized form, using selectors to convert from your data to a
         /// double, are found below.
         /// </summary>
-        /// <param name="_population">The data to get the standard deviation for</param>
+        /// <param name="population">The data to get the standard deviation for</param>
         /// <returns>The standard deviation for the collection of double values</returns>
-        public static double StandardDeviation( this IEnumerable<double> _population )
+        public static double StandardDeviation( this IEnumerable<double> population )
         {
-            var average = _population.Average();
-            return _population.StandardDeviation( average );
+            var average = population.Average();
+            return population.StandardDeviation( average );
         }
 
         /// <summary>
@@ -157,20 +157,20 @@ namespace Morpheus
         /// double, are found below. This version assumes that you already know the average of
         /// the population of data.
         /// </summary>
-        /// <param name="_population">The data to get the standard deviation for</param>
-        /// <param name="_preComputedAverage">
+        /// <param name="population">The data to get the standard deviation for</param>
+        /// <param name="preComputedAverage">
         /// The average of the data, calculated from outside this method
         /// </param>
         /// <returns>The standard deviation for the collection of double values</returns>
-        public static double StandardDeviation( this IEnumerable<double> _population, double _preComputedAverage )
+        public static double StandardDeviation( this IEnumerable<double> population, double preComputedAverage )
         {
             double sum = 0;
             var count = 0;
 
-            foreach (var x in _population)
+            foreach (var x in population)
             {
                 count++;
-                var xx = x - _preComputedAverage;
+                var xx = x - preComputedAverage;
                 sum += xx * xx;
             }
 
@@ -182,15 +182,15 @@ namespace Morpheus
         /// of doubles.
         /// </summary>
         /// <typeparam name="T">The Type of each element in the population</typeparam>
-        /// <param name="_population">The population of data</param>
-        /// <param name="_selector">
+        /// <param name="population">The population of data</param>
+        /// <param name="selector">
         /// Transform each element of the population into a "double" value
         /// </param>
         /// <returns>The standard deviation of the population</returns>
-        public static double StandardDeviation<T>( this IEnumerable<T> _population, Func<T, double> _selector )
+        public static double StandardDeviation<T>( this IEnumerable<T> population, Func<T, double> selector )
         {
-            var average = _population.Average( _selector );
-            return _population.StandardDeviation( _selector, average );
+            var average = population.Average( selector );
+            return population.StandardDeviation( selector, average );
         }
 
 
@@ -200,23 +200,23 @@ namespace Morpheus
         /// of data.
         /// </summary>
         /// <typeparam name="T">The Type of each element in the population</typeparam>
-        /// <param name="_population">The population of data</param>
-        /// <param name="_selector">
+        /// <param name="population">The population of data</param>
+        /// <param name="selector">
         /// Transform each element of the population into a "double" value
         /// </param>
-        /// <param name="_preComputedAverage">
+        /// <param name="preComputedAverage">
         /// The average of the population, computed prior to calling this routine
         /// </param>
         /// <returns>The standard deviation of the population</returns>
-        public static double StandardDeviation<T>( this IEnumerable<T> _population, Func<T, double> _selector, double _preComputedAverage )
+        public static double StandardDeviation<T>( this IEnumerable<T> population, Func<T, double> selector, double preComputedAverage )
         {
             double sum = 0;
             var count = 0;
 
-            foreach (var x in _population)
+            foreach (var x in population)
             {
                 count++;
-                var xx = _selector( x ) - _preComputedAverage;
+                var xx = selector( x ) - preComputedAverage;
                 sum += xx * xx;
             }
 
@@ -227,22 +227,22 @@ namespace Morpheus
         /// <summary>
         /// Return a set of stats (Min, Max, Avg, Total, Count) on a collection of numbers.
         /// </summary>
-        /// <param name="_data">The data to analyse</param>
+        /// <param name="data">The data to analyse</param>
         /// <returns>The stats on the data</returns>
-        public static LongStats GetStats( this IEnumerable<long> _data ) => _data.GetStats( _x => _x );
+        public static LongStats GetStats( this IEnumerable<long> data ) => data.GetStats( _x => _x );
 
         /// <summary>
         /// Return a set of stats (Min, Max, Avg, Total, Count) on a collection of numbers.
         /// </summary>
         /// <typeparam name="T">The Type of the data in the collection</typeparam>
-        /// <param name="_data">The data to analyse</param>
+        /// <param name="data">The data to analyse</param>
         /// <param name="_selector">The selctor to get an INT from the data</param>
         /// <returns>The stats on the data</returns>
-        public static LongStats GetStats<T>( this IEnumerable<T> _data, Func<T, long> _selector )
+        public static LongStats GetStats<T>( this IEnumerable<T> data, Func<T, long> _selector )
         {
             var retval = new LongStats();
 
-            foreach (var row in _data)
+            foreach (var row in data)
             {
                 var val = _selector( row );
                 retval.Accumulate( val );
@@ -255,22 +255,22 @@ namespace Morpheus
         /// <summary>
         /// Return a set of stats (Min, Max, Avg, Total, Count) on a collection of numbers.
         /// </summary>
-        /// <param name="_data">The data to analyse</param>
+        /// <param name="data">The data to analyse</param>
         /// <returns>The stats on the data</returns>
-        public static DoubleStats GetStats( this IEnumerable<double> _data ) => _data.GetStats( _x => _x );
+        public static DoubleStats GetStats( this IEnumerable<double> data ) => data.GetStats( _x => _x );
 
         /// <summary>
         /// Return a set of stats (Min, Max, Avg, Total, Count) on a collection of numbers.
         /// </summary>
         /// <typeparam name="T">The Type of the data in the collection</typeparam>
-        /// <param name="_data">The data to analyse</param>
+        /// <param name="data">The data to analyse</param>
         /// <param name="_selector">The selctor to get an INT from the data</param>
         /// <returns>The stats on the data</returns>
-        public static DoubleStats GetStats<T>( this IEnumerable<T> _data, Func<T, double> _selector )
+        public static DoubleStats GetStats<T>( this IEnumerable<T> data, Func<T, double> _selector )
         {
             var retval = new DoubleStats();
 
-            foreach (var row in _data)
+            foreach (var row in data)
             {
                 var val = _selector( row );
                 retval.Accumulate( val );
@@ -282,22 +282,22 @@ namespace Morpheus
         /// <summary>
         /// Return a set of stats (Earliest, Latest, Range, Count) on a collection of dates.
         /// </summary>
-        /// <param name="_data">The data to analyse</param>
+        /// <param name="data">The data to analyse</param>
         /// <returns>The stats on the data</returns>
-        public static DateStats GetStats( this IEnumerable<DateTime> _data ) => _data.GetStats( _x => _x );
+        public static DateStats GetStats( this IEnumerable<DateTime> data ) => data.GetStats( _x => _x );
 
         /// <summary>
         /// Return a set of stats (Earliest, Latest, Range, Count) on a collection of dates.
         /// </summary>
         /// <typeparam name="T">The Type of the data in the collection</typeparam>
-        /// <param name="_data">The data to analyse</param>
+        /// <param name="data">The data to analyse</param>
         /// <param name="_selector">The selctor to get a DateTime from the data</param>
         /// <returns>The stats on the data</returns>
-        public static DateStats GetStats<T>( this IEnumerable<T> _data, Func<T, DateTime> _selector )
+        public static DateStats GetStats<T>( this IEnumerable<T> data, Func<T, DateTime> _selector )
         {
             var retval = new DateStats();
 
-            foreach (var row in _data)
+            foreach (var row in data)
             {
                 var val = _selector( row );
                 retval.Accumulate( val );
@@ -311,18 +311,18 @@ namespace Morpheus
         /// used to determine what is used to define "average"
         /// </summary>
         /// <typeparam name="T">The Type of items in the enumeration</typeparam>
-        /// <param name="_items">The items in the list to search</param>
-        /// <param name="_selector">
+        /// <param name="items">The items in the list to search</param>
+        /// <param name="selector">
         /// The function that determines which "field" of an element is used to determine
         /// "average"
         /// </param>
         /// <returns>
         /// All items in the enumeration that are strictly larger than the average
         /// </returns>
-        public static IEnumerable<T> AboveAverage<T>( this IEnumerable<T> _items, Func<T, double> _selector )
+        public static IEnumerable<T> AboveAverage<T>( this IEnumerable<T> items, Func<T, double> selector )
         {
-            var average = _items.Average( _selector );
-            return _items.Where( _item => _selector( _item ) > average );
+            var average = items.Average( selector );
+            return items.Where( _item => selector( _item ) > average );
         }
 
         /// <summary>
@@ -330,18 +330,18 @@ namespace Morpheus
         /// used to determine what is used to define "average"
         /// </summary>
         /// <typeparam name="T">The Type of items in the enumeration</typeparam>
-        /// <param name="_items">The items in the list to search</param>
-        /// <param name="_selector">
+        /// <param name="items">The items in the list to search</param>
+        /// <param name="selector">
         /// The function that determines which "field" of an element is used to determine
         /// "average"
         /// </param>
         /// <returns>
         /// All items in the enumeration that are strictly smaller than the average
         /// </returns>
-        public static IEnumerable<T> BelowAverage<T>( this IEnumerable<T> _items, Func<T, double> _selector )
+        public static IEnumerable<T> BelowAverage<T>( this IEnumerable<T> items, Func<T, double> selector )
         {
-            var average = _items.Average( _selector );
-            return _items.Where( _item => _selector( _item ) < average );
+            var average = items.Average( selector );
+            return items.Where( _item => selector( _item ) < average );
         }
 
         /// <summary>

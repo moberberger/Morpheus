@@ -10,7 +10,7 @@ namespace Morpheus
     /// <summary>
     /// All of these extension methods operate with a random component.
     /// </summary>
-    public static class IEnumerableStochasticExtensions
+    public static class StochasticExtensions
     {
         /// <summary>
         /// Return a version of the enumeration with all values re-arranged randomly.
@@ -41,7 +41,8 @@ namespace Morpheus
         /// When TRUE, weight the smallest valued objects the most
         /// </param>
         /// <returns>An object from the collection selected based on the _selector</returns>
-        public static T Sample<T>( this IEnumerable<T> _data, Func<T, double> _selector, bool _inverse ) => _data.Sample( _selector, Rng.Default.NextDouble(), _inverse );
+        public static T Sample<T>( this IEnumerable<T> _data, Func<T, double> _selector, bool _inverse )
+            => _data.Sample( _selector, Rng.Default.NextDouble(), _inverse );
 
         /// <summary>
         /// Retrieve an item from an enumeration based on a weighted "sampling" of all objects
@@ -62,38 +63,50 @@ namespace Morpheus
         /// <returns>An object from the collection selected based on the _selector</returns>
         public static T Sample<T>( this IEnumerable<T> _data, Func<T, double> _selector, double _selection, bool _inverse )
         {
-            var count = 0;
-            double sumValues = 0, sumInverses = 0;
+            List<double> vals = new();
+            List<T> data = new();
 
-            foreach (var obj in _data)
+            double sum = 0;
+            foreach (var item in _data)
             {
-                var val = _selector( obj );
-                if (double.IsNaN( val ) || double.IsInfinity( val ) || val <= 0)
-                    throw new XException( $"The SELECTOR returned  [ {val} ] , which is invalid." );
+                var val = _selector( item );
+                if (_inverse)
+                    val = 1 / val;
 
-                count++;
-                sumValues += val;
-                sumInverses += 1.0 / val;
+                sum += val;
+                vals.Add( sum );
+                data.Add( item );
             }
 
-            if (count == 0)
-                return default;
-            if (count == 1)
+            if (data.Count == 0)
+                return default( T );
+            if (data.Count == 1)
                 return _data.First();
 
-            double running = 0;
-            foreach (var obj in _data)
-            {
-                var val = _selector( obj );
-
-                var increment = _inverse ? 1.0 / (sumInverses * val) : val / sumValues;
-                running += increment;
-
-                if (running >= _selection)
-                    return obj;
-            }
-            throw new XException( "Never should run out of objects in the sampled set" );
+            var selection = _selection * sum;
+            var idx = vals.BinarySearch( selection );
+            return data[idx];
         }
+
+
+        //<code>    var count = 0;
+        //    double sumValues = 0, sumInverses = 0;
+
+        // foreach (var obj in _data) { var val = _selector( obj ); if (double.IsNaN( val ) ||
+        // double.IsInfinity( val ) || val = 0) throw new XException( $"The SELECTOR returned [
+        // {val} ] , which is invalid." );
+
+        // count++; sumValues += val; sumInverses += 1.0 / val; }
+
+        // if (count == 0) return default; if (count == 1) return _data.First();
+
+        // double running = 0; foreach (var obj in _data) { var val = _selector( obj );
+
+        // var increment = _inverse ? 1.0 / (sumInverses * val) : val / sumValues; running +=
+        // increment;
+
+        // if (running >= _selection) return obj; } throw new XException( "Never should run out
+        // of objects in the sampled set" ); }
 
 
 
@@ -112,10 +125,13 @@ namespace Morpheus
         /// <param name="_collection">The elements that could be selected</param>
         /// <param name="_rng">A <see cref="Random"/> object used to select an item</param>
         /// <returns>A random element in the enumeration</returns>
-        public static T SelectRandom<T>( this IEnumerable<T> _collection, Random _rng )
+        public static T SelectRandom<T>( this IEnumerable<T> _collection, Random _rng = null )
         {
+            _rng ??= Rng.Default;
+
             var count = _collection.Count();
             var idx = _rng.Next( count );
+
             return _collection.ElementAt( idx );
         }
 
@@ -137,7 +153,7 @@ namespace Morpheus
             _rng ??= Rng.Default;
 
             var count = _list.Count;
-            for (var i = 0; i < count-1; i++)
+            for (var i = 0; i < count - 1; i++)
             {
                 var range = count - i;
                 var idx = _rng.Next( range );
