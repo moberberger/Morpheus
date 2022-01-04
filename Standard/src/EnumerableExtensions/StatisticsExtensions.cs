@@ -229,7 +229,8 @@ namespace Morpheus
         /// </summary>
         /// <param name="data">The data to analyse</param>
         /// <returns>The stats on the data</returns>
-        public static LongStats GetStats( this IEnumerable<long> data ) => data.GetStats( _x => _x );
+        public static LongStats GetStats( this IEnumerable<long> data ) 
+            => data.GetStats( _x => _x );
 
         /// <summary>
         /// Return a set of stats (Min, Max, Avg, Total, Count) on a collection of numbers.
@@ -257,7 +258,8 @@ namespace Morpheus
         /// </summary>
         /// <param name="data">The data to analyse</param>
         /// <returns>The stats on the data</returns>
-        public static DoubleStats GetStats( this IEnumerable<double> data ) => data.GetStats( _x => _x );
+        public static DoubleStats GetStats( this IEnumerable<double> data ) 
+            => data.GetStats( _x => _x );
 
         /// <summary>
         /// Return a set of stats (Min, Max, Avg, Total, Count) on a collection of numbers.
@@ -284,7 +286,8 @@ namespace Morpheus
         /// </summary>
         /// <param name="data">The data to analyse</param>
         /// <returns>The stats on the data</returns>
-        public static DateStats GetStats( this IEnumerable<DateTime> data ) => data.GetStats( _x => _x );
+        public static DateStats GetStats( this IEnumerable<DateTime> data ) 
+            => data.GetStats( _x => _x );
 
         /// <summary>
         /// Return a set of stats (Earliest, Latest, Range, Count) on a collection of dates.
