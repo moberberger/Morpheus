@@ -42,7 +42,7 @@ namespace Morpheus
         public static TextGridBorders Double => new TextGridBorders( "Double", "╔╦╗╠╬╣╚╩╝═║" );
         public static TextGridBorders Ascii => new TextGridBorders( "Double", "/v\\>+<\\+/-|" );
         public static TextGridBorders AsciiSquare => new TextGridBorders( "Double", "+++++++++-|" );
-        //public static TextGridBorders Thick => new TextGridBorders( "Thick", "┏┳┓┣╋┫┗┻┛━┃" );
+        // public static TextGridBorders Thick => new TextGridBorders( "Thick", "┏┳┓┣╋┫┗┻┛━┃" );
 
         public enum Alignments { Left, Top, Right, Bottom, Center };
         #endregion
@@ -153,6 +153,8 @@ namespace Morpheus
             return sb.ToString();
         }
 
+
+
         private void OutputStrings( StringBuilder sb, int rowType )
             => RowHeights[rowType].ForEach( linenum => OutputLine( sb, rowType, linenum ) );
 
@@ -160,10 +162,13 @@ namespace Morpheus
         private void OutputLine( StringBuilder sb, int row, int lineIndex = -1 )
         {
             var doBorders = Borders != null;
+            bool isTextLine = lineIndex != -1;
+            bool isBorderLine = !isTextLine;
+            bool hasHeader = Header?.Length > 0;
 
             for (int col = 0; col < Width; col++)
             {
-                if (lineIndex != -1)
+                if (isTextLine)
                 {
                     // Borders
                     if (doBorders) sb.Append( Borders.Vertical );
@@ -200,18 +205,19 @@ namespace Morpheus
                 else if (doBorders)
                 {
                     int r = row;
-                    if (r == 0 && col == 0 && Header?.Length > 0) r = 1;
+                    if (r == 0 && col == 0 && hasHeader) r = 1;
 
                     sb.Append( Borders[r, col] );
                     sb.Append( Borders.Horizontal, ColumnWidths[col] + ColumnPadding * 2 );
                 }
             }
 
-            // sb.Append( Borders[row != 0 ? row : (Header?.Length > 0) ? 1 : 0, col] );
             if (doBorders)
-                sb.Append( lineIndex == -1 ? Borders[row == 0 && Header.Length > 0 ? 1 : row, -1] : Borders.Vertical );
+                sb.Append( isBorderLine
+                    ? Borders[row == 0 && hasHeader ? 1 : row, -1]
+                    : Borders.Vertical );
 
-            if (doBorders || lineIndex != -1)
+            if (doBorders || isTextLine)
                 sb.AppendLine();
         }
 
