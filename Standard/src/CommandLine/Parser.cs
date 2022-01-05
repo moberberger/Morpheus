@@ -20,9 +20,9 @@ namespace Morpheus.CommandLine
                     .ToList();
 
 
-        public void Param( string name, 
-                            Action<Match> executor, 
-                            string usage = "", 
+        public void Param( string name,
+                            Action<Match> executor,
+                            string usage = "",
                             string subparamUsage = "",
                             string defaultValue = "",
                             bool isRequired = false,
@@ -65,10 +65,18 @@ namespace Morpheus.CommandLine
 
 
         public override string ToString()
-            => new StringBuilder()
-                .AppendLine( "USAGE:" )
-                .AppendLines( ParameterDefinitions )
-                .ToString();
+        => new TextGrid
+            (
+                "ProtoMake.exe USAGE",
+                ParameterDefinitions.Select
+                (
+                    pdef => pdef.ToString().Split( "\t" )
+                )
+            )
+            .WithBorders( TextGrid.Single )
+            .WithHorizontalAlign( TextGrid.Alignments.Left )
+            .WithColumnPadding( 1 )
+            .ToString();
 
         public void Execute( string commandLine = null )
         {

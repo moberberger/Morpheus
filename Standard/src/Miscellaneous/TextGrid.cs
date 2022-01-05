@@ -35,13 +35,6 @@ namespace Morpheus
 
             public static int TypeToIndex( int type )
                 => (type == 0) ? 0 : (type == -1) ? 2 : 1;
-            // public char Left( int rowType ) => orderedBorderChars[rowType * 3]; public char
-            // CenterHorizontal( int rowType ) => orderedBorderChars[rowType * 3 + 1]; public
-            // char Right( int rowType ) => orderedBorderChars[rowType * 3 + 2];
-
-            // public char Top( int colType ) => orderedBorderChars[colType]; public char
-            // CenterVertical( int colType ) => orderedBorderChars[3 + colType]; public char
-            // Bottom( int colType ) => orderedBorderChars[6 + colType];
         }
 
         public static TextGridBorders Spaces => new TextGridBorders( "Spaces", "           " );
@@ -49,7 +42,7 @@ namespace Morpheus
         public static TextGridBorders Double => new TextGridBorders( "Double", "╔╦╗╠╬╣╚╩╝═║" );
         public static TextGridBorders Ascii => new TextGridBorders( "Double", "/v\\>+<\\+/-|" );
         public static TextGridBorders AsciiSquare => new TextGridBorders( "Double", "+++++++++-|" );
-        public static TextGridBorders Thick => new TextGridBorders( "Thick", "┏┳┓┣╋┫┗┻┛━┃" );
+        //public static TextGridBorders Thick => new TextGridBorders( "Thick", "┏┳┓┣╋┫┗┻┛━┃" );
 
         public enum Alignments { Left, Top, Right, Bottom, Center };
         #endregion
@@ -61,13 +54,21 @@ namespace Morpheus
         public int Height { get; private set; }
 
 
-        public TextGridBorders Borders { get; set; } = Single;
+        public TextGrid WithHeader( string h ) { Header = h; return this; }
+        public TextGrid WithRowPadding( int p ) { RowPadding = p; return this; }
+        public TextGrid WithColumnPadding( int p ) { ColumnPadding = p; return this; }
+        public TextGrid WithHorizontalAlign( Alignments a ) { HorizontalAlign = a; return this; }
+        public TextGrid WithVerticalAlign( Alignments a ) { VerticalAlign = a; return this; }
+        public TextGrid WithBorders( TextGridBorders b ) { Borders = b; return this; }
+
+        public string Header { get; set; } = "";
         public int RowPadding { get; set; } = 0;
         public int ColumnPadding { get; set; } = 1;
         public Alignments HorizontalAlign { get; set; } = Alignments.Center;
         public Alignments VerticalAlign { get; set; } = Alignments.Center;
-        public int[] ColumnWidths { get; set; }
-        public int[] RowHeights { get; set; }
+        public TextGridBorders Borders { get; set; } = Single;
+        public int[] ColumnWidths { get; private set; }
+        public int[] RowHeights { get; private set; }
 
         public TextGrid( IEnumerable<IEnumerable> objects )
         {
@@ -93,6 +94,11 @@ namespace Morpheus
             } );
         }
 
+        public TextGrid( string header, IEnumerable<IEnumerable> objects )
+            : this( objects )
+            => Header = header ?? throw new ArgumentNullException( nameof( header ) );
+
+
         public static (int, int) BoxSize( IEnumerable<IEnumerable> objects )
             => (objects.Max( list => list.Count() ),
                 objects.Count());
@@ -106,6 +112,37 @@ namespace Morpheus
         {
             StringBuilder sb = new();
 
+            bool hasBorders = Borders != null;
+            int borderCount = hasBorders ? 1 : 0;
+
+            if (Header?.Length > 0)
+            {
+                var text = Header;
+                int width = ColumnWidths.Sum( w => w + 2 * ColumnPadding + borderCount ) - borderCount;
+
+                if (hasBorders)
+                    sb.Append( Borders[0, 0] )
+                      .Append( Borders.Horizontal, width )
+                      .Append( Borders[0, -1] )
+                      .AppendLine()
+                      .Append( Borders.Vertical );
+
+                int padding = width - text.Length;
+                if (padding < 0) // too long
+                {
+                    padding = 0;
+                    text = text[..width];
+                }
+                sb.Append( ' ', padding / 2 );
+                sb.Append( text );
+                sb.Append( ' ', padding - padding / 2 );
+
+                if (hasBorders)
+                    sb.Append( Borders.Vertical );
+
+                sb.AppendLine();
+            }
+
             for (int r = 0; r < Height; r++)
             {
                 OutputLine( sb, r );
@@ -116,33 +153,67 @@ namespace Morpheus
             return sb.ToString();
         }
 
-        private void OutputLine( StringBuilder sb, int row, int lineIndex = -1 )
-        {
-            for (int col = 0; col < Width; col++)
-            {
-                if (lineIndex == -1)
-                {
-                    sb.Append( Borders[row, col] );
-                    sb.Append( Borders.Horizontal, ColumnWidths[col] + ColumnPadding*2 );
-                }
-                else
-                {
-                    sb.Append( Borders.Vertical );
-                    sb.Append( ' ', ColumnPadding );
-
-                    var slist = strings[row, col].Split( "\n" );
-                    var s = (lineIndex < slist.Length) ? slist[lineIndex] : "";
-                    int padding = ColumnWidths[col] - s.Length;
-
-                    sb.Append( s ).Append( ' ', padding + ColumnPadding );
-                }
-            }
-            sb.Append( lineIndex == -1 ? Borders[row, -1] : Borders.Vertical ).AppendLine();
-        }
-
-
         private void OutputStrings( StringBuilder sb, int rowType )
             => RowHeights[rowType].ForEach( linenum => OutputLine( sb, rowType, linenum ) );
+
+
+        private void OutputLine( StringBuilder sb, int row, int lineIndex = -1 )
+        {
+            var doBorders = Borders != null;
+
+            for (int col = 0; col < Width; col++)
+            {
+                if (lineIndex != -1)
+                {
+                    // Borders
+                    if (doBorders) sb.Append( Borders.Vertical );
+
+                    // Column Padding
+                    sb.Append( ' ', ColumnPadding );
+
+                    // Get the string
+                    int width = ColumnWidths[col];
+                    var slist = strings[row, col].Split( "\n" );
+                    var s = (lineIndex < slist.Length) ? slist[lineIndex] : "";
+                    if (s.Length > width)
+                        s = s[..width];
+                    int padding = width - s.Length;
+
+                    // Add the left padding
+                    if (HorizontalAlign == Alignments.Center)
+                        sb.Append( ' ', padding / 2 );
+                    else if (HorizontalAlign == Alignments.Right)
+                        sb.Append( ' ', padding );
+
+                    // Add the string
+                    sb.Append( s );
+
+                    // Add the right padding
+                    if (HorizontalAlign == Alignments.Center)
+                        sb.Append( ' ', padding - padding / 2 );
+                    else if (HorizontalAlign == Alignments.Left)
+                        sb.Append( ' ', padding );
+
+                    // Column Padding
+                    sb.Append( ' ', ColumnPadding );
+                }
+                else if (doBorders)
+                {
+                    int r = row;
+                    if (r == 0 && col == 0 && Header?.Length > 0) r = 1;
+
+                    sb.Append( Borders[r, col] );
+                    sb.Append( Borders.Horizontal, ColumnWidths[col] + ColumnPadding * 2 );
+                }
+            }
+
+            // sb.Append( Borders[row != 0 ? row : (Header?.Length > 0) ? 1 : 0, col] );
+            if (doBorders)
+                sb.Append( lineIndex == -1 ? Borders[row == 0 && Header.Length > 0 ? 1 : row, -1] : Borders.Vertical );
+
+            if (doBorders || lineIndex != -1)
+                sb.AppendLine();
+        }
 
 
     }

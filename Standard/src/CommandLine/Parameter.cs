@@ -27,6 +27,6 @@ namespace Morpheus.CommandLine
 
 
         public override string ToString()
-            => $"{UsageLeftSide}   {Usage}";
+            => $"{UsageLeftSide}\t{Usage}";
     }
 }
