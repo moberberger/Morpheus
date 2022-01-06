@@ -33,6 +33,30 @@ namespace Morpheus
 
         public static int TypeToIndex( int type )
             => (type == 0) ? 0 : (type == -1) ? 2 : 1;
+
+        public string Left(GridAlignments location )
+        {
+            if (location == GridAlignments.Top) return TopLeft;
+            if (location == GridAlignments.Bottom) return BottomLeft;
+            if (location == GridAlignments.Center) return CenterLeft;
+            return "ERROR";
+        }
+
+        public string Center(GridAlignments location )
+        {
+            if (location == GridAlignments.Top) return TopCenter;
+            if (location == GridAlignments.Bottom) return BottomCenter;
+            if (location == GridAlignments.Center) return CenterCenter;
+            return "ERROR";
+        }
+
+        public string Right(GridAlignments location )
+        {
+            if (location == GridAlignments.Top) return TopRight;
+            if (location == GridAlignments.Bottom) return BottomRight;
+            if (location == GridAlignments.Center) return CenterRight;
+            return "ERROR";
+        }
     }
 
 

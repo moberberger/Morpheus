@@ -74,7 +74,7 @@ namespace Morpheus.CommandLine
                 )
             )
             .WithBorders( TextGrid.Single )
-            .WithHorizontalAlign( TextGrid.Alignments.Left )
+            .WithHorizontalAlign( GridAlignments.Left )
             .WithColumnPadding( 1 )
             .ToString();
 
