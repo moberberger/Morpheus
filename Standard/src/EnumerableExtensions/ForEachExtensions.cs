@@ -137,20 +137,44 @@ namespace Morpheus
 
 
         /// <summary>
+        /// Equivalent to a nested "for" loop model where a Cartesian product of both integer
+        /// ranges is needed.
+        /// </summary>
+        /// <remarks>
+        /// <code>
+        /// (5,7).ForEach( (x,y) => grid[x][y].member = value;
+        /// </code>
+        /// </remarks>
+        /// <param name="dimensions"></param>
+        /// <param name="action"></param>
+        public static IEnumerable<(int, int)> Range( this (int, int) dimensions )
+        {
+            for (int x = 0; x < dimensions.Item1; x++)
+                for (int y = 0; y < dimensions.Item2; y++)
+                    yield return (x, y);
+        }
+
+        public static IEnumerable<(int, int, int)> Range( this (int, int, int) dimensions )
+        {
+            for (int x = 0; x < dimensions.Item1; x++)
+                for (int y = 0; y < dimensions.Item2; y++)
+                    for (int z = 0; z < dimensions.Item3; z++)
+                        yield return (x, y, z);
+        }
+
+
+
+
+        /// <summary>
         /// Apply an action to each element of an enumeration
         /// </summary>
         /// <param name="action"></param>
         /// <returns>
         /// The same enumeration after <see cref="action"/> has been applied to each element
         /// </returns>
-        public static IEnumerable Apply( this IEnumerable stuff, Action<object> action )
-        {
-            foreach (var item in stuff)
-            {
-                action( item );
-                yield return item;
-            }
-        }
+        // public static IEnumerable Apply( this IEnumerable stuff, Action
+        // <object> action ) { foreach (var item in stuff) { action( item ); yield return item;
+        // } }
 
         public static IEnumerable<T> Apply<T>( this IEnumerable<T> stuff, Action<T> action )
         {
@@ -162,17 +186,13 @@ namespace Morpheus
         }
 
         /*
-        //public static T Apply<T>( this IEnumerable stuff, Action<object> action, T retval )
-        //{
-        //    foreach (var item in stuff) action( item );
-        //    return retval;
-        //}
+        // public static T Apply
+        // <T> ( this IEnumerable stuff, Action <object> action, T retval ) { foreach (var item
+        // in stuff) action( item ); return retval; }
 
-        //public static T Apply<T, U>( this IEnumerable<U> stuff, Action<U> action, T retval )
-        //{
-        //    foreach (var item in stuff) action( item );
-        //    return retval;
-        //}
+        // public static T Apply
+        // <T, U> ( this IEnumerable <U> stuff, Action <U> action, T retval ) { foreach (var
+        // item in stuff) action( item ); return retval; }
         */
 
 

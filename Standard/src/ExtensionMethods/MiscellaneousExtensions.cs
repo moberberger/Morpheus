@@ -133,7 +133,7 @@ namespace Morpheus
         {
             text = text.Trim();
 
-            if ( text.Length >= width )
+            if (text.Length >= width)
             {
                 text = text[..width];
                 sb.Append( text );

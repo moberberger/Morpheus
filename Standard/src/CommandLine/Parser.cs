@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Morpheus.CommandLine
 {
@@ -14,8 +13,9 @@ namespace Morpheus.CommandLine
 
 
         public Parser() { }
-        public Parser( IEnumerable<Parameter> parameterDefinitions )
-            => ParameterDefinitions = parameterDefinitions
+        public Parser( IEnumerable<Parameter> parameterDefinitions ) =>
+            ParameterDefinitions =
+                parameterDefinitions
                     .Apply( p => p.Parser = this )
                     .ToList();
 
@@ -26,8 +26,8 @@ namespace Morpheus.CommandLine
                             string subparamUsage = "",
                             string defaultValue = "",
                             bool isRequired = false,
-                            bool isNegatable = false )
-            => (ParameterDefinitions ??= new List<Parameter>())
+                            bool isNegatable = false ) =>
+            (ParameterDefinitions ??= new List<Parameter>())
                 .Add( new Parameter()
                 {
                     Parser = this,
@@ -41,8 +41,8 @@ namespace Morpheus.CommandLine
                 } );
 
 
-        public IDictionary<string, IEnumerable<Match>> Parse( string commandLine = null )
-            => (commandLine ?? CommandLine)
+        public IDictionary<string, IEnumerable<Match>> Parse( string commandLine = null ) =>
+            (commandLine ?? CommandLine)
                 .Split( Delimiter )
                 .Skip( 1 )
                 .ToDictionary( token => token,
@@ -51,8 +51,8 @@ namespace Morpheus.CommandLine
                                            .Where( match => match.IsMatch ) );
 
 
-        public IEnumerable<string> Validate( string commandLine = null )
-            => Parse( commandLine ?? CommandLine )
+        public IEnumerable<string> Validate( string commandLine = null ) =>
+            Parse( commandLine ?? CommandLine )
                 .Where( kv => kv.Value.Count() > 1 )
                 .Select( kv => $"Ambiguous Parameter Match: {kv.Key}\n{kv.Value.JoinAsString( "\n" )}" )
                 .Union( Parse( commandLine ?? CommandLine )
@@ -63,9 +63,12 @@ namespace Morpheus.CommandLine
                 .Where( pdef => pdef.IsRequired && Parser( commandLine ?? CommandLine ).Union( )
         */
 
+        public void Execute( string commandLine = null ) =>
+            Parse( commandLine ?? CommandLine )
+                .ForEach( kv => kv.Value.Single().Execute() );
 
-        public override string ToString()
-        => new TextGrid
+        public override string ToString() =>
+            new TextGrid
             (
                 "ProtoMake.exe USAGE",
                 ParameterDefinitions.Select
@@ -75,13 +78,9 @@ namespace Morpheus.CommandLine
             )
             .WithBorders( TextGrid.Single )
             .WithHorizontalAlign( GridAlignments.Left )
+            .WithHeaderAlign( GridAlignments.Center )
             .WithColumnPadding( 1 )
             .ToString();
 
-        public void Execute( string commandLine = null )
-        {
-            Parse( commandLine ?? CommandLine )
-                .ForEach( kv => kv.Value.Single().Execute() );
-        }
     }
 }
