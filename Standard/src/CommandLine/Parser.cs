@@ -15,9 +15,7 @@ namespace Morpheus.CommandLine
         public Parser() { }
         public Parser( IEnumerable<Parameter> parameterDefinitions ) =>
             ParameterDefinitions =
-                parameterDefinitions
-                    .Apply( p => p.Parser = this )
-                    .ToList();
+                parameterDefinitions.Apply( p => p.Parser = this ).ToList();
 
 
         public void Param( string name,
@@ -33,7 +31,7 @@ namespace Morpheus.CommandLine
                     Parser = this,
                     Name = name,
                     Executor = executor,
-                    Usage = usage,
+                    UsageText = usage,
                     SubparamUsage = subparamUsage,
                     DefaultValue = defaultValue,
                     IsNegatable = isNegatable,
@@ -46,9 +44,9 @@ namespace Morpheus.CommandLine
                 .Split( Delimiter )
                 .Skip( 1 )
                 .ToDictionary( token => token,
-                               token => ParameterDefinitions
-                                           .Select( pdef => new Match( pdef, token ) )
-                                           .Where( match => match.IsMatch ) );
+                                token => ParameterDefinitions
+                                            .Select( pdef => new Match( pdef, token ) )
+                                            .Where( match => match.IsMatch ) );
 
 
         public IEnumerable<string> Validate( string commandLine = null ) =>
@@ -71,16 +69,12 @@ namespace Morpheus.CommandLine
             new TextGrid
             (
                 "ProtoMake.exe USAGE",
-                ParameterDefinitions.Select
-                (
-                    pdef => pdef.ToString().Split( "\t" )
-                )
+                ParameterDefinitions.Select( pdef => pdef.ToString().Split( "\t" ) )
             )
             .WithBorders( TextGrid.Single )
             .WithHorizontalAlign( GridAlignments.Left )
             .WithHeaderAlign( GridAlignments.Center )
             .WithColumnPadding( 1 )
             .ToString();
-
     }
 }

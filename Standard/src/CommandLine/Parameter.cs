@@ -6,7 +6,7 @@ namespace Morpheus.CommandLine
     public class Parameter
     {
         public string Name { get; init; } = "Please Initialize Me";
-        public string Usage { get; init; } = "TODO: Add Usage Text";
+        public string UsageText { get; init; } = "TODO: Add Usage Text";
         public bool IsRequired { get; init; }
         public bool IsNegatable { get; init; }
         public string SubparamUsage { get; init; }
@@ -15,8 +15,8 @@ namespace Morpheus.CommandLine
         public Parser Parser { get; internal set; }
 
 
-        public string UsageLeftSide
-            => new StringBuilder()
+        public string UsageLeftSide =>
+            new StringBuilder()
                 .AppendIf( !IsRequired, "[" )
                 .Append( Parser.Delimiter.Trim() )
                 .AppendIf( IsNegatable, "[no]" )
@@ -26,7 +26,6 @@ namespace Morpheus.CommandLine
                 .ToString();
 
 
-        public override string ToString()
-            => $"{UsageLeftSide}\t{Usage}";
+        public override string ToString() => $"{UsageLeftSide}\t{UsageText}";
     }
 }
