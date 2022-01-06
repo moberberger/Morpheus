@@ -59,7 +59,7 @@ namespace Morpheus.CommandLine
                 .Where( kv => kv.Value.Count() == 0 )
                 .Select( kv => $"Unknown Parameter: {kv.Key}" ) );
         /*
-        .Union( ParameterDefinitions
+        .Union( ParameterDefinitions01
                 .Where( pdef => pdef.IsRequired && Parser( commandLine ?? CommandLine ).Union( )
         */
 
@@ -81,8 +81,7 @@ namespace Morpheus.CommandLine
         public void Execute( string commandLine = null )
         {
             Parse( commandLine ?? CommandLine )
-                .Apply( kv => kv.Value.Single().Execute() )
-                .ForEach();
+                .ForEach( kv => kv.Value.Single().Execute() );
         }
     }
 }

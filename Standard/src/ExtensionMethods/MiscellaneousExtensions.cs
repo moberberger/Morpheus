@@ -122,5 +122,11 @@ namespace Morpheus
                 sb.AppendLine( obj.ToString() );
             return sb;
         }
+
+        public static StringBuilder Append( this StringBuilder sb, string s, int count )
+        {
+            while (count-- > 0) sb.Append( s );
+            return sb;
+        }
     }
 }

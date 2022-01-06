@@ -3,43 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Morpheus
 {
     public class TextGrid
     {
         #region Border Stuff
-        public class TextGridBorders
-        {
-            string name;
-            string orderedBorderChars;
-
-            public TextGridBorders( string name, string orderedBorderChars )
-                => (this.name, this.orderedBorderChars) = (name, orderedBorderChars);
-
-            public char TopLeft => orderedBorderChars[0];
-            public char TopCenter => orderedBorderChars[1];
-            public char TopRight => orderedBorderChars[2];
-            public char CenterLeft => orderedBorderChars[3];
-            public char CenterCenter => orderedBorderChars[4];
-            public char CenterRight => orderedBorderChars[5];
-            public char BottomLeft => orderedBorderChars[6];
-            public char BottomCenter => orderedBorderChars[7];
-            public char BottomRight => orderedBorderChars[8];
-            public char Horizontal => orderedBorderChars[9];
-            public char Vertical => orderedBorderChars[10];
-
-            public char this[int rowType, int colType]
-                => orderedBorderChars[TypeToIndex( rowType ) * 3 + TypeToIndex( colType )];
-
-            public static int TypeToIndex( int type )
-                => (type == 0) ? 0 : (type == -1) ? 2 : 1;
-        }
 
         public static TextGridBorders Spaces => new TextGridBorders( "Spaces", "           " );
         public static TextGridBorders Single => new TextGridBorders( "Single", "┌┬┐├┼┤└┴┘─│" );
         public static TextGridBorders Double => new TextGridBorders( "Double", "╔╦╗╠╬╣╚╩╝═║" );
+        public static TextGridBorders Null => new NullTextGridBorders();
         public static TextGridBorders Ascii => new TextGridBorders( "Double", "/v\\>+<\\+/-|" );
         public static TextGridBorders AsciiSquare => new TextGridBorders( "Double", "+++++++++-|" );
         // public static TextGridBorders Thick => new TextGridBorders( "Thick", "┏┳┓┣╋┫┗┻┛━┃" );
@@ -49,26 +23,35 @@ namespace Morpheus
 
         string[,] strings;
 
-
         public int Width { get; private set; }
         public int Height { get; private set; }
-
 
         public TextGrid WithHeader( string h ) { Header = h; return this; }
         public TextGrid WithRowPadding( int p ) { RowPadding = p; return this; }
         public TextGrid WithColumnPadding( int p ) { ColumnPadding = p; return this; }
         public TextGrid WithHorizontalAlign( Alignments a ) { HorizontalAlign = a; return this; }
-        public TextGrid WithVerticalAlign( Alignments a ) { VerticalAlign = a; return this; }
+        // public TextGrid WithVerticalAlign( Alignments a ) { VerticalAlign = a; return this; }
         public TextGrid WithBorders( TextGridBorders b ) { Borders = b; return this; }
 
         public string Header { get; set; } = "";
         public int RowPadding { get; set; } = 0;
         public int ColumnPadding { get; set; } = 1;
         public Alignments HorizontalAlign { get; set; } = Alignments.Center;
-        public Alignments VerticalAlign { get; set; } = Alignments.Center;
+        // public Alignments VerticalAlign { get; set; } = Alignments.Center;
         public TextGridBorders Borders { get; set; } = Single;
         public int[] ColumnWidths { get; private set; }
         public int[] RowHeights { get; private set; }
+
+        public TextGrid( object[,] objects )
+        {
+            Height = objects.GetLength( 0 );
+            Width = objects.GetLength( 1 );
+
+            strings = new string[Height, Width];
+            (Height, Width).ForEach( ( r, c ) => strings[r, c] = objects[r, c].ToString() );
+
+            SetStartingData();
+        }
 
         public TextGrid( IEnumerable<IEnumerable> objects )
         {
@@ -80,24 +63,43 @@ namespace Morpheus
             objects
                 .ForEach( ( row, rowIndex )
                     => row.ForEach( ( obj, colIndex )
-                        => strings[rowIndex, colIndex] = obj.ToString()
-                )
-            );
+                        => strings[rowIndex, colIndex] = obj.ToString() ) );
 
-            ColumnWidths = new int[Width];
-            RowHeights = new int[Height];
-            (Height, Width).ForEach( ( r, c ) =>
-            {
-                var (w, h) = BoxSize( strings[r, c] );
-                ColumnWidths[c] = Math.Max( ColumnWidths[c], w );
-                RowHeights[r] = Math.Max( RowHeights[r], h );
-            } );
+            SetStartingData();
         }
+
+        public TextGrid( string newlineAndTabDelimited )
+            : this( newlineAndTabDelimited
+                .Split( "\n" )
+                .Select( line => line.Split( "\t" ) ) )
+        { }
 
         public TextGrid( string header, IEnumerable<IEnumerable> objects )
             : this( objects )
             => Header = header ?? throw new ArgumentNullException( nameof( header ) );
 
+
+        public TextGrid( string header, string newlineAndTabDelimited )
+            : this( newlineAndTabDelimited )
+            => Header = header ?? throw new ArgumentNullException( nameof( header ) );
+
+
+
+        private void SetStartingData()
+        {
+            ColumnWidths = new int[Width];
+            RowHeights = new int[Height];
+            (Height, Width).ForEach( ( r, c ) =>
+            {
+                strings[r, c] = strings[r, c]
+                    .Replace( "\r", "" )
+                    .Replace( "\t", " " );
+
+                var (w, h) = BoxSize( strings[r, c] );
+                ColumnWidths[c] = Math.Max( ColumnWidths[c], w );
+                RowHeights[r] = Math.Max( RowHeights[r], h );
+            } );
+        }
 
         public static (int, int) BoxSize( IEnumerable<IEnumerable> objects )
             => (objects.Max( list => list.Count() ),
@@ -220,7 +222,5 @@ namespace Morpheus
             if (doBorders || isTextLine)
                 sb.AppendLine();
         }
-
-
     }
 }
