@@ -161,6 +161,19 @@ namespace Morpheus
             }
         }
 
+        /*
+        //public static T Apply<T>( this IEnumerable stuff, Action<object> action, T retval )
+        //{
+        //    foreach (var item in stuff) action( item );
+        //    return retval;
+        //}
+
+        //public static T Apply<T, U>( this IEnumerable<U> stuff, Action<U> action, T retval )
+        //{
+        //    foreach (var item in stuff) action( item );
+        //    return retval;
+        //}
+        */
 
 
         /// <summary>

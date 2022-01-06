@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Morpheus
+﻿namespace Morpheus
 {
     public class TextGridBorders
     {
@@ -34,7 +28,7 @@ namespace Morpheus
         public static int TypeToIndex( int type )
             => (type == 0) ? 0 : (type == -1) ? 2 : 1;
 
-        public string Left(GridAlignments location )
+        public string Left( GridAlignments location )
         {
             if (location == GridAlignments.Top) return TopLeft;
             if (location == GridAlignments.Bottom) return BottomLeft;
@@ -42,7 +36,7 @@ namespace Morpheus
             return "ERROR";
         }
 
-        public string Center(GridAlignments location )
+        public string Center( GridAlignments location )
         {
             if (location == GridAlignments.Top) return TopCenter;
             if (location == GridAlignments.Bottom) return BottomCenter;
@@ -50,7 +44,7 @@ namespace Morpheus
             return "ERROR";
         }
 
-        public string Right(GridAlignments location )
+        public string Right( GridAlignments location )
         {
             if (location == GridAlignments.Top) return TopRight;
             if (location == GridAlignments.Bottom) return BottomRight;
