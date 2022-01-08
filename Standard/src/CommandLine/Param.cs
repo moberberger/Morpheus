@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Morpheus.CommandLine
 {
-    public class Parameter
+    public class Param
     {
         public string Name { get; init; } = "Please Initialize Me";
         public string UsageText { get; init; } = "TODO: Add Usage Text";

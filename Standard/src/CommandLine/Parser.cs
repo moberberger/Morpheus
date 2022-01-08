@@ -9,13 +9,14 @@ namespace Morpheus.CommandLine
         public string Delimiter { get; set; } = " -";
         public bool CaseSensitive { get; set; } = false;
         public string CommandLine { get; set; } = Environment.CommandLine;
-        public List<Parameter> ParameterDefinitions { get; private set; }
+        public List<Param> ParamDefinitions { get; private set; }
+
+
 
 
         public Parser() { }
-        public Parser( IEnumerable<Parameter> parameterDefinitions ) =>
-            ParameterDefinitions =
-                parameterDefinitions.Apply( p => p.Parser = this ).ToList();
+        public Parser( IEnumerable<Param> paramDefinitions ) =>
+            ParamDefinitions = paramDefinitions.Apply( p => p.Parser = this ).ToList();
 
 
         public void Param( string name,
@@ -25,8 +26,8 @@ namespace Morpheus.CommandLine
                             string defaultValue = "",
                             bool isRequired = false,
                             bool isNegatable = false ) =>
-            (ParameterDefinitions ??= new List<Parameter>())
-                .Add( new Parameter()
+            (ParamDefinitions ??= new List<Param>())
+                .Add( new Param()
                 {
                     Parser = this,
                     Name = name,
@@ -44,7 +45,7 @@ namespace Morpheus.CommandLine
                 .Split( Delimiter )
                 .Skip( 1 )
                 .ToDictionary( token => token,
-                                token => ParameterDefinitions
+                                token => ParamDefinitions
                                             .Select( pdef => new Match( pdef, token ) )
                                             .Where( match => match.IsMatch ) );
 
@@ -69,7 +70,7 @@ namespace Morpheus.CommandLine
             new TextGrid
             (
                 "ProtoMake.exe USAGE",
-                ParameterDefinitions.Select( pdef => pdef.ToString().Split( "\t" ) )
+                ParamDefinitions.Select( pdef => pdef.ToString().Split( "\t" ) )
             )
             .WithBorders( TextGrid.Single )
             .WithHorizontalAlign( GridAlignments.Left )

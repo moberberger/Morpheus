@@ -49,29 +49,17 @@ namespace Morpheus
                 .NowUse( this )
                 .SetStartingData();
 
-
         public TextGrid( IEnumerable<IEnumerable> objects ) =>
             ((Width, Height) = BoxSize( objects ))
                 .Translate( wh => Setup() )
                 .Apply( colRow => strings[colRow.Item2, colRow.Item1] = "" )
-            .NowUse( objects )
-                .Apply( ( row, rowIndex ) =>
-                    row.Apply( ( obj, colIndex ) => strings[rowIndex, colIndex] = obj?.ToString() ?? "" )
-                .NowUse( this ) )
-            .NowUse( this )
-                .SetStartingData();
-
-
-        private IEnumerable<(int, int)> Setup() =>
-            this
-                .With( _ => ColumnWidths = new int[Width] )
-                .With( _ => RowHeights = new int[Height] )
-                .With( _ => strings = new string[Height, Width] )
-            .NowUse( (Width, Height) )
-                .Range();
-
-
-
+                .NowUse( objects )
+                    .Apply( ( row, rowIndex ) =>
+                        row.Apply( ( obj, colIndex ) => 
+                            strings[rowIndex, colIndex] = obj?.ToString() ?? "" )
+                            .NowUse( this ) )
+                    .NowUse( this )
+                        .SetStartingData();
 
         public TextGrid( string header, object[,] objects ) : this( objects ) =>
             Header = header ?? throw new ArgumentNullException( nameof( header ) );
@@ -86,6 +74,14 @@ namespace Morpheus
             Header = header ?? throw new ArgumentNullException( nameof( header ) );
 
 
+
+        private IEnumerable<(int, int)> Setup() =>
+            this
+                .With( _ => ColumnWidths = new int[Width] )
+                .With( _ => RowHeights = new int[Height] )
+                .With( _ => strings = new string[Height, Width] )
+            .NowUse( (Width, Height) )
+                .Range();
 
         private void SetStartingData() =>
             (Height, Width).ForEach( ( r, c ) =>

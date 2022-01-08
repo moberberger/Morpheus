@@ -8,7 +8,7 @@ namespace Morpheus.CommandLine
             = new Regex( @"^\s* (?'negated'no)? (?'param'[\w\d\?]+) (\s*=?\s*) (?'value'[\w\d]+)? \s*$",
                             RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace );
 
-        public Parameter Parameter { get; init; }
+        public Param Parameter { get; init; }
         public string Token { get; init; }
         public bool IsNegated { get; private set; }
         public string ParamFound { get; private set; }
@@ -17,7 +17,7 @@ namespace Morpheus.CommandLine
         public bool IsMatch => Parameter.Name.StartsWith( ParamFound, !Parameter.Parser.CaseSensitive, null );
         public void Execute() => Parameter.Executor( this );
 
-        public Match( Parameter parameter, string token ) =>
+        public Match( Param parameter, string token ) =>
             (Parameter = parameter, Token = token.Trim())
             .NowUse( Regex.Match( Token ) )
             .With( m => IsNegated = m.Groups["negated"].Value.ToLower() == "no" )
