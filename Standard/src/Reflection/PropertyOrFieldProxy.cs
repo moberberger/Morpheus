@@ -264,6 +264,19 @@ namespace Morpheus
                     throw new ArgumentException( $"{_member.Name} is a {_member.MemberType}, but it must be a field or property" );
             }
         }
+
+        public Type TheType()
+        {
+            switch (MemberInfo)
+            {
+                case FieldInfo fi:
+                    return fi.FieldType;
+                case PropertyInfo pi:
+                    return pi.PropertyType;
+                default:
+                    throw new ArgumentException( $"{MemberInfo.Name} is a {MemberInfo.MemberType}, but it must be a field or property" );
+            }
+        }
     }
 
 

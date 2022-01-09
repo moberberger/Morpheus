@@ -2,7 +2,7 @@
 
 namespace Morpheus.CommandLine
 {
-    [AttributeUsage( AttributeTargets.Property | AttributeTargets.Field )]
+    [AttributeUsage( AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Class )]
     public class Usage : Attribute
     {
         public string UsageText { get; set; }
@@ -47,11 +47,4 @@ namespace Morpheus.CommandLine
         public CaseSensitive( bool isCaseSensitive ) => IsCaseSensitive = isCaseSensitive;
     }
 
-
-    [AttributeUsage( AttributeTargets.Class )]
-    public class Delimiters : Attribute
-    {
-        public string[] Delims { get; set; }
-        public Delimiters( params string[] delims ) => Delims = delims;
-    }
 }

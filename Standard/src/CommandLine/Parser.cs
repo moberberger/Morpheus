@@ -1,16 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Morpheus.CommandLine
 {
     public class Parser
     {
-        public string Delimiter { get; set; } = " -";
-        public bool CaseSensitive { get; set; } = false;
         public string CommandLine { get; set; } = Environment.CommandLine;
-        public List<Param> ParamDefinitions { get; private set; }
+        public List<Param> ParamDefinitions { get; private set; } = new();
 
+        protected object workingObject;
+
+        public bool CaseSensitive { get; set; } = false;
+
+        public string UsageTextHeader { get; set; } = Environment.CommandLine;
 
 
 
@@ -18,35 +23,28 @@ namespace Morpheus.CommandLine
         public Parser( IEnumerable<Param> paramDefinitions ) =>
             ParamDefinitions = paramDefinitions.Apply( p => p.Parser = this ).ToList();
 
-        public void Param( string name,
-                            Action<Match> executor,
-                            string usage = "",
-                            string subparamUsage = "",
-                            string defaultValue = "",
-                            bool isRequired = false,
-                            bool isNegatable = false ) =>
-            (ParamDefinitions ??= new List<Param>())
-                .Add( new Param()
-                {
-                    Parser = this,
-                    Name = name,
-                    Executor = executor,
-                    UsageText = usage,
-                    UsageParamName = subparamUsage,
-                    DefaultValue = defaultValue,
-                    IsNegatable = isNegatable,
-                    IsRequired = isRequired
-                } );
+
+        public void AddParam( Param p ) => ParamDefinitions.Add( p );
 
 
-        public void Params<T>() => Params( typeof( T ) );
-        public void Params( Type type )
+        public void ParamsFromType<T>() => ParamsFromType( typeof( T ) );
+        public void ParamsFromType( Type type )
         {
-            var accessors = type.GetProperties( System.Reflection.BindingFlags.Public )
+            workingObject = Activator.CreateInstance( type );
+
+            var flags = BindingFlags.Public | BindingFlags.Instance;
+            var accessors = type.GetProperties( flags )
                                 .Select( prop => new PropertyOrFieldProxy( prop ) )
-                                .Union( type.GetFields()
-                                    .Select( fld => new PropertyOrFieldProxy( fld ) )
-                                );
+                            .Union( type.GetFields( flags )
+                                .Select( fld => new PropertyOrFieldProxy( fld ) ) );
+
+            var caseSensAttr = type.GetSingleAttribute<CaseSensitive>();
+            if (caseSensAttr != null)
+                CaseSensitive = caseSensAttr.IsCaseSensitive;
+
+            var usageAttr = type.GetSingleAttribute<Usage>();
+            if (usageAttr != null)
+                UsageTextHeader = usageAttr.UsageText;
 
             foreach (var member in accessors)
             {
@@ -63,29 +61,56 @@ namespace Morpheus.CommandLine
                     IsNegatable = mi.HasAttribute<Negatable>(),
                 };
 
+                p.Executor = match =>
+                {
+                    if (member.TheType().IsPrimitive)
+                        member.Set( workingObject, match.Value );
+                    
+                };
+
                 var paramNamesAttr = mi.GetSingleAttribute<ParamNames>();
                 if (paramNamesAttr != null)
                     p.Names = paramNamesAttr.Names;
                 else
                     p.Name = mi.Name;
 
-                (ParamDefinitions ??= new List<Param>()).Add( p );
+                ParamDefinitions.Add( p );
             }
-
         }
 
-        public IDictionary<string, IEnumerable<Match>> Parse( string commandLine = null ) =>
-            (commandLine ?? CommandLine)
-                .Split( Delimiter )
-                .Skip( 1 )
-                .ToDictionary( token => token,
-                                token => ParamDefinitions
-                                            .Select( pdef => new Match( pdef, token ) )
-                                            .Where( match => match.IsMatch ) );
 
+
+        public IDictionary<string, List<Match>> Parse( string commandLine = null )
+        {
+            Dictionary<string, List<Match>> matches = new();
+
+            RegexOptions options = RegexOptions.ExplicitCapture | RegexOptions.IgnorePatternWhitespace;
+            if (!CaseSensitive) options |= RegexOptions.IgnoreCase;
+            Regex paramRegex = new( @"(?<negated>no)?  (?<name>[^\s=:]+)  [\s =:]*  (?<value>.*)", options );
+
+
+            var cmdstr = commandLine ?? CommandLine;
+            cmdstr = cmdstr.Trim().Replace( " --", " /" ).Replace( " -", " /" );
+
+
+            var opts = StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries;
+            IEnumerable<string> tokens = cmdstr.Split( " /", opts );
+            tokens = tokens.Skip( 1 ) // ignore the first token, which should be the executable name
+                            .Where( t => t?.Length > 0 ); // in case an empty one slips in
+
+            foreach (var token in tokens) // could be a ToDictionary, but that gets unwieldy
+            {
+                matches[token] = ParamDefinitions
+                    .Select( pdef => new Match( pdef, token ) )
+                    .Where( match => match.IsMatch )
+                    .ToList();
+            }
+
+            return matches;
+        }
 
         public IEnumerable<string> Validate( string commandLine = null ) =>
-            Parse( commandLine ?? CommandLine )
+            Parse( commandLine )
                 .Where( kv => kv.Value.Count() > 1 )
                 .Select( kv => $"Ambiguous Parameter Match: {kv.Key}\n{kv.Value.JoinAsString( "\n" )}" )
                 .Union( Parse( commandLine ?? CommandLine )
@@ -96,7 +121,7 @@ namespace Morpheus.CommandLine
                 .Where( pdef => pdef.IsRequired && Parser( commandLine ?? CommandLine ).Union( )
         */
 
-        public void Execute( string commandLine = null ) =>
+        public void Execute( PropertyOrFieldProxy member, string commandLine = null ) =>
             Parse( commandLine ?? CommandLine )
                 .ForEach( kv => kv.Value.Single().Execute() );
 
@@ -119,8 +144,7 @@ namespace Morpheus.CommandLine
 
     public class Parser<T> : Parser where T : class, new()
     {
-        public new T Params { get; private set; } = new T();
-
-        public Parser() => Params( typeof( T ) );
+        public T Params { get; private set; } = new T();
+        public Parser() => ParamsFromType( typeof( T ) );
     }
 }

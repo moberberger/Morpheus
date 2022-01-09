@@ -4,24 +4,36 @@ namespace Morpheus.CommandLine
 {
     public class Match
     {
-        public static Regex Regex { get; }
-            = new Regex( @"^\s* (?'negated'no)? (?'param'[\w\d\?]+) (\s*=?\s*) (?'value'[\w\d]+)? \s*$",
-                            RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace );
-
-        public Param Parameter { get; init; }
+        public Param Param { get; init; }
         public string Token { get; init; }
         public bool IsNegated { get; private set; }
-        public string ParamFound { get; private set; }
+        public string ParamInCmdline { get; private set; }
         public string DeducedValue { get; private set; }
-        public string Value => string.IsNullOrWhiteSpace( DeducedValue ) ? Parameter.DefaultValue : DeducedValue;
-        public bool IsMatch => Parameter.IsMatch( ParamFound );
-        public void Execute() => Parameter.Executor( this );
+        public string Value => string.IsNullOrWhiteSpace( DeducedValue ) ? Param.DefaultValue : DeducedValue;
+        public bool IsMatch => Param.IsMatch( ParamInCmdline );
+        public void Execute() => Param.Executor( this );
 
-        public Match( Param parameter, string token ) =>
-            (Parameter = parameter, Token = token.Trim())
-            .NowUse( Regex.Match( Token ) )
-            .With( m => IsNegated = m.Groups["negated"].Value.ToLower() == "no" )
-            .With( m => ParamFound = m.Groups["param"].Value )
-            .With( m => DeducedValue = m.Groups["value"].Value );
+        public Match( Param parameter, string token )
+        {
+            Param = parameter;
+            Token = token;
+
+            RegexOptions rgxOpt = RegexOptions.ExplicitCapture | RegexOptions.IgnorePatternWhitespace;
+            if (!Param.Parser.CaseSensitive)
+                rgxOpt |= RegexOptions.IgnoreCase;
+
+            var rgxStr = @"(?<name>[^\s=:]+)  [\s =:]*  (?<value>.*)";
+            if (Param.IsNegatable)
+                rgxStr = "(?<negated>no)?" + rgxStr;
+
+            var paramRegex = new Regex( rgxStr, rgxOpt );
+            var m = paramRegex.Match( Token );
+
+            IsNegated = m.Groups["negated"]?.Value?.Length > 0;
+            ParamInCmdline = m.Groups["name"].Value;
+            DeducedValue = m.Groups["value"]?.Value ?? "";
+        }
+
+        public override string ToString() => $"'{Token}' :: {Param.Name}= '{Value}'";
     }
 }

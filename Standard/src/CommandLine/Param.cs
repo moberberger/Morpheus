@@ -18,13 +18,13 @@ namespace Morpheus.CommandLine
         public string DefaultValue { get; init; }
         public bool IsRequired { get; init; }
         public bool IsNegatable { get; init; }
-        public Action<Match> Executor { get; init; }
+        public Action<Match> Executor { get; set; }
 
 
         public string UsageLeftSide =>
             new StringBuilder()
                 .AppendIf( !IsRequired, "[" )
-                .Append( Parser.Delimiter.Trim() )
+                .Append( "-" )
                 .AppendIf( IsNegatable, "[no]" )
                 .Append( Name )
                 .AppendIf( !string.IsNullOrWhiteSpace( UsageParamName ), $" <{UsageParamName}>" )
