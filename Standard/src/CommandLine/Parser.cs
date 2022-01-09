@@ -18,7 +18,6 @@ namespace Morpheus.CommandLine
         public Parser( IEnumerable<Param> paramDefinitions ) =>
             ParamDefinitions = paramDefinitions.Apply( p => p.Parser = this ).ToList();
 
-
         public void Param( string name,
                             Action<Match> executor,
                             string usage = "",
@@ -33,12 +32,47 @@ namespace Morpheus.CommandLine
                     Name = name,
                     Executor = executor,
                     UsageText = usage,
-                    SubparamUsage = subparamUsage,
+                    UsageParamName = subparamUsage,
                     DefaultValue = defaultValue,
                     IsNegatable = isNegatable,
                     IsRequired = isRequired
                 } );
 
+
+        public void Params<T>() => Params( typeof( T ) );
+        public void Params( Type type )
+        {
+            var accessors = type.GetProperties( System.Reflection.BindingFlags.Public )
+                                .Select( prop => new PropertyOrFieldProxy( prop ) )
+                                .Union( type.GetFields()
+                                    .Select( fld => new PropertyOrFieldProxy( fld ) )
+                                );
+
+            foreach (var member in accessors)
+            {
+                var mi = member.MemberInfo;
+                var usage = mi.GetSingleAttribute<Usage>();
+                if (usage == null) continue;
+
+                Param p = new()
+                {
+                    Parser = this,
+                    UsageText = usage.UsageText ?? "",
+                    UsageParamName = usage.UsageParamName ?? "",
+                    IsRequired = mi.HasAttribute<Required>(),
+                    IsNegatable = mi.HasAttribute<Negatable>(),
+                };
+
+                var paramNamesAttr = mi.GetSingleAttribute<ParamNames>();
+                if (paramNamesAttr != null)
+                    p.Names = paramNamesAttr.Names;
+                else
+                    p.Name = mi.Name;
+
+                (ParamDefinitions ??= new List<Param>()).Add( p );
+            }
+
+        }
 
         public IDictionary<string, IEnumerable<Match>> Parse( string commandLine = null ) =>
             (commandLine ?? CommandLine)
@@ -77,5 +111,16 @@ namespace Morpheus.CommandLine
             .WithHeaderAlign( GridAlignments.Center )
             .WithColumnPadding( 1 )
             .ToString();
+
+
+    }
+
+
+
+    public class Parser<T> : Parser where T : class, new()
+    {
+        public new T Params { get; private set; } = new T();
+
+        public Parser() => Params( typeof( T ) );
     }
 }

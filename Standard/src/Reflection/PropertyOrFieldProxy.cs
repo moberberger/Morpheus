@@ -186,6 +186,11 @@ namespace Morpheus
         public void Set( object _instanceObject, object _value ) => m_setter( _instanceObject, _value );
 
 
+
+        public override string ToString() =>
+            $"{MemberInfo.GetType().Name}: {MemberInfo.Name}";
+
+
         /// <summary>
         /// Helper to create the Getter and Setter functions.
         /// </summary>

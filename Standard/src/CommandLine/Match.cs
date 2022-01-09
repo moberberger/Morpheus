@@ -14,7 +14,7 @@ namespace Morpheus.CommandLine
         public string ParamFound { get; private set; }
         public string DeducedValue { get; private set; }
         public string Value => string.IsNullOrWhiteSpace( DeducedValue ) ? Parameter.DefaultValue : DeducedValue;
-        public bool IsMatch => Parameter.Name.StartsWith( ParamFound, !Parameter.Parser.CaseSensitive, null );
+        public bool IsMatch => Parameter.IsMatch( ParamFound );
         public void Execute() => Parameter.Executor( this );
 
         public Match( Param parameter, string token ) =>
