@@ -25,8 +25,7 @@ namespace Morpheus.CommandLine
             => Names.Contains( name => name.StartsWith( paramFound, !Parser.CaseSensitive, null ) );
 
 
-        public Param() { }
-        public static Param FromType( Parser parser, Type type, PropertyOrFieldProxy member )
+        public static Param FromType( Type type, PropertyOrFieldProxy member )
         {
             var mi = member.MemberInfo;
             var t = member.TheType;
@@ -36,7 +35,6 @@ namespace Morpheus.CommandLine
 
             Param p = new()
             {
-                Parser = parser,
                 UsageText = usage.UsageText ?? "",
                 UsageParamName = usage.UsageParamName ?? "",
                 IsRequired = mi.HasAttribute<Required>(),
@@ -90,8 +88,5 @@ namespace Morpheus.CommandLine
 
 
         public override string ToString() => $"{UsageLeftSide}\t{UsageText}";
-
-
     }
-
 }

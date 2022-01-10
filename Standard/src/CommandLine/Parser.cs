@@ -13,8 +13,6 @@ namespace Morpheus.CommandLine
     {
         public string CommandLine { get; set; } = Environment.CommandLine;
 
-        public List<Param> ParamDefinitions { get; private set; } = new();
-
         public bool CaseSensitive { get; set; } = false;
 
         public string UsageTextHeader { get; set; } = Environment.CommandLine;
@@ -24,12 +22,15 @@ namespace Morpheus.CommandLine
         public T Params<T>() => (T)WorkingObject;
 
 
+        public List<Param> ParamDefinitions { get; private set; } = new();
+        public void Add( Param p ) => ParamDefinitions.Add( p );
+
+
 
         public Parser() { }
         public Parser( Type t ) => ParamsFromType( t );
         public Parser( IEnumerable<Param> paramDefinitions ) =>
             ParamDefinitions = paramDefinitions.Apply( p => p.Parser = this ).ToList();
-        public void Add( Param p ) => ParamDefinitions.Add( p );
 
 
 
@@ -54,9 +55,12 @@ namespace Morpheus.CommandLine
 
             foreach (var member in accessors)
             {
-                var p = Param.FromType( this, type, member );
+                var p = Param.FromType( type, member );
                 if (p != null)
+                {
+                    p.Parser = this;
                     ParamDefinitions.Add( p );
+                }
             }
 
             return this;
