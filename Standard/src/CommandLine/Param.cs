@@ -24,34 +24,26 @@ namespace Morpheus.CommandLine
         public bool IsMatch( string paramFound )
             => Names.Contains( name => name.StartsWith( paramFound, !Parser.CaseSensitive, null ) );
 
-
-        public static Param FromType( Type type, PropertyOrFieldProxy member )
+        public Param() { }
+        public Param( Type type, PropertyOrFieldProxy member )
         {
             var mi = member.MemberInfo;
             var t = member.TheType;
 
-            var usage = mi.GetSingleAttribute<Usage>();
-            if (usage == null) return null;
-
-            Param p = new()
-            {
-                UsageText = usage.UsageText ?? "",
-                UsageParamName = usage.UsageParamName ?? "",
-                IsRequired = mi.HasAttribute<Required>(),
-                IsNegatable = mi.HasAttribute<Negatable>(),
-            };
-            p.Executor = match => p.SetWithReflection( member, match );
-
-            if (p.IsNegatable && t != typeof( bool ))
-                throw new CommandLineException( $"{mi.Name} is declared as Negatable but the underlying type isn't bool: {t}" );
+            var usage = mi.GetSingleAttribute<Usage>() ??
+                throw new ArgumentException( $"Member '{member.MemberInfo.Name}' doesn't have a 'Usage' attribute." );
 
             var paramNamesAttr = mi.GetSingleAttribute<ParamNames>();
             if (paramNamesAttr != null)
-                p.Names = paramNamesAttr.Names;
+                Names = paramNamesAttr.Names;
             else
-                p.Name = mi.Name;
+                Name = mi.Name;
 
-            return p;
+            UsageText = usage.UsageText ?? "";
+            UsageParamName = usage.UsageParamName ?? "";
+            IsRequired = mi.HasAttribute<Required>();
+            IsNegatable = mi.HasAttribute<Negatable>();
+            Executor = match => SetWithReflection( member, match );
         }
 
         private string SetWithReflection( PropertyOrFieldProxy member, Match match )
