@@ -37,10 +37,6 @@ namespace Morpheus.CommandLine
 
 
     [AttributeUsage( AttributeTargets.Class )]
-    public class CommandLineParams : Attribute { }
-
-
-    [AttributeUsage( AttributeTargets.Class )]
     public class AutoUsagePrintout : Attribute { }
 
 
