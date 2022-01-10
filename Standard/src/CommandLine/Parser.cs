@@ -4,33 +4,39 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
+using Parsed = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<Morpheus.CommandLine.Match>>;
+
+
 namespace Morpheus.CommandLine
 {
     public class Parser
     {
         public string CommandLine { get; set; } = Environment.CommandLine;
-        public List<Param> ParamDefinitions { get; private set; } = new();
 
-        protected object workingObject;
+        public List<Param> ParamDefinitions { get; private set; } = new();
 
         public bool CaseSensitive { get; set; } = false;
 
         public string UsageTextHeader { get; set; } = Environment.CommandLine;
 
 
+        public object WorkingObject { get; private set; }
+        public T Params<T>() => (T)WorkingObject;
+
+
 
         public Parser() { }
+        public Parser( Type t ) => ParamsFromType( t );
         public Parser( IEnumerable<Param> paramDefinitions ) =>
             ParamDefinitions = paramDefinitions.Apply( p => p.Parser = this ).ToList();
+        public void Add( Param p ) => ParamDefinitions.Add( p );
 
 
-        public void AddParam( Param p ) => ParamDefinitions.Add( p );
 
-
-        public void ParamsFromType<T>() => ParamsFromType( typeof( T ) );
-        public void ParamsFromType( Type type )
+        public Parser ParamsFromType<T>() => ParamsFromType( typeof( T ) );
+        public Parser ParamsFromType( Type type )
         {
-            workingObject = Activator.CreateInstance( type );
+            WorkingObject = Activator.CreateInstance( type );
 
             var flags = BindingFlags.Public | BindingFlags.Instance;
             var accessors = type.GetProperties( flags )
@@ -48,53 +54,36 @@ namespace Morpheus.CommandLine
 
             foreach (var member in accessors)
             {
-                var mi = member.MemberInfo;
-                var usage = mi.GetSingleAttribute<Usage>();
-                if (usage == null) continue;
-
-                Param p = new()
-                {
-                    Parser = this,
-                    UsageText = usage.UsageText ?? "",
-                    UsageParamName = usage.UsageParamName ?? "",
-                    IsRequired = mi.HasAttribute<Required>(),
-                    IsNegatable = mi.HasAttribute<Negatable>(),
-                };
-
-                p.Executor = match =>
-                {
-                    if (member.TheType().IsPrimitive)
-                        member.Set( workingObject, match.Value );
-                    
-                };
-
-                var paramNamesAttr = mi.GetSingleAttribute<ParamNames>();
-                if (paramNamesAttr != null)
-                    p.Names = paramNamesAttr.Names;
-                else
-                    p.Name = mi.Name;
-
-                ParamDefinitions.Add( p );
+                var p = Param.FromType( this, type, member );
+                if (p != null)
+                    ParamDefinitions.Add( p );
             }
+
+            return this;
         }
 
 
 
-        public IDictionary<string, List<Match>> Parse( string commandLine = null )
+        public Parsed Parse( string commandLine = null )
         {
-            Dictionary<string, List<Match>> matches = new();
+            Parsed matches = new();
 
             RegexOptions options = RegexOptions.ExplicitCapture | RegexOptions.IgnorePatternWhitespace;
             if (!CaseSensitive) options |= RegexOptions.IgnoreCase;
             Regex paramRegex = new( @"(?<negated>no)?  (?<name>[^\s=:]+)  [\s =:]*  (?<value>.*)", options );
 
+            if (commandLine != null)
+                CommandLine = commandLine;
 
-            var cmdstr = commandLine ?? CommandLine;
-            cmdstr = cmdstr.Trim().Replace( " --", " /" ).Replace( " -", " /" );
+            var cmdstr = CommandLine
+                            .Trim()
+                            .Replace( " --", " /" )
+                            .Replace( " -", " /" );
 
 
             var opts = StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries;
             IEnumerable<string> tokens = cmdstr.Split( " /", opts );
+
             tokens = tokens.Skip( 1 ) // ignore the first token, which should be the executable name
                             .Where( t => t?.Length > 0 ); // in case an empty one slips in
 
@@ -109,21 +98,33 @@ namespace Morpheus.CommandLine
             return matches;
         }
 
-        public IEnumerable<string> Validate( string commandLine = null ) =>
-            Parse( commandLine )
-                .Where( kv => kv.Value.Count() > 1 )
-                .Select( kv => $"Ambiguous Parameter Match: {kv.Key}\n{kv.Value.JoinAsString( "\n" )}" )
-                .Union( Parse( commandLine ?? CommandLine )
-                .Where( kv => kv.Value.Count() == 0 )
-                .Select( kv => $"Unknown Parameter: {kv.Key}" ) );
-        /*
-        .Union( ParameterDefinitions01
-                .Where( pdef => pdef.IsRequired && Parser( commandLine ?? CommandLine ).Union( )
-        */
 
-        public void Execute( PropertyOrFieldProxy member, string commandLine = null ) =>
-            Parse( commandLine ?? CommandLine )
-                .ForEach( kv => kv.Value.Single().Execute() );
+
+        public IEnumerable<string> Validate( string cmd ) => Validate( Parse( cmd ) );
+        public IEnumerable<string> Validate( Parsed parsed )
+        {
+            foreach (var problem in parsed.Where( kv => kv.Value.Count == 0 ))
+                yield return $":UNK: {problem.Key} There were no matching parameter definitions";
+
+            foreach (var problem in parsed.Where( kv => kv.Value.Count > 1 ))
+                yield return $":DUP: {problem.Key} There were {problem.Value.Count} matching parameter definitions";
+
+            var required = ParamDefinitions.Where( pdef => pdef.IsRequired ).ToHashSet();
+            foreach (var problem in parsed.Where( kv => kv.Value.Count == 1 ))
+                required.Remove( problem.Value.Single().Param );
+
+            foreach (var notFound in required)
+                yield return $":PNF: {notFound.Name} This required parameter was not found";
+        }
+
+
+        public IEnumerable<string> Execute( string cmd ) => Execute( Parse( cmd ) );
+        public IEnumerable<string> Execute( Parsed parsed )
+        {
+            foreach (var kv in parsed.Where( kv => kv.Value.Count == 1 ))
+                yield return kv.Value.Single().Execute();
+        }
+
 
         public override string ToString() =>
             new TextGrid
@@ -135,16 +136,22 @@ namespace Morpheus.CommandLine
             .WithHorizontalAlign( GridAlignments.Left )
             .WithHeaderAlign( GridAlignments.Center )
             .WithColumnPadding( 1 )
+            .WithHeader( UsageTextHeader )
             .ToString();
-
-
     }
-
 
 
     public class Parser<T> : Parser where T : class, new()
     {
-        public T Params { get; private set; } = new T();
+        public List<string> Messages { get; } = new List<string>();
+
         public Parser() => ParamsFromType( typeof( T ) );
+        public T Params( string cmdLine = null )
+        {
+            Messages.AddRange(
+                Execute( cmdLine )
+            );
+            return (T)WorkingObject;
+        }
     }
 }

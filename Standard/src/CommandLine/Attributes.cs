@@ -41,6 +41,10 @@ namespace Morpheus.CommandLine
 
 
     [AttributeUsage( AttributeTargets.Class )]
+    public class AutoUsagePrintout : Attribute { }
+
+
+    [AttributeUsage( AttributeTargets.Class )]
     public class CaseSensitive : Attribute
     {
         public bool IsCaseSensitive = false;

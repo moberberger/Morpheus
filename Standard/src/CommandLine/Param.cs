@@ -18,7 +18,64 @@ namespace Morpheus.CommandLine
         public string DefaultValue { get; init; }
         public bool IsRequired { get; init; }
         public bool IsNegatable { get; init; }
-        public Action<Match> Executor { get; set; }
+        public Func<Match, string> Executor { get; set; }
+
+
+        public bool IsMatch( string paramFound )
+            => Names.Contains( name => name.StartsWith( paramFound, !Parser.CaseSensitive, null ) );
+
+
+        public Param() { }
+        public static Param FromType( Parser parser, Type type, PropertyOrFieldProxy member )
+        {
+            var mi = member.MemberInfo;
+            var t = member.TheType;
+
+            var usage = mi.GetSingleAttribute<Usage>();
+            if (usage == null) return null;
+
+            Param p = new()
+            {
+                Parser = parser,
+                UsageText = usage.UsageText ?? "",
+                UsageParamName = usage.UsageParamName ?? "",
+                IsRequired = mi.HasAttribute<Required>(),
+                IsNegatable = mi.HasAttribute<Negatable>(),
+            };
+            p.Executor = match => p.SetWithReflection( member, match );
+
+            if (p.IsNegatable && t != typeof( bool ))
+                throw new CommandLineException( $"{mi.Name} is declared as Negatable but the underlying type isn't bool: {t}" );
+
+            var paramNamesAttr = mi.GetSingleAttribute<ParamNames>();
+            if (paramNamesAttr != null)
+                p.Names = paramNamesAttr.Names;
+            else
+                p.Name = mi.Name;
+
+            return p;
+        }
+
+        private string SetWithReflection( PropertyOrFieldProxy member, Match match )
+        {
+            object val;
+
+            if (member.TheType == typeof( bool ))
+            {
+                val = !match.IsNegated;
+            }
+            else
+            {
+                val = match.Value ?? "";
+                if (val.Equals( "" ))
+                    val = Activator.CreateInstance( member.TheType );
+                else
+                    val = Convert.ChangeType( val, member.TheType );
+            }
+
+            member.Set( Parser.WorkingObject, val );
+            return $"{member.MemberInfo.Name} = '{val}'";
+        }
 
 
         public string UsageLeftSide =>
@@ -31,13 +88,6 @@ namespace Morpheus.CommandLine
                 .AppendIf( !IsRequired, "]" )
                 .ToString();
 
-        internal bool IsMatch( string paramFound )
-        {
-            foreach (var name in Names)
-                if (name.StartsWith( paramFound, !Parser.CaseSensitive, null ))
-                    return true;
-            return false;
-        }
 
         public override string ToString() => $"{UsageLeftSide}\t{UsageText}";
 

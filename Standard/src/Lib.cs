@@ -86,61 +86,6 @@ namespace Morpheus
             val2 = tmp;
         }
 
-        /// <summary>
-        /// Convert a string containing a comma-separated list of values into an array of values
-        /// of the type specified
-        /// </summary>
-        /// <param name="_string">The comma-separated list</param>
-        /// <param name="_arrayType">The type of each element in the array to return.</param>
-        /// <returns>An Array object containing the values retrieved from the CSList</returns>
-        public static Array ConvertStringToArray( this string _string, Type _arrayType )
-        {
-            if (_string == null)
-                return null;
-            if (_string == "")
-                return Array.CreateInstance( _arrayType, 0 );
-
-            var vals = _string.Split( ',' );
-
-            var arr = Array.CreateInstance( _arrayType, vals.Length );
-            for (var i = 0; i < vals.Length; i++)
-            {
-                arr.SetValue( Convert.ChangeType( vals[i], _arrayType ), i );
-            }
-
-            return arr;
-        }
-
-        /// <summary>
-        /// Convert a string containing a comma-separated list of values into an array of values
-        /// of the type specified
-        /// </summary>
-        /// <typeparam name="T">
-        /// The Type that each element in the separated-list-string
-        /// </typeparam>
-        /// <param name="_string">The comma-separated list</param>
-        /// <param name="_separator">
-        /// The Separator used to distinguish individual elements in the list
-        /// </param>
-        /// <returns>The array created from the elements in the list.</returns>
-        public static T[] ConvertStringToArray<T>( this string _string, char _separator )
-        {
-            if (_string == null)
-                return null;
-            if (_string == "")
-                return new T[0];
-
-            var vals = _string.Split( _separator );
-            var elemType = typeof( T );
-
-            var arr = new T[vals.Length];
-            for (var i = 0; i < vals.Length; i++)
-            {
-                arr[i] = (T)Convert.ChangeType( vals[i], elemType );
-            }
-
-            return arr;
-        }
 
         /// <summary>
         /// Use this method successively to extract individual strings that have been separated

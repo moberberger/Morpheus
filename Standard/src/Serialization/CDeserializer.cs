@@ -1,8 +1,8 @@
 using Morpheus.Serialization;
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Xml;
 
 
@@ -90,7 +90,7 @@ namespace Morpheus
             StartProcessing();
 
             var elem = MakeElement( _xml );
-            return (T) FrameworkDeserialize( elem, typeof( T ) );
+            return (T)FrameworkDeserialize( elem, typeof( T ) );
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Morpheus
         /// </summary>
         /// <param name="_xml">The XML containing the data for the object</param>
         /// <returns>An XmlElement appropriate for deserialization</returns>
-        private static XmlElement MakeElement( XmlNode _xml ) => (_xml as XmlElement) ?? ((XmlDocument) _xml).DocumentElement;
+        private static XmlElement MakeElement( XmlNode _xml ) => (_xml as XmlElement) ?? ((XmlDocument)_xml).DocumentElement;
 
         /// <summary>
         /// This is the recursively-called routine that will actually direct the deserialization
@@ -336,7 +336,7 @@ namespace Morpheus
                 int[] indicies = null;
                 var sIndex = XmlExtensions.GetAttributeValue( elem, m_context.ArrayIndexAttributeName );
                 if (sIndex != null)
-                    indicies = Lib.ConvertStringToArray<int>( sIndex, ',' );
+                    indicies = sIndex.Split( ',' ).Select( s => int.Parse( s ) ).ToArray();
 
                 if (indicies != null && indicies.Length > 0)
                     _arrayHelper.SetIndicies( indicies );
@@ -415,10 +415,10 @@ namespace Morpheus
 
                 // Get info from the XML
                 var sLengths = XmlExtensions.GetAttributeValue( _xml, m_context.ArrayAttributeName );
-                var lengths = Lib.ConvertStringToArray<int>( sLengths, ',' );
+                var lengths = sLengths.Split( ',' ).Select( s => int.Parse( s ) ).ToArray();
 
                 var sLowerBounds = XmlExtensions.GetAttributeValue( _xml, m_context.ArrayLowerBoundAttribute );
-                var lowerBounds = Lib.ConvertStringToArray<int>( sLowerBounds, ',' );
+                var lowerBounds = sLowerBounds.Split( ',' ).Select( s => int.Parse( s ) ).ToArray();
 
                 if (lengths == null)
                 {

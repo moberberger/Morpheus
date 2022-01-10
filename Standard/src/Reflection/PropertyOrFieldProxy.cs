@@ -265,20 +265,11 @@ namespace Morpheus
             }
         }
 
-        public Type TheType()
-        {
-            switch (MemberInfo)
-            {
-                case FieldInfo fi:
-                    return fi.FieldType;
-                case PropertyInfo pi:
-                    return pi.PropertyType;
-                default:
-                    throw new ArgumentException( $"{MemberInfo.Name} is a {MemberInfo.MemberType}, but it must be a field or property" );
-            }
-        }
+        public Type TheType =>
+            (MemberInfo as FieldInfo)?.FieldType ??
+            (MemberInfo as PropertyInfo)?.PropertyType ??
+            throw new ArgumentException( $"{MemberInfo.Name} is a {MemberInfo.MemberType}, but it must be a field or property" );
     }
-
 
     /// <summary>
     /// Helper, mainly for testing, as these classes are not really useful if you know the code
