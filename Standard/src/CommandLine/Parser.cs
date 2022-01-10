@@ -53,13 +53,33 @@ namespace Morpheus.CommandLine
             if (usageAttr != null)
                 UsageTextHeader = usageAttr.UsageText;
 
+            var autoUsageAttr = type.GetSingleAttribute<AutoUsagePrintout>();
+            if (autoUsageAttr != null)
+            {
+                Param p = new()
+                {
+                    UsageText = "Prints This Message",
+                    Parser = this,
+                    Names = new[] { "help", "?" },
+                };
+
+                p.Executor = match =>
+                {
+                    Console.WriteLine( this );
+                    return "Usage Text";
+                };
+
+                Add( p );
+            }
+
+
             foreach (var member in accessors)
             {
                 var p = Param.FromType( type, member );
                 if (p != null)
                 {
                     p.Parser = this;
-                    ParamDefinitions.Add( p );
+                    Add( p );
                 }
             }
 

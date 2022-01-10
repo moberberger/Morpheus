@@ -14,8 +14,8 @@ namespace Morpheus.CommandLine
         public string Name { get => Names[0]; set => Names[0] = value; }
 
         public string UsageText { get; init; } = "TODO: Add Usage Text";
-        public string UsageParamName { get; init; }
-        public string DefaultValue { get; init; }
+        public string UsageParamName { get; init; } = "";
+        public string DefaultValue { get; init; } = "";
         public bool IsRequired { get; init; }
         public bool IsNegatable { get; init; }
         public Func<Match, string> Executor { get; set; }
