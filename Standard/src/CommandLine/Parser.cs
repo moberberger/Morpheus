@@ -22,16 +22,18 @@ namespace Morpheus.CommandLine
         public T Params<T>() => (T)WorkingObject;
 
 
-        public List<Param> ParamDefinitions { get; private set; } = new();
-        public void Add( Param p ) => ParamDefinitions.Add( p );
-
+        public IEnumerable<Param> ParamDefinitions { get; private set; } = new List<Param>();
+        public void Add( Param p )
+        {
+            p.Parser = this;
+            (ParamDefinitions as IList<Param>).Add( p );
+        }
 
 
         public Parser() { }
         public Parser( Type t ) => ParamsFromType( t );
         public Parser( IEnumerable<Param> paramDefinitions ) =>
-            ParamDefinitions = paramDefinitions.Apply( p => p.Parser = this ).ToList();
-
+            paramDefinitions.ForEach( param => Add( param ) );
 
 
         public Parser ParamsFromType<T>() => ParamsFromType( typeof( T ) );
@@ -55,38 +57,35 @@ namespace Morpheus.CommandLine
 
             var autoUsageAttr = type.GetSingleAttribute<AutoUsagePrintout>();
             if (autoUsageAttr != null)
-            {
-                Param p = new()
-                {
-                    UsageText = "Prints This Message",
-                    Parser = this,
-                    Names = new[] { "help", "?" },
-                };
-
-                p.Executor = match =>
-                {
-                    Console.WriteLine( this );
-                    return "Usage Text";
-                };
-
-                Add( p );
-            }
+                AddAutoUsagePrintout();
 
 
             foreach (var member in accessors)
             {
                 var p = Param.FromType( type, member );
                 if (p != null)
-                {
-                    p.Parser = this;
                     Add( p );
-                }
             }
 
             return this;
         }
 
+        private void AddAutoUsagePrintout()
+        {
+            Param p = new()
+            {
+                Names = new[] { "help", "?" },
+                UsageText = "Prints This Message",
+            };
 
+            p.Executor = match =>
+            {
+                Console.WriteLine( this );
+                return "Usage Text";
+            };
+
+            Add( p );
+        }
 
         public Parsed Parse( string commandLine = null )
         {
@@ -167,14 +166,23 @@ namespace Morpheus.CommandLine
 
     public class Parser<T> : Parser where T : class, new()
     {
-        public List<string> Messages { get; } = new List<string>();
+        public IEnumerable<string> ExecuteMessages { get; private set; }
 
         public Parser() => ParamsFromType( typeof( T ) );
         public T Params( string cmdLine = null )
         {
-            Messages.AddRange(
-                Execute( cmdLine )
-            );
+            var parsed = Parse( cmdLine );
+
+            var errors = Validate( parsed );
+            if (!errors.IsEmpty())
+            {
+                foreach (var error in errors)
+                    Console.Error.WriteLine( error );
+                return null;
+            }
+
+            ExecuteMessages = Execute( parsed ).ToList();
+
             return (T)WorkingObject;
         }
     }
