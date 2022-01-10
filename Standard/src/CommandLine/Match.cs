@@ -18,15 +18,15 @@ namespace Morpheus.CommandLine
             Param = parameter;
             Token = token;
 
-            RegexOptions rgxOpt = RegexOptions.ExplicitCapture | RegexOptions.IgnorePatternWhitespace;
+            RegexOptions regexOpt = RegexOptions.ExplicitCapture | RegexOptions.IgnorePatternWhitespace;
             if (!Param.Parser.CaseSensitive)
-                rgxOpt |= RegexOptions.IgnoreCase;
+                regexOpt |= RegexOptions.IgnoreCase;
 
-            var rgxStr = @"(?<name>[^\s=:]+)  [\s =:]*  (?<value>.*)";
+            var regexStr = @"(?<name>[^\s=:]+)  [\s =:]*  (?<value>.*)";
             if (Param.IsNegatable)
-                rgxStr = "(?<negated>no)?" + rgxStr;
+                regexStr = "(?<negated>no)?" + regexStr;
 
-            var paramRegex = new Regex( rgxStr, rgxOpt );
+            var paramRegex = new Regex( regexStr, regexOpt );
             var m = paramRegex.Match( Token );
 
             IsNegated = m.Groups["negated"]?.Value?.Length > 0;

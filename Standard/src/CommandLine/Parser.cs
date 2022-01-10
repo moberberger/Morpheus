@@ -2,10 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
-
-using Parsed_ = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<Morpheus.CommandLine.Match>>;
-
 
 namespace Morpheus.CommandLine
 {
@@ -21,6 +17,8 @@ namespace Morpheus.CommandLine
         public T Params<T>( string cmdLine = null ) => (T)SetWorkingObject( cmdLine );
 
         public IEnumerable<Param> ParamDefinitions { get; private set; } = new List<Param>();
+
+        public IEnumerable<string> ExecuteMessages { get; private set; }
 
 
 
@@ -65,19 +63,16 @@ namespace Morpheus.CommandLine
 
         public void AddAutoUsagePrintout()
         {
-            Param p = new()
+            Add( new()
             {
                 Names = new[] { "help", "?" },
                 UsageText = "Prints This Message",
-            };
-
-            p.Executor = match =>
-            {
-                Console.WriteLine( this );
-                return "Usage Text";
-            };
-
-            Add( p );
+                Executor = match =>
+                {
+                    Console.WriteLine( this );
+                    return "Usage Text";
+                }
+            } );
         }
 
         public Parsed Parse( string commandLine = null )
@@ -98,6 +93,22 @@ namespace Morpheus.CommandLine
                 .Where( t => t?.Length > 0 );   // in case an empty one slips in
 
             return new Parsed( this, tokens );
+        }
+
+        public object SetWorkingObject( string cmdLine = null )
+        {
+            var parsed = Parse( cmdLine );
+
+            var errors = parsed.Validate();
+            if (!errors.IsEmpty())
+            {
+                foreach (var error in errors)
+                    Console.Error.WriteLine( error );
+                return null;
+            }
+
+            ExecuteMessages = parsed.Execute().ToList();
+            return WorkingObject;
         }
 
 
@@ -147,23 +158,6 @@ namespace Morpheus.CommandLine
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => ParamDefinitions.GetEnumerator();
 
         #endregion
-
-        public IEnumerable<string> ExecuteMessages { get; private set; }
-        public object SetWorkingObject( string cmdLine = null )
-        {
-            var parsed = Parse( cmdLine );
-
-            var errors = parsed.Validate();
-            if (!errors.IsEmpty())
-            {
-                foreach (var error in errors)
-                    Console.Error.WriteLine( error );
-                return null;
-            }
-
-            ExecuteMessages = parsed.Execute().ToList();
-            return WorkingObject;
-        }
 
     }
 
