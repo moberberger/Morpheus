@@ -21,6 +21,17 @@ namespace Morpheus.CommandLine
             }
         }
 
+        internal Match AddEnvVariable( Param pdef, string variable, string value )
+        {
+            var token = "%" + variable + "=" + value;
+            var match = new Match( pdef, token );
+
+            (parsed[token] = new List<Match>())
+                .Add( match );
+
+            return match;
+        }
+
         public IEnumerable<string> Validate()
         {
             foreach (var problem in parsed.Where( kv => kv.Value.Count == 0 ))

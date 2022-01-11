@@ -16,6 +16,7 @@ namespace Morpheus.CommandLine
         public string UsageText { get; init; } = "TODO: Add Usage Text";
         public string UsageParamName { get; init; } = "";
         public string DefaultValue { get; init; } = "";
+        public string EnvironmentVariableName { get; init; } = null;
         public bool IsRequired { get; init; }
         public bool IsNegatable { get; init; }
         public Func<Match, string> Executor { get; set; }
@@ -25,7 +26,7 @@ namespace Morpheus.CommandLine
             => Names.Contains( name => name.StartsWith( paramFound, !Parser.CaseSensitive, null ) );
 
         public Param() { }
-        public Param( Type type, PropertyOrFieldProxy member )
+        public Param( PropertyOrFieldProxy member )
         {
             var mi = member.MemberInfo;
             var t = member.TheType;
@@ -42,15 +43,16 @@ namespace Morpheus.CommandLine
             UsageText = usage.UsageText ?? "";
             UsageParamName = usage.UsageParamName ?? "";
             IsRequired = mi.HasAttribute<Required>();
-            IsNegatable = mi.HasAttribute<Negatable>();
+            IsNegatable = (t == typeof( bool ));
+            EnvironmentVariableName = mi.GetSingleAttribute<EnvironmentVariable>()?.VariableName;
             Executor = match => SetWithReflection( member, match );
         }
 
-        private string SetWithReflection( PropertyOrFieldProxy member, Match match )
+        private string SetWithReflection( PropertyOrFieldProxy proxy, Match match )
         {
             object val;
 
-            if (member.TheType == typeof( bool ))
+            if (proxy.TheType == typeof( bool ))
             {
                 val = !match.IsNegated;
             }
@@ -58,13 +60,13 @@ namespace Morpheus.CommandLine
             {
                 val = match.Value ?? "";
                 if (val.Equals( "" ))
-                    val = Activator.CreateInstance( member.TheType );
+                    val = Activator.CreateInstance( proxy.TheType );
                 else
-                    val = Convert.ChangeType( val, member.TheType );
+                    val = Convert.ChangeType( val, proxy.TheType );
             }
 
-            member.Set( Parser.WorkingObject, val );
-            return $"{member.MemberInfo.Name} = '{val}'";
+            proxy.Set( Parser.WorkingObject, val );
+            return $"{proxy.MemberInfo.Name} = '{val}'";
         }
 
 

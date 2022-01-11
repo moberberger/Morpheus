@@ -13,6 +13,8 @@ namespace Morpheus.CommandLine
 
         public string UsageTextHeader { get; set; } = Environment.CommandLine;
 
+        public string EnvironmentVariablePrefix { get; set; } = "";
+
         public object WorkingObject { get; private set; }
         public T Params<T>( string cmdLine = null ) => (T)SetWorkingObject( cmdLine );
 
@@ -34,11 +36,9 @@ namespace Morpheus.CommandLine
         {
             WorkingObject = Activator.CreateInstance( type );
 
-            var flags = BindingFlags.Public | BindingFlags.Instance;
-            var accessors = type.GetProperties( flags )
-                                .Select( prop => new PropertyOrFieldProxy( prop ) )
-                            .Union( type.GetFields( flags )
-                                .Select( fld => new PropertyOrFieldProxy( fld ) ) );
+            var autoUsageAttr = type.GetSingleAttribute<AutoUsagePrintout>();
+            if (autoUsageAttr != null)
+                AddAutoUsagePrintout();
 
             var caseSensAttr = type.GetSingleAttribute<CaseSensitive>();
             if (caseSensAttr != null)
@@ -48,15 +48,17 @@ namespace Morpheus.CommandLine
             if (usageAttr != null)
                 UsageTextHeader = usageAttr.UsageText;
 
-            var autoUsageAttr = type.GetSingleAttribute<AutoUsagePrintout>();
-            if (autoUsageAttr != null)
-                AddAutoUsagePrintout();
+            var envVarPrefixAttr = type.GetSingleAttribute<EnvironmentVariablePrefix>();
+            if (envVarPrefixAttr != null)
+                EnvironmentVariablePrefix = envVarPrefixAttr.Prefix;
 
-            foreach (var member in accessors.Where( member => member.MemberInfo.HasAttribute<Usage>() ))
-            {
-                var p = new Param( type, member );
-                Add( p );
-            }
+            var theParams = type.GetMembers()
+                .Where( member => member is FieldInfo || member is PropertyInfo )
+                .Where( member => member.HasAttribute<Usage>() )
+                .Select( member => new PropertyOrFieldProxy( member ) )
+                .Select( proxy => new Param( proxy ) );
+
+            AddRange( theParams );
 
             return this;
         }
@@ -92,7 +94,11 @@ namespace Morpheus.CommandLine
                 .Skip( 1 )                       // ignore the first token, which should be the executable name
                 .Where( t => t?.Length > 0 );   // in case an empty one slips in
 
-            return new Parsed( this, tokens );
+            var working = new Parsed( this, tokens );
+
+
+
+            return working;
         }
 
         public object SetWorkingObject( string cmdLine = null )
@@ -140,6 +146,12 @@ namespace Morpheus.CommandLine
         {
             p.Parser = this;
             (ParamDefinitions as IList<Param>).Add( p );
+        }
+
+        public void AddRange( IEnumerable<Param> parameters )
+        {
+            foreach (var param in parameters)
+                Add( param );
         }
 
         public bool Remove( Param item ) => (ParamDefinitions as ICollection<Param>).Remove( item );

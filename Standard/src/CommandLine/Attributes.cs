@@ -16,6 +16,12 @@ namespace Morpheus.CommandLine
 
 
 
+
+    [AttributeUsage( AttributeTargets.Property | AttributeTargets.Field )]
+    public class Required : Attribute { }
+
+
+
     [AttributeUsage( AttributeTargets.Property | AttributeTargets.Field )]
     public class ParamNames : Attribute
     {
@@ -23,14 +29,12 @@ namespace Morpheus.CommandLine
         public ParamNames( params string[] paramNames ) => Names = paramNames;
     }
 
-
-
     [AttributeUsage( AttributeTargets.Property | AttributeTargets.Field )]
-    public class Negatable : Attribute { }
-
-
-    [AttributeUsage( AttributeTargets.Property | AttributeTargets.Field )]
-    public class Required : Attribute { }
+    public class EnvironmentVariable : Attribute
+    {
+        public string VariableName { get; set; }
+        public EnvironmentVariable( string variable ) => VariableName = variable;
+    }
 
 
 
@@ -38,6 +42,14 @@ namespace Morpheus.CommandLine
 
     [AttributeUsage( AttributeTargets.Class )]
     public class AutoUsagePrintout : Attribute { }
+
+
+    [AttributeUsage( AttributeTargets.Class )]
+    public class EnvironmentVariablePrefix : Attribute
+    {
+        public string Prefix { get; set; }
+        public EnvironmentVariablePrefix( string prefix ) => Prefix = prefix;
+    }
 
 
     [AttributeUsage( AttributeTargets.Class )]
