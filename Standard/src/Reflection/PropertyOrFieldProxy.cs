@@ -55,27 +55,12 @@ namespace Morpheus
         /// </summary>
         protected PropertyOrFieldProxy() { }
 
-        /// <summary>
-        /// Create a new proxy for a field identified by a <see cref="FieldInfo"/> object.
-        /// </summary>
-        /// <param name="_fieldInfo">
-        /// The <see cref="FieldInfo"/> object used to construct this proxy
-        /// </param>
-        public PropertyOrFieldProxy( FieldInfo _fieldInfo )
-        {
-            Init( _fieldInfo );
-        }
 
         /// <summary>
-        /// Create a new proxy for a property identified by a <see cref="PropertyInfo"/> object.
+        /// Initialize using either MemberInfo
         /// </summary>
-        /// <param name="_propertyInfo">
-        /// The <see cref="PropertyInfo"/> object used to construct this proxy
-        /// </param>
-        public PropertyOrFieldProxy( PropertyInfo _propertyInfo )
-        {
-            Init( _propertyInfo );
-        }
+        /// <param name="_member"></param>
+        public PropertyOrFieldProxy( MemberInfo member ) => Init( member );
 
         /// <summary>
         /// Initialize using either MemberInfo
