@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Morpheus.CommandLine
@@ -12,16 +13,43 @@ namespace Morpheus.CommandLine
         {
             this.parser = parser;
 
-            foreach (var token in tokens) // could be a ToDictionary, but that gets unwieldy
+            AddEnvironmentVariables();
+
+            AddTokens( tokens );
+        }
+
+        private void AddEnvironmentVariables()
+        {
+            Parser.Diag.WriteLine();
+            Parser.Diag.WriteLine( "Finding environment variables" );
+
+            var fromEnv = Environment.GetEnvironmentVariables();
+            var envVars = new Dictionary<string, string>();
+
+            foreach (System.Collections.DictionaryEntry kv in fromEnv)
             {
-                parsed[token] = parser.ParamDefinitions
-                    .Select( pdef => new Match( pdef, token ) )
-                    .Where( match => match.IsMatch )
-                    .ToList();
+                var key = kv.Key.ToString().ToLower();
+                var val = fromEnv[kv.Key]?.ToString() ?? "";
+                envVars[key] = val;
+                Parser.Diag.WriteLine( $"[{key}] {val}" );
+            }
+
+            Parser.Diag.WriteLine();
+            Parser.Diag.WriteLine( "Resolving appropriate variables" );
+
+            foreach (var pdef in parser.ParamDefinitions)
+            {
+                var varName = pdef.ResolvedEnvironmentVariableName;
+                if (varName != null && envVars.TryGetValue( varName, out string val ))
+                {
+                    Parser.Diag.WriteLine( $"{varName} == {val}" );
+                    if (val?.Length > 0)
+                        AddEnvironmentVariable( pdef, varName, val );
+                }
             }
         }
 
-        internal Match AddEnvVariable( Param pdef, string variable, string value )
+        private Match AddEnvironmentVariable( Param pdef, string variable, string value )
         {
             var token = "%" + variable + "=" + value;
             var match = new Match( pdef, token );
@@ -31,6 +59,26 @@ namespace Morpheus.CommandLine
 
             return match;
         }
+
+        private void AddTokens( IEnumerable<string> tokens )
+        {
+            Parser.Diag.WriteLine();
+            Parser.Diag.WriteLine( "Adding Tokens" );
+
+            foreach (var token in tokens) // could be a ToDictionary, but that gets unwieldy
+            {
+                var list = parser.ParamDefinitions
+                    .Select( pdef => new Match( pdef, token ) )
+                    .Where( match => match.IsMatch )
+                .ToList();
+
+                parsed[token] = list;
+
+                var paramNames = list.Select( m => m.Param.Name ).JoinAsString( ", " );
+                Parser.Diag.WriteLine( $"Token [{token}] added: [{parsed[token].Count}] {paramNames}" );
+            }
+        }
+
 
         public IEnumerable<string> Validate()
         {
