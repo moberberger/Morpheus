@@ -10,10 +10,8 @@ namespace Morpheus.CommandLine
     {
         #region Outputs
 
-        public static TextWriter Diag = Console.Out;
-        public static TextWriter Log = Console.Out;
+        public static TextWriter Diag = new StringWriter();
         public static TextWriter Error = Console.Error;
-        public static TextWriter Recipe = StreamWriter.Null;
 
         #endregion
 
@@ -45,41 +43,71 @@ namespace Morpheus.CommandLine
         public Parser ParamsFromType<T>() => ParamsFromType( typeof( T ) );
         public Parser ParamsFromType( Type type )
         {
-            Diag.WriteLine( $"Creating Parameters for Type '{type.Name}'" );
-            WorkingObject = Activator.CreateInstance( type );
-
-            CheckForAttribute<Usage>( type, attr => UsageTextHeader = attr.UsageText );
-            CheckForAttribute<AutoUsagePrintout>( type, attr => AddAutoUsagePrintout() );
-            CheckForAttribute<CaseSensitive>( type, attr => CaseSensitive = attr.IsCaseSensitive );
-            CheckForAttribute<EnvironmentVariablePrefix>( type, attr => EnvironmentVariablePrefix = attr.Prefix );
-
-            foreach (var member in type.GetMembers())
+            try
             {
-                Diag.Write( $"Member '{member.Name}' ({member.GetType().Name}) " );
+                Diag.WriteLine( $"Creating Parameters for Type '{type.Name}'" );
+                WorkingObject = Activator.CreateInstance( type );
 
-                if (!(member is FieldInfo || member is PropertyInfo))
+                CheckForAttribute<Usage>( type, attr => UsageTextHeader = attr.UsageText );
+                CheckForAttribute<AutoUsagePrintout>( type, attr => AddAutoUsagePrintout() );
+                CheckForAttribute<CaseSensitive>( type, attr => CaseSensitive = attr.IsCaseSensitive );
+                CheckForAttribute<EnvironmentVariablePrefix>( type, attr => EnvironmentVariablePrefix = attr.Prefix );
+
+                foreach (var member in type.GetMembers())
                 {
-                    Diag.WriteLine( "skipped- not appropriate" );
-                    continue;
+                    Diag.Write( $"Member '{member.Name}' ({member.GetType().Name}) " );
+
+                    if (!(member is FieldInfo || member is PropertyInfo))
+                    {
+                        Diag.WriteLine( "skipped- not appropriate" );
+                        continue;
+                    }
+
+                    var mfi = member as FieldInfo;
+                    var pfi = member as PropertyInfo;
+                    if (mfi != null)
+                    {
+                        if (mfi.FieldType.IsAssignableTo( typeof( Parser ) ))
+                        {
+                            Diag.WriteLine( $"PARSER object assigned to field {member.Name}." );
+                            mfi.SetValue( WorkingObject, this );
+                            continue;
+                        }
+                    }
+                    else if (pfi != null)
+                    {
+                        if (pfi.PropertyType.IsAssignableTo( typeof( Parser ) ))
+                        {
+                            Diag.WriteLine( $"PARSER object assigned to property {member.Name}." );
+                            pfi.SetValue( WorkingObject, this );
+                            continue;
+                        }
+                    }
+
+                    if (!member.HasAttribute<Usage>())
+                    {
+                        Diag.WriteLine( "skipped- no Usage attribute" );
+                        continue;
+                    }
+
+                    Diag.Write( "proxy " );
+                    PropertyOrFieldProxy proxy = new( member );
+
+                    Diag.Write( "param " );
+                    Param param = new( proxy );
+
+                    Diag.WriteLine( param.UsageLeftSide );
+                    Add( param );
                 }
 
-                if (!member.HasAttribute<Usage>())
-                {
-                    Diag.WriteLine( "skipped- no Usage attribute" );
-                    continue;
-                }
-
-                Diag.Write( "proxy " );
-                PropertyOrFieldProxy proxy = new( member );
-
-                Diag.Write( "param " );
-                Param param = new( proxy );
-
-                Diag.WriteLine( param.UsageLeftSide );
-                Add( param );
+                return this;
             }
-
-            return this;
+            catch (Exception ex)
+            {
+                Diag.WriteLine( ex );
+                Console.Error.WriteLine( Diag.ToString() );
+                throw new InvalidOperationException( "Exception thrown in parser." );
+            }
         }
 
         private void CheckForAttribute<Tattr>( Type type, Action<Tattr> action )
@@ -117,6 +145,7 @@ namespace Morpheus.CommandLine
             if (commandLine != null)
                 CommandLine = commandLine;
 
+            Diag.WriteLine();
             Diag.WriteLine( "Parsing: " + CommandLine );
 
             var cmdstr = CommandLine
@@ -138,26 +167,40 @@ namespace Morpheus.CommandLine
 
         public object CreateWorkingObject( string cmdLine = null )
         {
-            var parsed = Parse( cmdLine );
-
-            Diag.WriteLine();
-            Diag.WriteLine( "Validating parsed information" );
-            var errors = parsed.Validate();
-            if (!errors.IsEmpty())
+            try
             {
-                Diag.WriteLine( "Errors found." );
-                foreach (var error in errors)
-                    Error.WriteLine( error );
-                return null;
+                var parsed = Parse( cmdLine );
+
+                Diag.WriteLine();
+                Diag.WriteLine( "Validating parsed information" );
+                var errors = parsed.Validate();
+                if (!errors.IsEmpty())
+                {
+                    Diag.WriteLine( "Errors found." );
+                    foreach (var error in errors)
+                        Error.WriteLine( error );
+                    return null;
+                }
+
+                Diag.WriteLine( "Executing the parsed command line" );
+                ExecuteMessages = parsed.Execute().ToList();
+
+                Diag.WriteLine(
+                    new TextGrid( ExecuteMessages.Select( line => line.Split( '=' ) ) )
+                    .WithBorders( TextGrid.Null )
+                    .WithColumnPadding( 1 )
+                    .WithHorizontalAlign( GridAlignments.Left )
+                );
+                Diag.WriteLine();
+
+                return WorkingObject;
             }
-
-            Diag.WriteLine( "Executing the parsed command line" );
-            ExecuteMessages = parsed.Execute().ToList();
-
-            Diag.WriteLine( ExecuteMessages.JoinAsString( "\n" ) );
-            Diag.WriteLine();
-
-            return WorkingObject;
+            catch (Exception ex)
+            {
+                Diag.WriteLine( ex );
+                Console.WriteLine( Diag.ToString() );
+                throw new InvalidOperationException( "Exception thrown in parser." );
+            }
         }
 
 

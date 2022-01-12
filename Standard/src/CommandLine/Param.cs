@@ -64,10 +64,13 @@ namespace Morpheus.CommandLine
             else
             {
                 val = match.Value ?? "";
-                if (val.Equals( "" ))
-                    val = Activator.CreateInstance( proxy.TheType );
-                else
-                    val = Convert.ChangeType( val, proxy.TheType );
+                if (proxy.TheType != typeof( string ))
+                {
+                    if (val.Equals( "" ))
+                        val = Activator.CreateInstance( proxy.TheType );
+                    else
+                        val = Convert.ChangeType( val, proxy.TheType );
+                }
             }
 
             proxy.Set( Parser.WorkingObject, val );
