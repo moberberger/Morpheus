@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -7,6 +8,14 @@ namespace Morpheus.CommandLine
 {
     public class Parser : ICollection<Param>
     {
+        #region Outputs
+
+        public static TextWriter Diag = new StringWriter();
+        public static TextWriter Error = Console.Error;
+
+        #endregion
+
+
         public string CommandLine { get; set; } = Environment.CommandLine;
 
         public bool CaseSensitive { get; set; } = false;
@@ -16,7 +25,7 @@ namespace Morpheus.CommandLine
         public string EnvironmentVariablePrefix { get; set; } = "";
 
         public object WorkingObject { get; private set; }
-        public T Params<T>( string cmdLine = null ) => (T)SetWorkingObject( cmdLine );
+        public T Params<T>( string cmdLine = null ) => (T)CreateWorkingObject( cmdLine );
 
         public IEnumerable<Param> ParamDefinitions { get; private set; } = new List<Param>();
 
@@ -34,33 +43,87 @@ namespace Morpheus.CommandLine
         public Parser ParamsFromType<T>() => ParamsFromType( typeof( T ) );
         public Parser ParamsFromType( Type type )
         {
-            WorkingObject = Activator.CreateInstance( type );
+            try
+            {
+                Diag.WriteLine( $"Creating Parameters for Type '{type.Name}'" );
+                WorkingObject = Activator.CreateInstance( type );
 
-            var autoUsageAttr = type.GetSingleAttribute<AutoUsagePrintout>();
-            if (autoUsageAttr != null)
-                AddAutoUsagePrintout();
+                CheckForAttribute<Usage>( type, attr => UsageTextHeader = attr.UsageText );
+                CheckForAttribute<AutoUsagePrintout>( type, attr => AddAutoUsagePrintout() );
+                CheckForAttribute<CaseSensitive>( type, attr => CaseSensitive = attr.IsCaseSensitive );
+                CheckForAttribute<EnvironmentVariablePrefix>( type, attr => EnvironmentVariablePrefix = attr.Prefix );
 
-            var caseSensAttr = type.GetSingleAttribute<CaseSensitive>();
-            if (caseSensAttr != null)
-                CaseSensitive = caseSensAttr.IsCaseSensitive;
+                foreach (var member in type.GetMembers())
+                {
+                    Diag.Write( $"Member '{member.Name}' ({member.GetType().Name}) " );
 
-            var usageAttr = type.GetSingleAttribute<Usage>();
-            if (usageAttr != null)
-                UsageTextHeader = usageAttr.UsageText;
+                    if (!(member is FieldInfo || member is PropertyInfo))
+                    {
+                        Diag.WriteLine( "skipped- not appropriate" );
+                        continue;
+                    }
 
-            var envVarPrefixAttr = type.GetSingleAttribute<EnvironmentVariablePrefix>();
-            if (envVarPrefixAttr != null)
-                EnvironmentVariablePrefix = envVarPrefixAttr.Prefix;
+                    var mfi = member as FieldInfo;
+                    var pfi = member as PropertyInfo;
+                    if (mfi != null)
+                    {
+                        if (mfi.FieldType.IsAssignableTo( typeof( Parser ) ))
+                        {
+                            Diag.WriteLine( $"PARSER object assigned to field {member.Name}." );
+                            mfi.SetValue( WorkingObject, this );
+                            continue;
+                        }
+                    }
+                    else if (pfi != null)
+                    {
+                        if (pfi.PropertyType.IsAssignableTo( typeof( Parser ) ))
+                        {
+                            Diag.WriteLine( $"PARSER object assigned to property {member.Name}." );
+                            pfi.SetValue( WorkingObject, this );
+                            continue;
+                        }
+                    }
 
-            var theParams = type.GetMembers()
-                .Where( member => member is FieldInfo || member is PropertyInfo )
-                .Where( member => member.HasAttribute<Usage>() )
-                .Select( member => new PropertyOrFieldProxy( member ) )
-                .Select( proxy => new Param( proxy ) );
+                    if (!member.HasAttribute<Usage>())
+                    {
+                        Diag.WriteLine( "skipped- no Usage attribute" );
+                        continue;
+                    }
 
-            AddRange( theParams );
+                    Diag.Write( "proxy " );
+                    PropertyOrFieldProxy proxy = new( member );
 
-            return this;
+                    Diag.Write( "param " );
+                    Param param = new( proxy );
+
+                    Diag.WriteLine( param.UsageLeftSide );
+                    Add( param );
+                }
+
+                return this;
+            }
+            catch (Exception ex)
+            {
+                Diag.WriteLine( ex );
+                Console.Error.WriteLine( Diag.ToString() );
+                throw new InvalidOperationException( "Exception thrown in parser." );
+            }
+        }
+
+        private void CheckForAttribute<Tattr>( Type type, Action<Tattr> action )
+            where Tattr : Attribute
+        {
+            Diag.Write( $"Checking for {typeof( Tattr ).Name} attribute: " );
+            var attr = type.GetSingleAttribute<Tattr>();
+            if (attr != null)
+            {
+                Diag.WriteLine( "  FOUND  " );
+                action( attr );
+            }
+            else
+            {
+                Diag.WriteLine( "not found" );
+            }
         }
 
         public void AddAutoUsagePrintout()
@@ -82,10 +145,15 @@ namespace Morpheus.CommandLine
             if (commandLine != null)
                 CommandLine = commandLine;
 
+            Diag.WriteLine();
+            Diag.WriteLine( "Parsing: " + CommandLine );
+
             var cmdstr = CommandLine
                             .Trim()
                             .Replace( " --", " /" )
                             .Replace( " -", " /" );
+
+            Diag.WriteLine( "Normalized Delims: " + cmdstr );
 
 
             var opts = StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries;
@@ -94,27 +162,45 @@ namespace Morpheus.CommandLine
                 .Skip( 1 )                       // ignore the first token, which should be the executable name
                 .Where( t => t?.Length > 0 );   // in case an empty one slips in
 
-            var working = new Parsed( this, tokens );
-
-
-
-            return working;
+            return new Parsed( this, tokens );
         }
 
-        public object SetWorkingObject( string cmdLine = null )
+        public object CreateWorkingObject( string cmdLine = null )
         {
-            var parsed = Parse( cmdLine );
-
-            var errors = parsed.Validate();
-            if (!errors.IsEmpty())
+            try
             {
-                foreach (var error in errors)
-                    Console.Error.WriteLine( error );
-                return null;
-            }
+                var parsed = Parse( cmdLine );
 
-            ExecuteMessages = parsed.Execute().ToList();
-            return WorkingObject;
+                Diag.WriteLine();
+                Diag.WriteLine( "Validating parsed information" );
+                var errors = parsed.Validate();
+                if (!errors.IsEmpty())
+                {
+                    Diag.WriteLine( "Errors found." );
+                    foreach (var error in errors)
+                        Error.WriteLine( error );
+                    return null;
+                }
+
+                Diag.WriteLine( "Executing the parsed command line" );
+                ExecuteMessages = parsed.Execute().ToList();
+
+                Diag.WriteLine(
+                    new TextGrid( ExecuteMessages.Select( line => line.Split( '=' ) ) )
+                    .WithBorders( TextGrid.Null )
+                    .WithColumnPadding( 1 )
+                    .WithHorizontalAlign( GridAlignments.Left )
+                );
+                Diag.WriteLine();
+
+                return WorkingObject;
+            }
+            catch (Exception ex)
+            {
+                Diag.WriteLine( ex );
+                Console.WriteLine( Diag.ToString() );
+                throw new InvalidOperationException( "Exception thrown in parser." );
+            }
         }
 
 
@@ -146,6 +232,7 @@ namespace Morpheus.CommandLine
         {
             p.Parser = this;
             (ParamDefinitions as IList<Param>).Add( p );
+            Diag.WriteLine( $"Parameter {p.Name} added to parser" );
         }
 
         public void AddRange( IEnumerable<Param> parameters )
@@ -177,6 +264,8 @@ namespace Morpheus.CommandLine
     public class Parser<T> : Parser where T : class, new()
     {
         public Parser() => ParamsFromType( typeof( T ) );
-        public T Params( string cmdLine = null ) => (T)SetWorkingObject( cmdLine );
+        public T Params( string cmdLine = null ) => Params<T>();
+
+        public static implicit operator T( Parser<T> parser ) => parser.Params();
     }
 }

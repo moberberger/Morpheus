@@ -21,18 +21,23 @@ namespace Morpheus.CommandLine
         public bool IsNegatable { get; init; }
         public Func<Match, string> Executor { get; set; }
 
+        public string ResolvedEnvironmentVariableName =>
+            (EnvironmentVariableName?.Length > 0 ? EnvironmentVariableName :
+             Parser.EnvironmentVariablePrefix?.Length > 0 ? Parser.EnvironmentVariablePrefix + Name :
+             null)?.ToLower();
 
-        public bool IsMatch( string paramFound )
-            => Names.Contains( name => name.StartsWith( paramFound, !Parser.CaseSensitive, null ) );
+        public bool IsMatch( string nameInQuestion ) =>
+            Names.Contains( name =>
+                name.StartsWith( nameInQuestion, !Parser.CaseSensitive, null ) );
 
         public Param() { }
-        public Param( PropertyOrFieldProxy member )
+        public Param( PropertyOrFieldProxy proxy )
         {
-            var mi = member.MemberInfo;
-            var t = member.TheType;
+            var mi = proxy.MemberInfo;
+            var t = proxy.TheType;
 
             var usage = mi.GetSingleAttribute<Usage>() ??
-                throw new ArgumentException( $"Member '{member.MemberInfo.Name}' doesn't have a 'Usage' attribute." );
+                throw new ArgumentException( $"Member '{mi.Name}' doesn't have a 'Usage' attribute." );
 
             var paramNamesAttr = mi.GetSingleAttribute<ParamNames>();
             if (paramNamesAttr != null)
@@ -45,7 +50,7 @@ namespace Morpheus.CommandLine
             IsRequired = mi.HasAttribute<Required>();
             IsNegatable = (t == typeof( bool ));
             EnvironmentVariableName = mi.GetSingleAttribute<EnvironmentVariable>()?.VariableName;
-            Executor = match => SetWithReflection( member, match );
+            Executor = match => SetWithReflection( proxy, match );
         }
 
         private string SetWithReflection( PropertyOrFieldProxy proxy, Match match )
@@ -59,10 +64,13 @@ namespace Morpheus.CommandLine
             else
             {
                 val = match.Value ?? "";
-                if (val.Equals( "" ))
-                    val = Activator.CreateInstance( proxy.TheType );
-                else
-                    val = Convert.ChangeType( val, proxy.TheType );
+                if (proxy.TheType != typeof( string ))
+                {
+                    if (val.Equals( "" ))
+                        val = Activator.CreateInstance( proxy.TheType );
+                    else
+                        val = Convert.ChangeType( val, proxy.TheType );
+                }
             }
 
             proxy.Set( Parser.WorkingObject, val );
