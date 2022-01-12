@@ -8,7 +8,7 @@ namespace Morpheus
 {
     public class TextGrid
     {
-        public readonly static TextGridBorders Null = new NullTextGridBorders();
+        public readonly static TextGridBorders NullBorder = new NullTextGridBorders();
         public readonly static TextGridBorders Spaces = new( "Spaces", @"           " );
         public readonly static TextGridBorders Single = new( "Single", @"┌┬┐├┼┤└┴┘─│" );
         public readonly static TextGridBorders Double = new( "Double", @"╔╦╗╠╬╣╚╩╝═║" );

@@ -187,7 +187,7 @@ namespace Morpheus.CommandLine
 
                 Diag.WriteLine(
                     new TextGrid( ExecuteMessages.Select( line => line.Split( '=' ) ) )
-                    .WithBorders( TextGrid.Null )
+                    .WithBorders( TextGrid.NullBorder )
                     .WithColumnPadding( 1 )
                     .WithHorizontalAlign( GridAlignments.Left )
                 );
