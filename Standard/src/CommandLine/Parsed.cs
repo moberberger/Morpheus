@@ -35,7 +35,7 @@ namespace Morpheus.CommandLine
             }
 
             Parser.Diag.WriteLine();
-            Parser.Diag.WriteLine( "Resolving appropriate variables" );
+            Parser.Diag.WriteLine( "Resolving appropriate environment variables" );
 
             foreach (var pdef in parser.ParamDefinitions)
             {

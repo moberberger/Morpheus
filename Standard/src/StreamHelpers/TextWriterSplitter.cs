@@ -24,11 +24,6 @@ namespace Morpheus
         /// </summary>
         private readonly IEnumerable<TextWriter> m_writers;
 
-        /// <summary>
-        /// Flag to make sure this is not Disposed multiple times
-        /// </summary>
-        private bool m_disposed = false;
-
 
         /// <summary>
         /// A new splitter class to send output to whatever TextWriters are specified in the constructor
@@ -40,14 +35,6 @@ namespace Morpheus
         }
 
         /// <summary>
-        /// Make sure things like Files get flushed and closed. One of those rare instances when you need a finalizer.
-        /// </summary>
-        ~TextWriterSplitter()
-        {
-            Dispose( true );
-        }
-
-        /// <summary>
         /// Use the first textwriter's encoding unless there are no text writers; then use default but it doesn't really matter
         /// </summary>
         public override Encoding Encoding => m_writers?.FirstOrDefault().Encoding ?? Encoding.Default;
@@ -56,43 +43,16 @@ namespace Morpheus
         /// The only method that must be implemented- all other methods in the bsae implementation use this at the end
         /// </summary>
         /// <param name="_char">A character to write</param>
-        public override void Write( char _char )
+        public override void Write( char value )
         {
             foreach (var writer in m_writers)
-                writer.Write( _char );
+                writer.Write( value );
         }
 
-        /// <summary>
-        /// Call this if you do not want this TextWriter to dispose your other text writers.
-        /// </summary>
-        public void DontDispose() => m_disposed = true;
-
-        /// <summary>
-        /// This is called by the base class's Dispose() method, which implements IDisposable.
-        /// Make sure that all writers attached to this thing get disposed when it gets disposed.
-        /// </summary>
-        /// <param name="_disposing">TRUE- Called by IDisposable.Dispose  FALSE- Called by finalizer.
-        /// See <see cref="System.IO.TextWriter.Dispose(bool)"/></param>
-        protected override void Dispose( bool _disposing )
+        public override void Write( string value )
         {
-            if (!m_disposed)
-            {
-                m_disposed = true;
-                try
-                {
-                    base.Dispose( _disposing ); // should actually do nothing according to Reflector
-                }
-                catch { };
-
-                foreach (var writer in m_writers)
-                {
-                    try
-                    {
-                        writer.Dispose();
-                    }
-                    catch { }
-                }
-            }
+            foreach (var writer in m_writers)
+                writer.Write( value );
         }
     }
 }

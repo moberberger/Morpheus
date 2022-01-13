@@ -19,7 +19,7 @@ namespace Morpheus
             return sb;
         }
 
-        public static StringBuilder AppendTab( this StringBuilder sb ) => sb.Append( "\t" );
+        public static StringBuilder AppendTab( this StringBuilder sb, string text = null ) => sb.Append( $"{text}\t" );
 
         public static StringBuilder Append( this StringBuilder sb, string s, int count )
         {
