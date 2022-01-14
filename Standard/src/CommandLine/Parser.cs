@@ -31,6 +31,7 @@ namespace Morpheus.CommandLine
 
         public IEnumerable<string> ExecuteMessages { get; private set; }
 
+        public bool UsageTextOut { get; private set; }
 
 
         public Parser() { }
@@ -134,6 +135,7 @@ namespace Morpheus.CommandLine
                 UsageText = "Prints This Message",
                 Executor = match =>
                 {
+                    UsageTextOut = true;
                     Console.WriteLine( this );
                     return "Usage Text";
                 }
