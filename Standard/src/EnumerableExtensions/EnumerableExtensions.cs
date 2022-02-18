@@ -86,7 +86,7 @@ namespace Morpheus
         /// </summary>
         /// <typeparam name="T">The Type of each element in the population</typeparam>
         /// <param name="_collection">The population of data</param>
-        /// <param name="_selector">
+        /// <param name="predicate">
         /// Application returns TRUE for an element that should be returned.
         /// </param>
         /// <returns>
@@ -122,12 +122,12 @@ namespace Morpheus
         /// Assert.AreEqual( -1, x );
         /// </code>
         /// </remarks>
-        public static int FirstIndexOf<T>( this IEnumerable<T> _collection, Func<T, bool> _selector )
+        public static int FirstIndexOf<T>( this IEnumerable<T> _collection, Func<T, bool> predicate )
         {
             var idx = 0;
             foreach (var elem in _collection)
             {
-                if (_selector( elem ))
+                if (predicate( elem ))
                     return idx;
                 idx++;
             }
@@ -479,8 +479,6 @@ namespace Morpheus
             foreach (var item in stuff) count++;
             return count;
         }
-
-
 
 
 

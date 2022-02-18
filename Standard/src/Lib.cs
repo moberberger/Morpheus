@@ -447,6 +447,10 @@ namespace Morpheus
             return str.ToString();
         }
 
+        public static string RemoveAllWhitespace( this string _string ) =>
+            new( _string.Where( ch => !char.IsWhiteSpace( ch ) ).ToArray() );
+
+
         /// <summary>
         /// Convert a byte array to a string that represents the byte array encoded as Base64
         /// </summary>
@@ -1249,15 +1253,15 @@ namespace Morpheus
     /// apply here as do for <see cref="CreateWithConstructor"/>
     /// </summary>
     /// <typeparam name="T">
-    /// The Type of objects in the array to create- All objects are of this type, so this
-    /// can't be an interface or abstract type
+    /// The Type of objects in the array to create- All objects are of this type, so this can't
+    /// be an interface or abstract type
     /// </typeparam>
     /// <param name="_size">
     /// The number of elements in the array- All of these elements will be constructed
     /// </param>
     /// <param name="_constructorParams">
-    /// A list of parameters which are to be passed to the constructors for all objects in
-    /// the array
+    /// A list of parameters which are to be passed to the constructors for all objects in the
+    /// array
     /// </param>
     /// <returns>
     /// A new array of type T containing objects of type T constructed using the specified
@@ -1280,8 +1284,8 @@ namespace Morpheus
     /// provided by the caller
     /// </summary>
     /// <typeparam name="T">
-    /// The Type of objects in the array to create- All objects are of this type, so this
-    /// can't be an interface or abstract type
+    /// The Type of objects in the array to create- All objects are of this type, so this can't
+    /// be an interface or abstract type
     /// </typeparam>
     /// <param name="_size">
     /// The number of elements in the array- All of these elements will be constructed
@@ -1307,8 +1311,8 @@ namespace Morpheus
     /// provided by the caller
     /// </summary>
     /// <typeparam name="T">
-    /// The Type of objects in the array to create- All objects are of this type, so this
-    /// can't be an interface or abstract type
+    /// The Type of objects in the array to create- All objects are of this type, so this can't
+    /// be an interface or abstract type
     /// </typeparam>
     /// <param name="_size">
     /// The number of elements in the array- All of these elements will be constructed

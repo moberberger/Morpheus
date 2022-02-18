@@ -17,7 +17,10 @@ namespace Morpheus
     {
         public const ulong Multiplier = 6364136223846793005UL;
         public const ulong Increment = 1442695040888963407UL;
-        public ulong State = RandomSeed.FastULong();
+        public ulong State;
+
+        public LCPRNG_MMIX() => State = RandomSeed.FastULong();
+        public LCPRNG_MMIX( ulong seed ) => State = seed;
 
         public override ulong Next64() => State = State * Multiplier + Increment;
 
