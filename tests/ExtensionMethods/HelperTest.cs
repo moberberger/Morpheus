@@ -21,35 +21,6 @@ namespace Morpheus.Standard.UnitTests
             Assert.AreEqual<string>( expected, actual, "String not correct for a null array" );
         }
 
-        [TestMethod]
-        public void TestConvertStringToArray()
-        {
-            Assert.AreEqual( null, Lib.ConvertStringToArray( null, typeof( string ) ), "NULL Conversion incorrect" );
-
-            var actual = (string[]) Lib.ConvertStringToArray( "", typeof( string ) );
-            Assert.AreEqual<int>( 0, actual.Length, "Length of array is not correct for zero-len string" );
-
-            var actual2 = (int[]) Lib.ConvertStringToArray( "1,22, 333", typeof( int ) );
-            Assert.AreEqual<int>( 3, actual2.Length, "Length of INT array incorrect" );
-            Assert.AreEqual<int>( 1, actual2[0], "Index 0 is incorrect" );
-            Assert.AreEqual<int>( 22, actual2[1], "Index 0 is incorrect" );
-            Assert.AreEqual<int>( 333, actual2[2], "Index 0 is incorrect" );
-        }
-
-        [TestMethod]
-        public void TestConvertStringToArrayGeneric()
-        {
-            Assert.AreEqual( null, Lib.ConvertStringToArray<string>( null, ',' ), "NULL Conversion incorrect" );
-
-            var actual = Lib.ConvertStringToArray<string>( "", ',' );
-            Assert.AreEqual<int>( 0, actual.Length, "Length of array is not correct for zero-len string" );
-
-            var actual2 = Lib.ConvertStringToArray<int>( "1|22| 333", '|' );
-            Assert.AreEqual<int>( 3, actual2.Length, "Length of INT array incorrect" );
-            Assert.AreEqual<int>( 1, actual2[0], "Index 0 is incorrect" );
-            Assert.AreEqual<int>( 22, actual2[1], "Index 0 is incorrect" );
-            Assert.AreEqual<int>( 333, actual2[2], "Index 0 is incorrect" );
-        }
 
         [TestMethod]
         public void TestParseNextSegment()

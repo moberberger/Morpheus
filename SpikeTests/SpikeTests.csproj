@@ -2,12 +2,11 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <RootNamespace>PerformanceTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\MorpheusCore.csproj" />
     <ProjectReference Include="..\Standard\MorpheusStandard.csproj" />
   </ItemGroup>
 

@@ -22,17 +22,6 @@ namespace Morpheus.Standard.UnitTests.IEnumerable
         }
 
         [TestMethod]
-        public void ForEachFilteredTest()
-        {
-            var col = new int[] { 1, 2, 3, 4, 5, 6 };
-
-            int sum1 = 0;
-            col.ForEach( _number => (_number & 1) == 0, _number => sum1 += _number );
-
-            Assert.AreEqual( 12, sum1 );
-        }
-
-        [TestMethod]
         public void ForEachWithIndexTest()
         {
             var col = new int[] { 1, 2, 3, 4, 5, 6 };

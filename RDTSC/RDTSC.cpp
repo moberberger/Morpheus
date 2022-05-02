@@ -7,7 +7,7 @@ unsigned long long RDTSC_Wrapper()
 }
 
 __declspec(dllexport)
-unsigned unsigned int RDRAND_Wrapper()
+unsigned int RDRAND_Wrapper()
 {
     unsigned int val;
     while (_rdrand32_step(&val) == 0);

@@ -1,9 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
 
     <IsPackable>false</IsPackable>
+
+    <RootNamespace>Morpheus.UnitTests</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -30,7 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\MorpheusCore.csproj" />
     <ProjectReference Include="..\Standard\MorpheusStandard.csproj" />
   </ItemGroup>
 

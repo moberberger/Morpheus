@@ -1,3 +1,5 @@
+#if false 
+
 using System;
 using System.Reflection;
 using System.Linq;
@@ -11,7 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 /// </summary>
 #pragma warning disable 0169, 0649
 
-using CFieldTransfer = Morpheus.Core.CFieldTransfer;
+//using CFieldTransfer = Morpheus.Core.CFieldTransfer;
 
 namespace Morpheus.Standard.UnitTests.Reflection
 {
@@ -568,3 +570,5 @@ namespace Morpheus.Standard.UnitTests.Reflection
 
     }
 }
+
+#endif

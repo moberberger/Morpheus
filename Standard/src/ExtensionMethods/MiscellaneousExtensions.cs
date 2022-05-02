@@ -111,5 +111,22 @@ namespace Morpheus
                     return val;
             }
         }
+
+
+        public static bool InterpretBool( this string s )
+        {
+            if (string.IsNullOrEmpty( s )) return false;
+            s = s.ToLower();
+
+            if (s == "0") return false;
+            if (s == "off") return false;
+            if ("no".StartsWith( s )) return false;
+            if ("false".StartsWith( s )) return false;
+
+            return true;
+        }
+
+
+
     }
 }
