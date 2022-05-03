@@ -415,10 +415,10 @@ namespace Morpheus
 
                 // Get info from the XML
                 var sLengths = XmlExtensions.GetAttributeValue( _xml, m_context.ArrayAttributeName );
-                var lengths = sLengths.Split( ',' ).Select( s => int.Parse( s ) ).ToArray();
+                var lengths = sLengths?.Split( ',' ).Select( s => int.Parse( s ) ).ToArray();
 
                 var sLowerBounds = XmlExtensions.GetAttributeValue( _xml, m_context.ArrayLowerBoundAttribute );
-                var lowerBounds = sLowerBounds.Split( ',' ).Select( s => int.Parse( s ) ).ToArray();
+                var lowerBounds = sLowerBounds?.Split( ',' ).Select( s => int.Parse( s ) ).ToArray();
 
                 if (lengths == null)
                 {

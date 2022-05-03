@@ -7,12 +7,10 @@ using Morpheus.DependencyInjection;
 
 namespace Morpheus
 {
-    using THIS_DICT = IDictionary<Type, ClassConfig>;
-
     /// <summary>
     /// A Dependency Injection Scope.
     /// </summary>
-    public class DI : IDI
+    public class DI
     {
         #region Static stuff
         /// <summary>
@@ -25,15 +23,9 @@ namespace Morpheus
         /// </summary>
         static DI()
         {
-            Default.For<Random>().Use<CryptoRandomNumbers>();
-            Default.For<LCPRNG>().Use<LCPRNG_MMIX>();
+            Default.For<Random>().UseNewInstance<CryptoRandomNumbers>();
+            Default.For<LCPRNG>().UseNewInstance<LCPRNG_MMIX>();
         }
-
-        /// <summary>
-        /// Create a new DI Scope
-        /// </summary>
-        /// <returns></returns>
-        public static DI NewDefault() => new DI( Default );
         #endregion
 
 
@@ -41,27 +33,20 @@ namespace Morpheus
         /// <summary>
         /// internal lookup table
         /// </summary>
-        private readonly THIS_DICT m_typeLookup = null;
+        private readonly EncapsulatingDictionary<Type, TypeConfig> m_typeLookup = null;
 
         /// <summary>
         /// Construct with a parent.
         /// </summary>
         /// <param name="_parent"></param>
-        private DI( DI _parent = null ) => m_typeLookup = _parent?.m_typeLookup ?? new EncapsulatingDictionary<Type, ClassConfig>();
-
-
-        /// <summary>
-        /// Get the DI <see cref="ClassConfig"/> for a given <see cref="Type"/>
-        /// </summary>
-        /// <param name="_type"></param>
-        /// <returns></returns>
-        public ClassConfig GetClassConfig( Type _type ) => m_typeLookup.GetOrAdd( _type, t => new ClassConfig( t, this, null ) );
+        private DI( DI _parent = null ) =>
+            m_typeLookup = new( _parent?.m_typeLookup );
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public IDI New() => new DI( this );
+        public DI New() => new DI( this );
 
 
         /// <summary>
@@ -69,49 +54,52 @@ namespace Morpheus
         /// </summary>
         /// <typeparam name="T">The <see cref="Type"/> the caller is interested in</typeparam>
         /// <returns></returns>
-        public ClassConfig For<T>() where T : class => GetClassConfig( typeof( T ) );
+        public TypeConfig For<T>() => GetTypeConfig( typeof( T ) );
+
+
+        /// <summary>
+        /// Get the DI <see cref="TypeConfig"/> for a given <see cref="Type"/>
+        /// </summary>
+        /// <param name="_type"></param>
+        /// <returns></returns>
+        public TypeConfig GetTypeConfig( Type _type )
+        {
+            if (!m_typeLookup.ContainsKeyShallow( _type ))
+                m_typeLookup.Add( _type, new TypeConfig( _type, this ) );
+            return m_typeLookup[ _type ];
+        }
 
         /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public T Get<T>() where T : class => (T)(For<T>().GetObject());
+        public T Get<T>( params object[] @params ) =>
+            (T)Get( typeof( T ), @params );
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="type"></param>
-        /// <param name="parms"></param>
+        /// <param name="params"></param>
         /// <returns></returns>
-        public object GetInstance( Type type, params object[] parms )
+        public object Get( Type type, params object[] @params )
         {
-            throw new NotImplementedException();
+            var cfg = GetTypeConfig( type );
+            var obj = cfg.Get( @params );
+            Inject( obj );
+            return obj;
         }
 
         /// <summary>
-        /// 
+        /// For each non-primitive in the object, attempt to set it using configured types.
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public object Inject( object obj )
+        public void Inject( object obj )
         {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="parms"></param>
-        /// <returns></returns>
-        public IClassConfig For<T>( params object[] parms )
-        {
-            throw new NotImplementedException();
         }
     }
-
-
 
 
 }

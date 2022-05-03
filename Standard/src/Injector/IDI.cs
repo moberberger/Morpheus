@@ -26,7 +26,7 @@ namespace Morpheus
         /// <param name="type"></param>
         /// <param name="parms"></param>
         /// <returns></returns>
-        object GetInstance( Type type, params object[] parms );
+        object Get( Type type, params object[] parms );
 
         /// <summary>
         /// Inject all reference-typed members as configured
@@ -43,7 +43,7 @@ namespace Morpheus
         /// parameters sent to that Method
         /// </param>
         /// <returns></returns>
-        IClassConfig For<T>( params object[] parms );
+        //IClassConfig For<T>( params object[] parms );
     }
 
     /// <summary>
@@ -59,7 +59,7 @@ namespace Morpheus
         /// A new object for the given Type, or an exception detailing why a/the object could
         /// not be returned
         /// </returns>
-        public static T GetInstance<T>( this IDI idi ) => (T)idi.GetInstance( typeof( T ) );
+        public static T Get<T>( this IDI idi ) => (T)idi.Get( typeof( T ) );
 
         /// <summary>
         /// Inject all reference-typed members as configured

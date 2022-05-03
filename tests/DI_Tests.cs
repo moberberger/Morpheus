@@ -18,8 +18,8 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         public void BasicOperationTest()
         {
-            var di = DI.NewDefault();
-            di.For<Random>().Use<CryptoRandomNumbers>();
+            var di = DI.Default.New();
+            di.For<Random>().UseNewInstance<CryptoRandomNumbers>();
 
             var rng = di.Get<Random>();
             Assert.AreEqual( typeof( CryptoRandomNumbers ), rng.GetType() );
@@ -31,8 +31,8 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         public void SingletonTest()
         {
-            var di = DI.NewDefault();
-            di.For<Random>().Use<MersenneTwister>().AsSingleton();
+            var di = DI.Default.New();
+            di.For<Random>().UseNewInstance<MersenneTwister>().AsSingleton();
 
             var rng = di.Get<Random>();
             Assert.AreEqual( rng.GetType(), typeof( MersenneTwister ) );
@@ -45,10 +45,10 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         public void SpecificSingletonTest()
         {
-            var di = DI.NewDefault();
+            var di = DI.Default.New();
 
             var basis = new MersenneTwister();
-            di.For<Random>().Use<MersenneTwister>().AsSingleton( basis );
+            di.For<Random>().UseNewInstance<MersenneTwister>().AsSingleton( basis );
 
             var rng = di.Get<Random>();
             Assert.AreEqual( rng, basis );
@@ -61,10 +61,10 @@ namespace Morpheus.Standard.UnitTests
         [TestMethod]
         public void ChangingSingletonTest()
         {
-            var di = DI.NewDefault();
+            var di = DI.Default.New();
 
             var basis = new MersenneTwister();
-            di.For<Random>().Use<MersenneTwister>().AsSingleton( basis );
+            di.For<Random>().UseNewInstance<MersenneTwister>().AsSingleton( basis );
 
             var rng = di.Get<Random>();
             Assert.AreEqual( rng, basis );
@@ -79,45 +79,45 @@ namespace Morpheus.Standard.UnitTests
 
 
         // TODO: Not Implemented Exception
-        //[TestMethod]
-        //public void DIContainerTests()
-        //{
-        //    var di = DI.NewDefault();
+        [TestMethod]
+        public void DIContainerTests()
+        {
+            var di = DI.Default.New();
 
-        //    di.For<Random>().Use<CryptoRandomNumbers>();
-        //    var rng1 = di.Get<Random>();
-        //    Assert.AreEqual( typeof( CryptoRandomNumbers ), rng1.GetType() );
+            di.For<Random>().UseNewInstance<CryptoRandomNumbers>();
+            var rng1 = di.Get<Random>();
+            Assert.AreEqual( typeof( CryptoRandomNumbers ), rng1.GetType() );
 
-        //    var basis = new List<int>();
-        //    di.For<IEnumerable<int>>().Use( basis );
-        //    var list1 = di.Get<IEnumerable<int>>();
-        //    Assert.AreEqual( typeof( List<int> ), list1.GetType() );
-        //    Assert.AreEqual( basis, list1 );
+            var basis = new List<int>();
+            di.For<IEnumerable<int>>().Use( basis );
+            var list1 = di.Get<IEnumerable<int>>();
+            Assert.AreEqual( typeof( List<int> ), list1.GetType() );
+            Assert.AreEqual( basis, list1 );
 
-        //    var di2 = di.New();
-        //    var rng2 = di2.GetInstance<Random>();
-        //    Assert.AreEqual( typeof( CryptoRandomNumbers ), rng2.GetType() );
+            var di2 = di.New();
+            var rng2 = di2.GetInstance<Random>();
+            Assert.AreEqual( typeof( CryptoRandomNumbers ), rng2.GetType() );
 
-        //    di2.For<Random>().UseType<MersenneTwister>();
-        //    var rng3 = di2.GetInstance<Random>();
-        //    Assert.AreEqual( typeof( MersenneTwister ), rng3.GetType() );
+            di2.For<Random>().UseNewInstance<MersenneTwister>();
+            var rng3 = di2.GetInstance<Random>();
+            Assert.AreEqual( typeof( MersenneTwister ), rng3.GetType() );
 
-        //    var rng4 = di.Get<Random>();
-        //    Assert.AreEqual( typeof( CryptoRandomNumbers ), rng4.GetType() );
-        //    Assert.AreNotEqual( rng1, rng4 );
+            var rng4 = di.Get<Random>();
+            Assert.AreEqual( typeof( CryptoRandomNumbers ), rng4.GetType() );
+            Assert.AreNotEqual( rng1, rng4 );
 
-        //    var rng5 = di2.GetInstance<IEnumerable<int>>();
-        //    Assert.AreEqual( basis, rng5 );
-        //}
+            var rng5 = di2.GetInstance<IEnumerable<int>>();
+            Assert.AreEqual( basis, rng5 );
+        }
 
 
 
         [TestMethod]
         public void DIContainerSingletonTest()
         {
-            var di = DI.NewDefault();
+            var di = DI.Default.New();
             di.For<Random>()
-                    .Use<MersenneTwister>()
+                    .UseNewInstance<MersenneTwister>()
                     .Use( new CryptoRandomNumbers() );
 
             var rng1 = di.Get<Random>();
@@ -127,7 +127,7 @@ namespace Morpheus.Standard.UnitTests
             var rng2 = di.Get<Random>();
             Assert.AreEqual( typeof( MersenneTwister ), rng2.GetType() );
 
-            di.For<Random>().Use<Random>();
+            di.For<Random>().UseNewInstance<Random>();
             var rng3 = di.Get<Random>();
             Assert.AreEqual( typeof( Random ), rng3.GetType() );
         }

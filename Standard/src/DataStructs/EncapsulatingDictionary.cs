@@ -58,7 +58,7 @@ namespace Morpheus
         /// How many objects in this dictionary PLUS how many objects in encapsulated
         /// dictionary(s) that are NOT in this dictionary.
         /// </summary>
-        public int DeepCount { get => GetObjects().Sum( _ => 1 ); }
+        public int DeepCount { get => GetObjects().Count(); }
 
         /// <summary>
         /// The number of objects in this dictionary EXCLUSIVE OF any encapsulated dictionaries
@@ -150,7 +150,8 @@ namespace Morpheus
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        public void Add( TKey key, TValue value ) => m_dictionary.Add( key, value );
+        public void Add( TKey key, TValue value ) => 
+            m_dictionary.Add( key, value );
 
         /// <summary>
         /// Add a new element to the dictionary, replacing a value if it already exists at this
@@ -158,19 +159,22 @@ namespace Morpheus
         /// dictionary.
         /// </summary>
         /// <param name="item"></param>
-        public void Add( KeyValuePair<TKey, TValue> item ) => m_dictionary.Add( item.Key, item.Value );
+        public void Add( KeyValuePair<TKey, TValue> item ) => 
+            m_dictionary.Add( item.Key, item.Value );
 
         /// <summary>
         /// Clear this dictionary- has no effect on any encapsulated dictionary.
         /// </summary>
-        public void Clear() => m_dictionary.Clear();
+        public void Clear() => 
+            m_dictionary.Clear();
 
         /// <summary>
         /// donut use
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public bool Contains( KeyValuePair<TKey, TValue> item ) => m_dictionary.ContainsKey( item.Key ) || (m_encapsulatedDictionary?.ContainsKey( item.Key ) ?? false);
+        public bool Contains( KeyValuePair<TKey, TValue> item ) => 
+            m_dictionary.ContainsKey( item.Key ) || (m_encapsulatedDictionary?.ContainsKey( item.Key ) ?? false);
 
         /// <summary>
         /// Returns TRUE if the specified key exists in the dictionary or any encapsulated
@@ -180,7 +184,8 @@ namespace Morpheus
         /// <returns>
         /// TRUE if the specified key exists in the dictionary or any encapsulated dictionaries
         /// </returns>
-        public bool ContainsKey( TKey key ) => m_dictionary.ContainsKey( key ) || (m_encapsulatedDictionary?.ContainsKey( key ) ?? false);
+        public bool ContainsKey( TKey key ) => 
+            m_dictionary.ContainsKey( key ) || (m_encapsulatedDictionary?.ContainsKey( key ) ?? false);
 
         /// <summary>
         /// Remove an element from -this- dictionary, but leaves encapsulated dictionaries
@@ -188,14 +193,16 @@ namespace Morpheus
         /// </summary>
         /// <param name="key"></param>
         /// <returns>TRUE if an element was removed, FALSE if not</returns>
-        public bool Remove( TKey key ) => m_dictionary.Remove( key );
+        public bool Remove( TKey key ) => 
+            m_dictionary.Remove( key );
 
         /// <summary>
         /// donut use
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public bool Remove( KeyValuePair<TKey, TValue> item ) => m_dictionary.Remove( item.Key );
+        public bool Remove( KeyValuePair<TKey, TValue> item ) => 
+            m_dictionary.Remove( item.Key );
 
         /// <summary>
         /// If a value for specified key exists in this or any encapsulated dictionaries, return
@@ -204,7 +211,8 @@ namespace Morpheus
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryGetValue( TKey key, out TValue value ) => m_dictionary.TryGetValue( key, out value ) || (m_encapsulatedDictionary?.TryGetValue( key, out value ) ?? false);
+        public bool TryGetValue( TKey key, out TValue value ) => 
+            m_dictionary.TryGetValue( key, out value ) || (m_encapsulatedDictionary?.TryGetValue( key, out value ) ?? false);
 
         /// <summary>
         /// Copy ALL elements of this dictionary and encapsulated dictionaries to an Array
@@ -212,30 +220,35 @@ namespace Morpheus
         /// </summary>
         /// <param name="array"></param>
         /// <param name="arrayIndex"></param>
-        public void CopyTo( KeyValuePair<TKey, TValue>[] array, int arrayIndex ) => this.Select( x => array[arrayIndex++] = x ).ForEach();
+        public void CopyTo( KeyValuePair<TKey, TValue>[] array, int arrayIndex ) => 
+            this.Select( x => array[arrayIndex++] = x ).ForEach();
 
         /// <summary>
         /// Pass-through to the enumeration algorithm
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => GetObjects().GetEnumerator();
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => 
+            GetObjects().GetEnumerator();
 
         /// <summary>
         /// Pass-through to the enumeration algorithm
         /// </summary>
         /// <returns></returns>
-        IEnumerator IEnumerable.GetEnumerator() => GetObjects().GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => 
+            GetObjects().GetEnumerator();
 
 
         /// <summary>
         /// Returns a list of the Keys in all dictionaries
         /// </summary>
-        public ICollection<TKey> Keys => GetObjects().Select( x => x.Key ).ToList();
+        public ICollection<TKey> Keys => 
+            GetObjects().Select( x => x.Key ).ToList();
 
         /// <summary>
         /// Returns a list of the Values in all dictionaries
         /// </summary>
-        public ICollection<TValue> Values => GetObjects().Select( x => x.Value ).ToList();
+        public ICollection<TValue> Values => 
+            GetObjects().Select( x => x.Value ).ToList();
 
         /// <summary>
         /// The Count of elements in the collection produced by enumerating this object

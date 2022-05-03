@@ -8,7 +8,7 @@ namespace Morpheus.Standard.UnitTests
     /// This is a test class for CCrypto and is intended
     /// to contain all CCrypto Unit Tests
     ///</summary>
-    [TestClass()]
+//    [TestClass()]
     public class CCryptoTest
     {
         [TestMethod]
