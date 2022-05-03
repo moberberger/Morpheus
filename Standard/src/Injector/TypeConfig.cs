@@ -1,90 +1,74 @@
 ﻿namespace Morpheus.DependencyInjection
 {
-    public interface IResolver
-    {
-        object Get( object[] @params );
-    }
-
-
-    public class OverrideCreator : IResolver
-    {
-        protected readonly Type m_type;
-        protected readonly DI m_owner;
-        public OverrideCreator( Type _type, DI _owner )
-        {
-            m_type = _type;
-            m_owner = _owner;
-        }
-
-        public object Get( object[] @params ) =>
-            m_owner.Get( m_type, @params );
-    }
-
-    public class ActivatorCreator : IResolver
-    {
-        Type activationType;
-        public ActivatorCreator( Type activationType ) => this.activationType = activationType;
-        public object Get( params object[] @params ) =>
-            Activator.CreateInstance( activationType, @params );
-    }
-
-    public class SingletonCreator : IResolver
-    {
-        object singleton;
-        public SingletonCreator( object singleton ) => this.singleton = singleton;
-        public object Get( object[] @params ) => singleton;
-    }
-
-    public class FactoryLambdaCreator : IResolver
-    {
-        Func<object> lambda;
-        public FactoryLambdaCreator( Func<object> factoryLambda ) => lambda = factoryLambda;
-        public object Get( object[] @params ) => lambda();
-    }
-
-
     /// <summary>
     /// This class will describe all DI metadata for a Type.
     /// </summary>
     public class TypeConfig : IResolver
     {
-        IResolver creator;
+        /// <summary>
+        /// This is the actual resolver currently used by this config
+        /// </summary>
+        IResolver resolver;
+
+        /// <summary>
+        /// This config describes this type.
+        /// </summary>
         Type m_type;
 
-        internal TypeConfig( Type _type, DI _owner )
-        {
-            if ( _type == null )
-                throw new ArgumentNullException( "type" );
-            if (_owner == null)
-                throw new ArgumentNullException( "owner" );
+        /// <summary>
+        /// This is the <see cref="DI"/> that created this config. If this is null, then this
+        /// <see cref="TypeConfig"/> cannot "forward" any request to an encapsulating
+        /// <see cref="DI"/> and therefore must handle the resolution without forwarding.
+        /// </summary>
+        DI m_owner;
 
-            m_type = _type;
-            creator = new OverrideCreator( m_type, _owner );
+        /// <summary>
+        /// For a given type and parent DI, create a new DI config object
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> being configured by this object</param>
+        /// <param name="owner">The owner <see cref="DI"/> for this object</param>
+        /// <exception cref="ArgumentNullException">
+        /// the specified <see cref="Type"/> cannot be NULL
+        /// </exception>
+        public TypeConfig( Type type, DI owner )
+        {
+            if (type == null)
+                throw new ArgumentNullException( "type" );
+
+            m_type = type;
+            m_owner = owner;
+            resolver = new OverrideCreator( m_type, owner.Parent );
         }
 
         public TypeConfig UseNewInstance<T>() => UseNewInstance( typeof( T ) );
 
         public TypeConfig UseNewInstance( Type activatorType = null )
         {
-            creator = new ActivatorCreator( activatorType ?? m_type );
+            resolver = new ActivatorCreator( activatorType ?? m_type );
             return this;
         }
 
         public TypeConfig UseSingleton( object singleton )
         {
-            creator = new SingletonCreator( singleton );
+            resolver = new SingletonCreator( singleton );
             return this;
         }
 
         public TypeConfig UseFactoryLambda( Func<object> factory )
         {
-            creator = new FactoryLambdaCreator( factory );
+            resolver = new FactoryLambdaCreator( factory );
+            return this;
+        }
+
+        public TypeConfig UseFactoryLambda( Func<object, object[]> factory )
+        {
+            resolver = new FactoryLambdaCreator( factory );
             return this;
         }
 
         public TypeConfig UseCreator( IResolver creator )
         {
-            this.creator = creator;
+            this.resolver = creator;
             return this;
         }
 
@@ -93,6 +77,6 @@
         /// Return an object for this Type based on this configuration.
         /// </summary>
         /// <returns>an object for this Type based on this configuration.</returns>
-        public object Get( params object[] @params ) => creator.Get( @params );
+        public object Get( params object[] @params ) => resolver.Get( @params );
     }
 }

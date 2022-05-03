@@ -16,7 +16,7 @@ namespace Morpheus
         /// <summary>
         /// AppDomain Default DI scope. All DI scopes will eventually link down to this scope.
         /// </summary>
-        public static DI Default { get; private set; } = new DI();
+        public static DI Default { get; } = new DI( null );
 
         /// <summary>
         /// Load Morpheus Defaults into the Default scope.
@@ -33,20 +33,34 @@ namespace Morpheus
         /// <summary>
         /// internal lookup table
         /// </summary>
-        private readonly EncapsulatingDictionary<Type, TypeConfig> m_typeLookup = null;
+        // private readonly EncapsulatingDictionary
+        // <Type, TypeConfig> m_typeLookup = null;
+        private readonly Dictionary<Type, TypeConfig> m_typeLookup = new();
+
+        public DI Parent => m_parentDI;
+        private readonly DI m_parentDI;
 
         /// <summary>
-        /// Construct with a parent.
+        /// Construct with a parent. Must be called by <see cref="DI.New"/> - App cannot
+        /// construct directly.
         /// </summary>
-        /// <param name="_parent"></param>
-        private DI( DI _parent = null ) =>
-            m_typeLookup = new( _parent?.m_typeLookup );
+        /// <param name="parent"></param>
+        private DI( DI parent ) => m_parentDI = parent;
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
         public DI New() => new DI( this );
+
+
+        /// <summary>
+        /// Informs about whether or not this DI contains information about a type. Unlike the
+        /// <see cref="Get"/> method, this operation is a C++-style "const" method.
+        /// </summary>
+        /// <param name="m_type"></param>
+        /// <returns></returns>
+        public bool Contains( Type m_type ) => m_typeLookup.ContainsKey( m_type );
 
 
         /// <summary>
@@ -62,15 +76,11 @@ namespace Morpheus
         /// </summary>
         /// <param name="_type"></param>
         /// <returns></returns>
-        public TypeConfig GetTypeConfig( Type _type )
-        {
-            if (!m_typeLookup.ContainsKeyShallow( _type ))
-                m_typeLookup.Add( _type, new TypeConfig( _type, this ) );
-            return m_typeLookup[ _type ];
-        }
+        public TypeConfig GetTypeConfig( Type _type ) =>
+            m_typeLookup.GetOrAdd( _type, _t => new TypeConfig( _type, this ) );
 
         /// <summary>
-        /// 
+        /// Get an object for a Type
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
@@ -78,7 +88,7 @@ namespace Morpheus
             (T)Get( typeof( T ), @params );
 
         /// <summary>
-        /// 
+        /// Get an object for a Type
         /// </summary>
         /// <param name="type"></param>
         /// <param name="params"></param>
