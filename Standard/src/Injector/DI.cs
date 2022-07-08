@@ -12,7 +12,7 @@ namespace Morpheus
     /// </summary>
     public class DI
     {
-        #region Static stuff
+        #region Static stuff for Morpheus integration
         /// <summary>
         /// AppDomain Default DI scope. All DI scopes will eventually link down to this scope.
         /// </summary>
@@ -108,6 +108,8 @@ namespace Morpheus
         /// <returns></returns>
         public void Inject( object obj )
         {
+            var injector = new Injector( obj );
+            injector.Inject();
         }
     }
 

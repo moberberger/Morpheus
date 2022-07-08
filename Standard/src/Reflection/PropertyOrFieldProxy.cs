@@ -1,7 +1,4 @@
-﻿using System;
-using System.CodeDom;
-using System.Linq;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Morpheus
@@ -318,42 +315,4 @@ namespace Morpheus
         }
     }
 
-
-
-    public class MemberAspect<Tc, Tv> where Tc : class
-    {
-        PropertyInfo Property;
-        FieldInfo Field;
-        object Object = new();
-
-        public MemberAspect( Expression<Func<Tc, Tv>> memberExpr )
-        {
-            var member = memberExpr.Body.GetMemberInfo();
-            Property = member as PropertyInfo;
-            Field = member as FieldInfo;
-        }
-
-        public Tv Set( Tv newValue )
-        {
-            return newValue;
-        }
-
-        public static implicit operator Tv( MemberAspect<Tc, Tv> _this )
-        {
-            object obj = _this.Property?.GetValue( _this.Object );
-            obj ??= _this.Field?.GetValue( _this.Object );
-            return (Tv)Convert.ChangeType( obj, typeof( Tv ) );
-        }
-
-        public static void Initialize( object obj )
-        {
-            foreach (var pi in obj
-                .GetType()
-                .GetProperties()
-                .Where( fi => fi.PropertyType.GetGenericTypeDefinition() == typeof( MemberAspect<,> ) ))
-            {
-            }
-
-        }
-    }
 }
