@@ -10,6 +10,7 @@ namespace Morpheus.CommandLine
     {
         #region Outputs
 
+        // set these using the application please
         public static TextWriter Diag = new StringWriter();
         public static TextWriter Error = Console.Error;
 
@@ -187,12 +188,20 @@ namespace Morpheus.CommandLine
                 Diag.WriteLine( "Executing the parsed command line" );
                 ExecuteMessages = parsed.Execute().ToList();
 
-                Diag.WriteLine(
-                    new TextGrid( ExecuteMessages.Select( line => line.Split( '=' ) ) )
-                    .WithBorders( TextGrid.NullBorder )
-                    .WithColumnPadding( 1 )
-                    .WithHorizontalAlign( GridAlignments.Left )
-                );
+                if (ExecuteMessages.Count() > 0)
+                {
+                    Diag.WriteLine(
+                        new TextGrid( ExecuteMessages.Select( line => line.Split( '=' ) ) )
+                        .WithBorders( TextGrid.NullBorder )
+                        .WithColumnPadding( 1 )
+                        .WithHorizontalAlign( GridAlignments.Left )
+                    );
+                }
+                else
+                {
+                    Diag.WriteLine( $"No Executed Parameters" );
+                }
+
                 Diag.WriteLine();
 
                 return WorkingObject;
