@@ -8,6 +8,8 @@ namespace Morpheus.CommandLine
 {
     public class Param
     {
+        const int NO_POSITION = int.MaxValue;
+
         public Parser Parser { get; internal set; }
 
         public string[] Names { get; set; } = new string[1];
@@ -19,6 +21,8 @@ namespace Morpheus.CommandLine
         public string EnvironmentVariableName { get; init; } = null;
         public bool IsRequired { get; init; }
         public bool IsNegatable { get; init; }
+        public bool IsPositional => PositionalParameterIndex < NO_POSITION;
+        public int PositionalParameterIndex { get; private set; } = NO_POSITION;
         public Func<Match, string> Executor { get; set; }
 
         public string ResolvedEnvironmentVariableName =>
@@ -39,18 +43,31 @@ namespace Morpheus.CommandLine
             var usage = mi.GetSingleAttribute<Usage>() ??
                 throw new ArgumentException( $"Member '{mi.Name}' doesn't have a 'Usage' attribute." );
 
+            UsageText = usage.UsageText ?? "";
+            UsageParamName = usage.UsageParamName ?? "";
+            Executor = match => SetWithReflection( proxy, match );
+
+            var unnamed = mi.GetSingleAttribute<PositionalParameter>();
+            if (unnamed != null)
+            {
+                IsRequired = true;
+                IsNegatable = false;
+                EnvironmentVariableName = "";
+                PositionalParameterIndex = unnamed.Index;
+                Parser.Diag.Write( $"Position:{unnamed.Index} " );
+            }
+            else
+            {
+                IsRequired = mi.HasAttribute<Required>();
+                IsNegatable = (t == typeof( bool ));
+                EnvironmentVariableName = mi.GetSingleAttribute<EnvironmentVariable>()?.VariableName;
+            }
+
             var paramNamesAttr = mi.GetSingleAttribute<ParamNames>();
             if (paramNamesAttr != null)
                 Names = paramNamesAttr.Names;
             else
                 Name = mi.Name;
-
-            UsageText = usage.UsageText ?? "";
-            UsageParamName = usage.UsageParamName ?? "";
-            IsRequired = mi.HasAttribute<Required>();
-            IsNegatable = (t == typeof( bool ));
-            EnvironmentVariableName = mi.GetSingleAttribute<EnvironmentVariable>()?.VariableName;
-            Executor = match => SetWithReflection( proxy, match );
         }
 
         private string SetWithReflection( PropertyOrFieldProxy proxy, Match match )
@@ -81,11 +98,13 @@ namespace Morpheus.CommandLine
         public string UsageLeftSide =>
             new StringBuilder()
                 .AppendIf( !IsRequired, "[" )
-                .Append( "-" )
+                .AppendIf( IsPositional, "<" )
+                .AppendIf( !IsPositional, "-" )
                 .AppendIf( IsNegatable, "[no]" )
                 .Append( Name )
                 .AppendIf( !string.IsNullOrWhiteSpace( UsageParamName ), $" <{UsageParamName}>" )
                 .AppendIf( !IsRequired, "]" )
+                .AppendIf( IsPositional, ">" )
                 .ToString();
 
 

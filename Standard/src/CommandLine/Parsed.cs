@@ -8,8 +8,9 @@ namespace Morpheus.CommandLine
     {
         Parser parser;
         Dictionary<string, List<Match>> parsed = new();
+        Dictionary<int, List<Match>> positionalParams = new();
 
-        public Parsed( Parser parser, IEnumerable<string> tokens )
+        public Parsed( Parser parser, params string[] tokens )
         {
             this.parser = parser;
 
@@ -60,21 +61,28 @@ namespace Morpheus.CommandLine
             return match;
         }
 
-        private void AddTokens( IEnumerable<string> tokens )
+        private void AddTokens( string[] tokens )
         {
             Parser.Diag.WriteLine();
             Parser.Diag.WriteLine( "Adding Tokens" );
 
-            foreach (var token in tokens) // could be a ToDictionary, but that gets unwieldy
+            if (tokens.Length == 0)
             {
+                Console.WriteLine( $"\tNo tokens found." );
+                return;
+            }
+
+            for (int i = 0; i < tokens.Length; i++)
+            {
+                var token = tokens[i];
+
                 var list = parser.ParamDefinitions
-                    .Select( pdef => new Match( pdef, token ) )
-                    .Where( match => match.IsMatch )
-                .ToList();
+                        .Select( pdef => new Match( pdef, token ) )
+                        .Where( match => match.IsMatch )
+                        .ToList();
 
                 parsed[token] = list;
-
-                var paramNames = list.Select( m => m.Param.Name ).JoinAsString( ", " );
+                var paramNames = parsed[token].Select( m => m.Param.Name ).JoinAsString( ", " );
                 Parser.Diag.WriteLine( $"Token [{token}] added: [{parsed[token].Count}] {paramNames}" );
             }
         }
@@ -88,12 +96,12 @@ namespace Morpheus.CommandLine
             foreach (var problem in parsed.Where( kv => kv.Value.Count > 1 ))
                 yield return $":DUP: {problem.Key} There were {problem.Value.Count} matching parameter definitions";
 
-            var required = parser.ParamDefinitions.Where( pdef => pdef.IsRequired ).ToHashSet();
+            var required = parser.ParamDefinitions.Where( pdef => pdef.IsRequired && !pdef.IsPositional ).ToHashSet();
             foreach (var goodOne in parsed.Where( kv => kv.Value.Count == 1 ))
                 required.Remove( goodOne.Value.Single().Param );
 
             foreach (var notFound in required)
-                yield return $":PNF: {notFound.Name} This required parameter was not found";
+                yield return $":PNF: ({notFound.Name}) '{notFound.UsageText}'   This required parameter was not found";
         }
 
         public IEnumerable<string> Execute()

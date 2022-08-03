@@ -63,7 +63,7 @@ namespace Morpheus
         /// Assert.AreEqual( "(84),(46)", joined );
         /// </code>
         /// </remarks>
-        public static string JoinAsString<T>( this IEnumerable<T> _collection, string _joinString, Func<T, string> _stringizer = null )
+        public static string JoinAsString<T>( this IEnumerable<T> _collection, string _joinString = "", Func<T, string> _stringizer = null )
         {
             if (_collection is null)
                 throw new ArgumentNullException( nameof( _collection ) );
@@ -75,7 +75,7 @@ namespace Morpheus
             {
                 if (str.Length > 0)
                     str.Append( _joinString );
-                str.Append( _stringizer?.Invoke( o ) ?? o.ToString() );
+                str.Append( _stringizer?.Invoke( o ) ?? o?.ToString() ?? "" );
             }
             return str.ToString();
         }

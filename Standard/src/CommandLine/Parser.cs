@@ -10,14 +10,12 @@ namespace Morpheus.CommandLine
     {
         #region Outputs
 
-        // set these using the application please
-        public static TextWriter Diag = new StringWriter();
+        public static TextWriter Diag = StreamWriter.Null;
+        // public static TextWriter Diag = Console.Out;
         public static TextWriter Error = Console.Error;
 
         #endregion
 
-
-        public string CommandLine { get; set; } = Environment.CommandLine;
 
         public bool CaseSensitive { get; set; } = false;
 
@@ -26,7 +24,6 @@ namespace Morpheus.CommandLine
         public string EnvironmentVariablePrefix { get; set; } = "";
 
         public object WorkingObject { get; private set; }
-        public T Params<T>( string cmdLine = null ) => (T)CreateWorkingObject( cmdLine );
 
         public IEnumerable<Param> ParamDefinitions { get; private set; } = new List<Param>();
 
@@ -65,26 +62,7 @@ namespace Morpheus.CommandLine
                         continue;
                     }
 
-                    var mfi = member as FieldInfo;
-                    var pfi = member as PropertyInfo;
-                    if (mfi != null)
-                    {
-                        if (mfi.FieldType.IsAssignableTo( typeof( Parser ) ))
-                        {
-                            Diag.WriteLine( $"PARSER object assigned to field {member.Name}." );
-                            mfi.SetValue( WorkingObject, this );
-                            continue;
-                        }
-                    }
-                    else if (pfi != null)
-                    {
-                        if (pfi.PropertyType.IsAssignableTo( typeof( Parser ) ))
-                        {
-                            Diag.WriteLine( $"PARSER object assigned to property {member.Name}." );
-                            pfi.SetValue( WorkingObject, this );
-                            continue;
-                        }
-                    }
+                    SetParserObjectIfPresent( member );
 
                     if (!member.HasAttribute<Usage>())
                     {
@@ -111,6 +89,29 @@ namespace Morpheus.CommandLine
                 throw new InvalidOperationException( "Exception thrown in parser." );
             }
         }
+
+        private void SetParserObjectIfPresent( MemberInfo member )
+        {
+            var mfi = member as FieldInfo;
+            var pfi = member as PropertyInfo;
+            if (mfi != null)
+            {
+                if (mfi.FieldType.IsAssignableTo( typeof( Parser ) ))
+                {
+                    Diag.WriteLine( $"PARSER object assigned to field {member.Name}." );
+                    mfi.SetValue( WorkingObject, this );
+                }
+            }
+            else if (pfi != null)
+            {
+                if (pfi.PropertyType.IsAssignableTo( typeof( Parser ) ))
+                {
+                    Diag.WriteLine( $"PARSER object assigned to property {member.Name}." );
+                    pfi.SetValue( WorkingObject, this );
+                }
+            }
+        }
+
 
         private void CheckForAttribute<Tattr>( Type type, Action<Tattr> action )
             where Tattr : Attribute
@@ -143,15 +144,85 @@ namespace Morpheus.CommandLine
             } );
         }
 
-        public Parsed Parse( string commandLine = null )
+        public Parsed Parse( string[] argv )
         {
-            if (commandLine != null)
-                CommandLine = commandLine;
-
             Diag.WriteLine();
-            Diag.WriteLine( "Parsing: " + CommandLine );
+            Diag.WriteLine( "Normalized Delims: " + argv.JoinAsString( "," ) );
 
-            var cmdstr = CommandLine
+            List<string> tokens = new();
+            string working = "";
+
+            for (int i = 0; i < argv.Length; i++)
+            {
+                var tok = argv[i].RemoveDuplicateWhitespace();
+                Diag.Write( $"Token: '{tok}'  " );
+
+
+                Param pp = ParamDefinitions.SingleOrDefault( p => p.PositionalParameterIndex == i );
+                if (pp != null) // this token should be treated as positional
+                {
+                    Diag.WriteLine( $"Treated as Positional: {pp.Name}" );
+                    pp.Executor( new Match( pp, tok ) );
+                    continue;
+                }
+
+                if (IsParamName( ref tok ))
+                {
+                    Diag.WriteLine( "Param Name." );
+
+                    if (!string.IsNullOrWhiteSpace( working ))
+                    {
+                        Diag.WriteLine( $"\t{working}     added to token list" );
+                        tokens.Add( working );
+                    }
+                    working = tok;
+                }
+                else
+                {
+                    Diag.WriteLine( $"... appended to {working}" );
+
+                    working += " " + tok;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace( working ))
+            {
+                Diag.WriteLine( $"\t{working} --- added to token list" );
+                tokens.Add( working );
+            }
+
+            Diag.WriteLine( $"" );
+            Diag.WriteLine( $"The following tokens will be processed:" );
+            Diag.WriteLine( $"{tokens.JoinAsString( "\n" )}" );
+
+            return new Parsed( this, tokens.ToArray() );
+        }
+
+        bool IsParamName( ref string token )
+        {
+            if (token.Length > 0)
+            {
+                if (token.StartsWith( "--" ))
+                {
+                    token = token[2..];
+                    return true;
+                }
+                else if (token[0] == '-' || token[0] == '/')
+                {
+                    token = token[1..];
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public Parsed Parse( string commandLine )
+        {
+            Diag.WriteLine();
+            Diag.WriteLine( "Parsing: " + commandLine );
+
+            var cmdstr = commandLine
                             .Trim()
                             .Replace( " --", " /" )
                             .Replace( " -", " /" );
@@ -164,15 +235,15 @@ namespace Morpheus.CommandLine
                 .Split( " /", opts )             // split into tokens delimited by " /"
                 .Skip( 1 )                       // ignore the first token, which should be the executable name
                 .Where( t => t?.Length > 0 );   // in case an empty one slips in
-
-            return new Parsed( this, tokens );
+            throw new NotImplementedException();
+            return new Parsed( this, tokens.JoinAsString() );
         }
 
-        public object CreateWorkingObject( string cmdLine = null )
+        public object CreateWorkingObject( string[] argv )
         {
             try
             {
-                var parsed = Parse( cmdLine );
+                var parsed = Parse( argv );
 
                 Diag.WriteLine();
                 Diag.WriteLine( "Validating parsed information" );
@@ -182,7 +253,7 @@ namespace Morpheus.CommandLine
                     Diag.WriteLine( "Errors found." );
                     foreach (var error in errors)
                         Error.WriteLine( error );
-                    return null;
+                    return WorkingObject;
                 }
 
                 Diag.WriteLine( "Executing the parsed command line" );
@@ -219,14 +290,15 @@ namespace Morpheus.CommandLine
         public override string ToString() =>
             new TextGrid
             (
-                "ProtoMake.exe USAGE",
-                ParamDefinitions.Select( pdef => pdef.ToString().Split( "\t" ) )
+                UsageTextHeader,
+                ParamDefinitions
+                    .Where( pdef => !pdef.IsPositional )
+                    .Select( pdef => pdef.ToString().Split( "\t" ) )
             )
             .WithBorders( TextGrid.Single )
             .WithHorizontalAlign( GridAlignments.Left )
             .WithHeaderAlign( GridAlignments.Center )
             .WithColumnPadding( 1 )
-            .WithHeader( UsageTextHeader )
             .ToString();
 
 
@@ -275,8 +347,6 @@ namespace Morpheus.CommandLine
     public class Parser<T> : Parser where T : class, new()
     {
         public Parser() => ParamsFromType( typeof( T ) );
-        public T Params( string cmdLine = null ) => Params<T>();
-
-        public static implicit operator T( Parser<T> parser ) => parser.Params();
+        public new T Parse( string[] argv ) => (T)CreateWorkingObject( argv );
     }
 }
