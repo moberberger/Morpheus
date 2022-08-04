@@ -149,12 +149,12 @@ public class Parser
                 Execute( $"Named: {workingParameter?.Name}" );
 
                 bool isNegated = GetCurParamFromToken( tok );
-                bool isNegatable = workingParameter?.IsNegatable ?? false;
-
-                if (isNegated)
-                    workingValueToken = "false";
-                else if (isNegatable)
-                    workingValueToken = "true";
+                bool isBool = workingParameter?.IsBool ?? false;
+                if (isBool)
+                {
+                    workingValueToken = isNegated ? "false" : "true";
+                    Execute( $"Boolean: {workingValueToken}" );
+                }
             }
             else
             {

@@ -15,6 +15,7 @@ public class Param
     public string UsageParamName { get; init; }
     public bool IsRequired { get; init; }
     public bool IsNegatable { get; init; }
+    public bool IsBool => Proxy?.TheType == typeof( bool );
 
 
     public int PositionalParameterIndex { get; init; } = NO_POSITION;
@@ -83,7 +84,7 @@ public class Param
         if (EnvironmentVariableName != null)
         {
             EnvironmentVariableValue = Environment.GetEnvironmentVariable( EnvironmentVariableName );
-            Diag.Write( $"'{EnvironmentVariableName}' = '{EnvironmentVariableValue??"null"}'" );
+            Diag.Write( $"'{EnvironmentVariableName}' = '{EnvironmentVariableValue ?? "null"}'" );
         }
         else
         {
@@ -121,6 +122,7 @@ public class Param
 
     internal void Execute( string tok )
     {
+        Diag.WriteLine( $"Executing {Name} = '{tok}'" );
         Executor( tok );
     }
 
