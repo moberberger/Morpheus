@@ -71,7 +71,7 @@ public class Parser
         foreach (var p in paramDefCollection.Where( p => p.IsPositional ))
         {
             if (positions.Contains( p.PositionalParameterIndex ))
-                throw new InvalidOperationException( "Multiple positional parameters found for index: " + p.PositionalParameterIndex );
+                throw new CommandLineException( "Multiple positional parameters found for index: " + p.PositionalParameterIndex );
             positions.Add( p.PositionalParameterIndex );
 
             if (p.IsRequired)
@@ -87,7 +87,7 @@ public class Parser
         while (positions.Count > 0)
         {
             if (!positions.Contains( idx ))
-                throw new InvalidOperationException( $"Index position {idx} does not have a corresponding Positional Parameter." );
+                throw new CommandLineException( $"Index position {idx} does not have a corresponding Positional Parameter." );
             positions.Remove( idx++ );
         }
     }
@@ -219,11 +219,11 @@ public class Parser
                 if (workingParameter.IsNegatable)
                     return true;
                 else
-                    throw new InvalidOperationException( $"Found a non-negatable parameter '{workingParameter.Name}' that matches '{tok}'" );
+                    throw new CommandLineException( $"Found a non-negatable parameter '{workingParameter.Name}' that matches '{tok}'" );
             }
         }
         if (workingParameter == null)
-            throw new InvalidOperationException( $"Param name '{tok}' not a valid parameter" );
+            throw new CommandLineException( $"Param name '{tok}' not a valid parameter" );
         return false;
     }
 
@@ -233,7 +233,7 @@ public class Parser
         foreach (var pdef in ParamDefinitions.Where( pd => pd.IsRequired ))
         {
             if (!uniqueParamSet.Contains( pdef ))
-                throw new InvalidOperationException( $"Parameter {pdef.UsageLeftSide} is required but not present on the command line nor in the environment" );
+                throw new CommandLineException( $"Parameter {pdef.UsageLeftSide} is required but not present on the command line nor in the environment" );
         }
     }
 
@@ -245,7 +245,7 @@ public class Parser
             Diag.WriteLine( message );
 
             if (uniqueParamSet.Contains( workingParameter ))
-                throw new InvalidOperationException( $"Cannot have a second command line token '{workingParameter.Name}', '{workingValueToken}' resolve to a previous Param object" );
+                throw new CommandLineException( $"Cannot have a second command line token '{workingParameter.Name}', '{workingValueToken}' resolve to a previous Param object" );
             uniqueParamSet.Add( workingParameter );
 
             workingParameter.Execute( workingValueToken );

@@ -41,7 +41,7 @@ public class Param
 
         var mi = Proxy.MemberInfo;
         var usage = mi.GetSingleAttribute<Usage>() ??
-            throw new ArgumentException( $"Member '{mi.Name}' doesn't have a 'Usage' attribute." );
+            throw new CommandLineException( $"Member '{mi.Name}' doesn't have a 'Usage' attribute." );
 
         Name = mi.GetSingleAttribute<ParamName>()?.Name ?? mi.Name;
         UsageText = usage.UsageText ?? "";
