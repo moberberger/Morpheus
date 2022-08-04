@@ -48,27 +48,40 @@ public class Parser
             {
                 Diag.WriteLine( $"PARSER member found: '{proxy.MemberInfo.Name}'" );
                 parserProxy = proxy;
-                continue;
             }
-
-            if (!member.HasAttribute<Usage>())
+            else if (!member.HasAttribute<Usage>())
             {
                 Diag.WriteLine( "skipped- no Usage attribute" );
-                continue;
             }
-
-            Param param = new( this, proxy );
-            paramDefCollection.Add( param );
+            else
+            {
+                Param param = new( this, proxy );
+                paramDefCollection.Add( param );
+            }
         }
 
-        // Verify positional parameter definitions
+        VerifyPositionalParameterIndices();
+    }
+
+    private void VerifyPositionalParameterIndices()
+    {
         HashSet<int> positions = new();
+        int firstOptional = int.MaxValue;
+        int lastRequired = int.MinValue;
         foreach (var p in paramDefCollection.Where( p => p.IsPositional ))
         {
             if (positions.Contains( p.PositionalParameterIndex ))
                 throw new InvalidOperationException( "Multiple positional parameters found for index: " + p.PositionalParameterIndex );
             positions.Add( p.PositionalParameterIndex );
+
+            if (p.IsRequired)
+                lastRequired = Math.Max( lastRequired, p.PositionalParameterIndex );
+            else
+                firstOptional = Math.Min( firstOptional, p.PositionalParameterIndex );
         }
+
+        if (firstOptional < lastRequired)
+            throw new CommandLineException( $"The last required positional param is index {lastRequired}, which is after the first optional positional parameter at index {firstOptional}." );
 
         int idx = 0;
         while (positions.Count > 0)
@@ -101,12 +114,12 @@ public class Parser
         {
             Name = "help",
             UsageText = "Prints This Message",
+            Parser = this,
             Executor = value =>
             {
                 UsageTextOut = true;
                 Console.WriteLine( this );
             },
-            Parser = this,
         };
 
         paramDefCollection.Add( p );
@@ -152,17 +165,15 @@ public class Parser
         for (int i = 0; i < argv.Length; i++)
         {
             var tok = argv[i].RemoveDuplicateWhitespace();
-            Diag.Write( $"Token: '{tok}'  " );
+            Diag.Write( $"-- '{tok}'  " );
 
             Param pp = ParamDefinitions.SingleOrDefault( p => p.PositionalParameterIndex == i );
-            if (pp != null) // this token should be treated as positional
+
+            if (IsParamName( ref tok ))
             {
-                workingParameter = pp;
-                workingValueToken = tok;
-                Execute( $"Positional: {pp.Name} " );
-            }
-            else if (IsParamName( ref tok ))
-            {
+                if (pp?.IsRequired ?? false)
+                    throw new CommandLineException( $"Parameter '{tok}' found, but required positional parameter {pp.Name} should be in its place." );
+
                 Execute( $"Named: {workingParameter?.Name}" );
 
                 bool isNegated = GetCurParamFromToken( tok );
@@ -173,8 +184,17 @@ public class Parser
                     Execute( $"Boolean: {workingValueToken}" );
                 }
             }
+            else if (pp != null) // this token should be treated as positional
+            {
+                workingParameter = pp;
+                workingValueToken = tok;
+                Execute( $"Positional: {pp.Name}[{i}] " );
+            }
             else
             {
+                if (workingParameter == null)
+                    throw new CommandLineException( $"Found token '{tok}' on the command line when no positional parameter is expected at index {i}." );
+
                 Diag.WriteLine( $"... appended to {workingValueToken}" );
                 workingValueToken += " " + tok;
             }
@@ -219,7 +239,7 @@ public class Parser
 
     private void Execute( string message )
     {
-        Diag.WriteLine( $"\n*** {workingParameter?.Name} >>{workingValueToken}<<  " );
+        Diag.Write( "\t... " );
         if (workingParameter != null)
         {
             Diag.WriteLine( message );
@@ -231,6 +251,11 @@ public class Parser
             workingParameter.Execute( workingValueToken );
             workingParameter = null;
         }
+        else
+        {
+            Diag.WriteLine( "Nothing Executed- " + message );
+        }
+
         workingValueToken = "";
     }
 
