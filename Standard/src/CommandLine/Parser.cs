@@ -23,7 +23,7 @@ public class Parser
 
     private List<Param> paramDefCollection { get; } = new List<Param>();
     public IEnumerable<Param> ParamDefinitions => paramDefCollection;
-    private PropertyOrFieldProxy ParserProxy { get; init; }
+    private PropertyOrFieldProxy parserProxy { get; init; }
 
 
 
@@ -47,7 +47,7 @@ public class Parser
             if (proxy.TheType.IsAssignableTo( typeof( Parser ) ))
             {
                 Diag.WriteLine( $"PARSER member found: '{proxy.MemberInfo.Name}'" );
-                ParserProxy = proxy;
+                parserProxy = proxy;
                 continue;
             }
 
@@ -59,6 +59,23 @@ public class Parser
 
             Param param = new( this, proxy );
             paramDefCollection.Add( param );
+        }
+
+        // Verify positional parameter definitions
+        HashSet<int> positions = new();
+        foreach (var p in paramDefCollection.Where( p => p.IsPositional ))
+        {
+            if (positions.Contains( p.PositionalParameterIndex ))
+                throw new InvalidOperationException( "Multiple positional parameters found for index: " + p.PositionalParameterIndex );
+            positions.Add( p.PositionalParameterIndex );
+        }
+
+        int idx = 0;
+        while (positions.Count > 0)
+        {
+            if (!positions.Contains( idx ))
+                throw new InvalidOperationException( $"Index position {idx} does not have a corresponding Positional Parameter." );
+            positions.Remove( idx++ );
         }
     }
 
@@ -128,7 +145,7 @@ public class Parser
         workingParameter = null;
 
         WorkingObject = Activator.CreateInstance( ParsedType );
-        ParserProxy?.Set( WorkingObject, this );
+        parserProxy?.Set( WorkingObject, this );
         foreach (var pdef in ParamDefinitions.Where( p => p.EnvironmentVariableValue != null ))
             pdef.Execute( pdef.EnvironmentVariableValue );
 
