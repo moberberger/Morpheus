@@ -22,18 +22,21 @@ public class Required : Attribute { }
 
 
 
+
+
+
 [AttributeUsage( AttributeTargets.Property | AttributeTargets.Field )]
-public class ParamNames : Attribute
+public class ParamName : Attribute
 {
-    public string[] Names { get; set; }
-    public ParamNames( params string[] paramNames ) => Names = paramNames;
+    public string Name { get; set; }
+    public ParamName( string paramName ) => Name = paramName;
 }
 
 [AttributeUsage( AttributeTargets.Property | AttributeTargets.Field )]
 public class EnvironmentVariable : Attribute
 {
-    public string VariableName { get; set; }
-    public EnvironmentVariable( string variable ) => VariableName = variable;
+    public string ExplicitName { get; set; }
+    public EnvironmentVariable( string explicitName = null ) => ExplicitName = explicitName;
 }
 
 /// <summary>

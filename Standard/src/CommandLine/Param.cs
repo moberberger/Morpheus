@@ -1,113 +1,128 @@
-﻿using System;
-using System.Linq;
-using System.Text;
+﻿using System.Reflection;
 
-using Morpheus;
+namespace Morpheus.CommandLine;
 
-namespace Morpheus.CommandLine
+public class Param
 {
-    public class Param
+    TextWriter Diag => Parser.Diag;
+
+    public Parser Parser { get; internal set; }
+    public PropertyOrFieldProxy Proxy { get; init; }
+    public Action<string> Executor { private get; set; }
+
+    public string Name { get; init; }
+    public string UsageText { get; init; }
+    public string UsageParamName { get; init; }
+    public bool IsRequired { get; init; }
+    public bool IsNegatable { get; init; }
+
+
+    public int PositionalParameterIndex { get; init; } = NO_POSITION;
+    public string EnvironmentVariableName { get; private set; }
+    public string EnvironmentVariableValue { get; private set; }
+
+
+
+    const int NO_POSITION = int.MaxValue;
+    public bool IsPositional => PositionalParameterIndex != NO_POSITION;
+
+
+
+    public bool IsMatch( string nameInQuestion ) =>
+            Name.StartsWith( nameInQuestion, !Parser.CaseSensitive, null );
+
+
+    public Param() { }
+    public Param( Parser parser, PropertyOrFieldProxy proxy )
     {
-        const int NO_POSITION = int.MaxValue;
+        Parser = parser;
+        Proxy = proxy;
 
-        public Parser Parser { get; internal set; }
+        var mi = Proxy.MemberInfo;
+        var usage = mi.GetSingleAttribute<Usage>() ??
+            throw new ArgumentException( $"Member '{mi.Name}' doesn't have a 'Usage' attribute." );
 
-        public string[] Names { get; set; } = new string[1];
-        public string Name { get => Names[0]; set => Names[0] = value; }
+        Name = mi.GetSingleAttribute<ParamName>()?.Name ?? mi.Name;
+        UsageText = usage.UsageText ?? "";
+        UsageParamName = usage.UsageParamName ?? "";
+        IsRequired = mi.HasAttribute<Required>();
+        IsNegatable = (Proxy.TheType == typeof( bool ));
+        EnvironmentVariableName = EnvironmentVariableValue = null; // handle below if needed
+        Diag.Write( $"{Name}: Req:{IsRequired} Negatable:{IsNegatable} " );
 
-        public string UsageText { get; init; } = "TODO: Add Usage Text";
-        public string UsageParamName { get; init; } = "";
-        public string DefaultValue { get; init; } = "";
-        public string EnvironmentVariableName { get; init; } = null;
-        public bool IsRequired { get; init; }
-        public bool IsNegatable { get; init; }
-        public bool IsPositional => PositionalParameterIndex < NO_POSITION;
-        public int PositionalParameterIndex { get; private set; } = NO_POSITION;
-        public Func<Match, string> Executor { get; set; }
-
-        public string ResolvedEnvironmentVariableName =>
-            (EnvironmentVariableName?.Length > 0 ? EnvironmentVariableName :
-             Parser.EnvironmentVariablePrefix?.Length > 0 ? Parser.EnvironmentVariablePrefix + Name :
-             null)?.ToLower();
-
-        public bool IsMatch( string nameInQuestion ) =>
-            Names.Contains( name =>
-                name.StartsWith( nameInQuestion, !Parser.CaseSensitive, null ) );
-
-        public Param() { }
-        public Param( PropertyOrFieldProxy proxy )
+        var positional = mi.GetSingleAttribute<PositionalParameter>();
+        if (positional != null)
         {
-            var mi = proxy.MemberInfo;
-            var t = proxy.TheType;
-
-            var usage = mi.GetSingleAttribute<Usage>() ??
-                throw new ArgumentException( $"Member '{mi.Name}' doesn't have a 'Usage' attribute." );
-
-            UsageText = usage.UsageText ?? "";
-            UsageParamName = usage.UsageParamName ?? "";
-            Executor = match => SetWithReflection( proxy, match );
-
-            var unnamed = mi.GetSingleAttribute<PositionalParameter>();
-            if (unnamed != null)
-            {
-                IsRequired = true;
-                IsNegatable = false;
-                EnvironmentVariableName = "";
-                PositionalParameterIndex = unnamed.Index;
-                Parser.Diag.Write( $"Position:{unnamed.Index} " );
-            }
-            else
-            {
-                IsRequired = mi.HasAttribute<Required>();
-                IsNegatable = (t == typeof( bool ));
-                EnvironmentVariableName = mi.GetSingleAttribute<EnvironmentVariable>()?.VariableName;
-            }
-
-            var paramNamesAttr = mi.GetSingleAttribute<ParamNames>();
-            if (paramNamesAttr != null)
-                Names = paramNamesAttr.Names;
-            else
-                Name = mi.Name;
+            PositionalParameterIndex = positional.Index;
+            Diag.WriteLine( $"Positional:{positional.Index} " );
+        }
+        else
+        {
+            PositionalParameterIndex = NO_POSITION;
+            SetEnvironmentData( mi );
+            Diag.WriteLine( $" Named" );
         }
 
-        private string SetWithReflection( PropertyOrFieldProxy proxy, Match match )
-        {
-            object val;
-
-            if (proxy.TheType == typeof( bool ))
-            {
-                val = !match.IsNegated;
-            }
-            else
-            {
-                val = match.Value ?? "";
-                if (proxy.TheType != typeof( string ))
-                {
-                    if (val.Equals( "" ))
-                        val = Activator.CreateInstance( proxy.TheType );
-                    else
-                        val = Convert.ChangeType( val, proxy.TheType );
-                }
-            }
-
-            proxy.Set( Parser.WorkingObject, val );
-            return $"{proxy.MemberInfo.Name} = '{val}'";
-        }
-
-
-        public string UsageLeftSide =>
-            new StringBuilder()
-                .AppendIf( !IsRequired, "[" )
-                .AppendIf( IsPositional, "<" )
-                .AppendIf( !IsPositional, "-" )
-                .AppendIf( IsNegatable, "[no]" )
-                .Append( Name )
-                .AppendIf( !string.IsNullOrWhiteSpace( UsageParamName ), $" <{UsageParamName}>" )
-                .AppendIf( !IsRequired, "]" )
-                .AppendIf( IsPositional, ">" )
-                .ToString();
-
-
-        public override string ToString() => $"{UsageLeftSide}\t{UsageText}";
+        Executor = SetWithProxy;
     }
+
+    void SetEnvironmentData( MemberInfo member )
+    {
+        var envAttr = member.GetSingleAttribute<EnvironmentVariable>();
+        if (envAttr != null)
+        {
+            EnvironmentVariableName = envAttr.ExplicitName;
+            Diag.Write( "Explicit " );
+        }
+        else if (Parser.EnvironmentVariablePrefix != null)
+        {
+            EnvironmentVariableName = Parser.EnvironmentVariablePrefix + member.Name;
+            Diag.Write( "Implicit " );
+        }
+
+        if (EnvironmentVariableName != null)
+        {
+            EnvironmentVariableValue = Environment.GetEnvironmentVariable( EnvironmentVariableName );
+            Diag.Write( $"'{EnvironmentVariableName}' = '{EnvironmentVariableValue}'" );
+        }
+        else
+        {
+            Diag.Write( "No Environment Variable" );
+        }
+    }
+
+
+    public void SetWithProxy( string val )
+    {
+        object obj = Convert.ChangeType( val, Proxy.TheType );
+        Proxy.Set( Parser.WorkingObject, obj );
+        Diag.WriteLine( $"{Proxy.MemberInfo.Name} = '{obj}'" );
+    }
+
+
+    public string UsageLeftSide
+    {
+        get
+        {
+            var s = new StringBuilder();
+            if (!IsRequired) s.Append( '[' );
+            if (IsPositional) s.Append( '<' );
+            else s.Append( '-' );
+            if (IsNegatable) s.Append( "[no]" );
+
+            s.Append( Name );
+
+            if (!IsRequired) s.Append( ']' );
+            if (IsPositional) s.Append( '>' );
+
+            return s.ToString();
+        }
+    }
+
+    internal void Execute( string tok )
+    {
+        Executor( tok );
+    }
+
+    public override string ToString() => $"{UsageLeftSide}\t{UsageText}";
 }
