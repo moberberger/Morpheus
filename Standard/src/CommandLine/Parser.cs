@@ -14,6 +14,7 @@ public class Parser
 
     #endregion
 
+    public Type ParsedType { get; init; }
     public bool CaseSensitive { get; set; } = false;
     public bool UsageTextOut { get; private set; }
     public string UsageTextHeader { get; set; } = Environment.CommandLine;
@@ -22,29 +23,31 @@ public class Parser
 
     private List<Param> paramDefCollection { get; } = new List<Param>();
     public IEnumerable<Param> ParamDefinitions => paramDefCollection;
+    private PropertyOrFieldProxy ParserProxy { get; init; }
 
 
 
 
     public Parser( Type type )
     {
-        Diag.WriteLine( $"Creating Parameters for Type '{type.Name}'" );
-        WorkingObject = Activator.CreateInstance( type );
+        ParsedType = type;
 
-        CheckForAttribute<Usage>( type, attr => UsageTextHeader = attr.UsageText );
-        CheckForAttribute<AutoUsagePrintout>( type, attr => AddAutoUsagePrintout() );
-        CheckForAttribute<CaseSensitive>( type, attr => CaseSensitive = attr.IsCaseSensitive );
-        CheckForAttribute<EnvironmentVariablePrefix>( type, attr => EnvironmentVariablePrefix = attr.Prefix );
+        Diag.WriteLine( $"Creating Parameters for Type '{ParsedType.Name}'" );
 
-        foreach (var member in type.GetMembers().Where( m => m is FieldInfo || m is PropertyInfo ))
+        CheckForAttribute<Usage>( ParsedType, attr => UsageTextHeader = attr.UsageText );
+        CheckForAttribute<AutoUsagePrintout>( ParsedType, attr => AddAutoUsagePrintout() );
+        CheckForAttribute<CaseSensitive>( ParsedType, attr => CaseSensitive = attr.IsCaseSensitive );
+        CheckForAttribute<EnvironmentVariablePrefix>( ParsedType, attr => EnvironmentVariablePrefix = attr.Prefix );
+
+        foreach (var member in ParsedType.GetMembers().Where( m => m is FieldInfo || m is PropertyInfo ))
         {
             Diag.Write( $"Member '{member.Name}' ({member.GetType().Name}) " );
 
             PropertyOrFieldProxy proxy = new( member );
             if (proxy.TheType.IsAssignableTo( typeof( Parser ) ))
             {
-                Diag.WriteLine( $"PARSER object assigned to '{proxy.MemberInfo.Name}'" );
-                proxy.Set( WorkingObject, this );
+                Diag.WriteLine( $"PARSER member found: '{proxy.MemberInfo.Name}'" );
+                ParserProxy = proxy;
                 continue;
             }
 
@@ -111,18 +114,23 @@ public class Parser
 
 
 
-    HashSet<Param> UniqueParamSet;
-    string working;
-    Param curParam;
+    HashSet<Param> uniqueParamSet;
+    string workingValueToken;
+    Param workingParameter;
 
     public object Parse( string[] argv )
     {
         Diag.WriteLine();
         Diag.WriteLine( argv.JoinAsString( "," ) );
 
-        UniqueParamSet = new();
-        working = "";
-        curParam = null;
+        uniqueParamSet = new();
+        workingValueToken = "";
+        workingParameter = null;
+
+        WorkingObject = Activator.CreateInstance( ParsedType );
+        ParserProxy?.Set( WorkingObject, this );
+        foreach (var pdef in ParamDefinitions.Where( p => p.EnvironmentVariableValue != null ))
+            pdef.Execute( pdef.EnvironmentVariableValue );
 
         for (int i = 0; i < argv.Length; i++)
         {
@@ -132,30 +140,30 @@ public class Parser
             Param pp = ParamDefinitions.SingleOrDefault( p => p.PositionalParameterIndex == i );
             if (pp != null) // this token should be treated as positional
             {
-                curParam = pp;
-                working = tok;
+                workingParameter = pp;
+                workingValueToken = tok;
                 Execute( $"Positional: {pp.Name} " );
             }
             else if (IsParamName( ref tok ))
             {
-                Execute( $"Named: {curParam?.Name}" );
+                Execute( $"Named: {workingParameter?.Name}" );
 
                 bool isNegated = GetCurParamFromToken( tok );
-                bool isNegatable = curParam?.IsNegatable ?? false;
+                bool isNegatable = workingParameter?.IsNegatable ?? false;
 
                 if (isNegated)
-                    working = "false";
+                    workingValueToken = "false";
                 else if (isNegatable)
-                    working = "true";
+                    workingValueToken = "true";
             }
             else
             {
-                Diag.WriteLine( $"... appended to {working}" );
-                working += " " + tok;
+                Diag.WriteLine( $"... appended to {workingValueToken}" );
+                workingValueToken += " " + tok;
             }
         }
 
-        Execute( $"Final Named: {curParam?.UsageParamName}" );
+        Execute( $"Final Named: {workingParameter?.UsageParamName}" );
 
         VerifyRequiredParameters();
 
@@ -165,19 +173,19 @@ public class Parser
 
     bool GetCurParamFromToken( string tok )
     {
-        curParam = ParamDefinitions.SingleOrDefault( p => p.IsMatch( tok ) );
-        if (curParam == null && tok.ToLower().StartsWith( "no" ))
+        workingParameter = ParamDefinitions.SingleOrDefault( p => p.IsMatch( tok ) );
+        if (workingParameter == null && tok.ToLower().StartsWith( "no" ))
         {
-            curParam = ParamDefinitions.SingleOrDefault( p => p.IsMatch( tok[2..] ) );
-            if (curParam != null)
+            workingParameter = ParamDefinitions.SingleOrDefault( p => p.IsMatch( tok[2..] ) );
+            if (workingParameter != null)
             {
-                if (curParam.IsNegatable)
+                if (workingParameter.IsNegatable)
                     return true;
                 else
-                    throw new InvalidOperationException( $"Found a non-negatable parameter '{curParam.Name}' that matches '{tok}'" );
+                    throw new InvalidOperationException( $"Found a non-negatable parameter '{workingParameter.Name}' that matches '{tok}'" );
             }
         }
-        if (curParam == null)
+        if (workingParameter == null)
             throw new InvalidOperationException( $"Param name '{tok}' not a valid parameter" );
         return false;
     }
@@ -187,26 +195,26 @@ public class Parser
     {
         foreach (var pdef in ParamDefinitions.Where( pd => pd.IsRequired ))
         {
-            if (!UniqueParamSet.Contains( pdef ))
+            if (!uniqueParamSet.Contains( pdef ))
                 throw new InvalidOperationException( $"Parameter {pdef.UsageLeftSide} is required but not present on the command line nor in the environment" );
         }
     }
 
     private void Execute( string message )
     {
-        Diag.WriteLine( $"\n*** {curParam?.Name} >>{working}<<  " );
-        if (curParam != null)
+        Diag.WriteLine( $"\n*** {workingParameter?.Name} >>{workingValueToken}<<  " );
+        if (workingParameter != null)
         {
             Diag.WriteLine( message );
 
-            if (UniqueParamSet.Contains( curParam ))
-                throw new InvalidOperationException( $"Cannot have a second command line token '{curParam.Name}', '{working}' resolve to a previous Param object" );
-            UniqueParamSet.Add( curParam );
+            if (uniqueParamSet.Contains( workingParameter ))
+                throw new InvalidOperationException( $"Cannot have a second command line token '{workingParameter.Name}', '{workingValueToken}' resolve to a previous Param object" );
+            uniqueParamSet.Add( workingParameter );
 
-            curParam.Execute( working );
-            curParam = null;
+            workingParameter.Execute( workingValueToken );
+            workingParameter = null;
         }
-        working = "";
+        workingValueToken = "";
     }
 
     bool IsParamName( ref string token )

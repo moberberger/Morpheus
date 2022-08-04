@@ -83,7 +83,7 @@ public class Param
         if (EnvironmentVariableName != null)
         {
             EnvironmentVariableValue = Environment.GetEnvironmentVariable( EnvironmentVariableName );
-            Diag.Write( $"'{EnvironmentVariableName}' = '{EnvironmentVariableValue}'" );
+            Diag.Write( $"'{EnvironmentVariableName}' = '{EnvironmentVariableValue??"null"}'" );
         }
         else
         {
