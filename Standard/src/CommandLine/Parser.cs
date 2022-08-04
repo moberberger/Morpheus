@@ -6,10 +6,10 @@ namespace Morpheus.CommandLine;
 
 public class Parser
 {
-    #region Outputs
+    #region Output Streams
 
-    // public static TextWriter Diag = StreamWriter.Null;
-    public static TextWriter Diag = Console.Out;
+    public static TextWriter Diag = StreamWriter.Null;
+    //public static TextWriter Diag = Console.Out;
     public static TextWriter Error = Console.Error;
 
     #endregion
@@ -25,6 +25,9 @@ public class Parser
     public IEnumerable<Param> ParamDefinitions => paramDefCollection;
     private PropertyOrFieldProxy parserProxy { get; init; }
 
+
+
+    void AddParamDefinition(Param p) => paramDefCollection.Add(p);
 
 
 
@@ -56,7 +59,7 @@ public class Parser
             else
             {
                 Param param = new( this, proxy );
-                paramDefCollection.Add( param );
+                AddParamDefinition( param );
             }
         }
 
@@ -68,7 +71,7 @@ public class Parser
         HashSet<int> positions = new();
         int firstOptional = int.MaxValue;
         int lastRequired = int.MinValue;
-        foreach (var p in paramDefCollection.Where( p => p.IsPositional ))
+        foreach (var p in ParamDefinitions.Where( p => p.IsPositional ))
         {
             if (positions.Contains( p.PositionalParameterIndex ))
                 throw new CommandLineException( "Multiple positional parameters found for index: " + p.PositionalParameterIndex );
@@ -122,7 +125,7 @@ public class Parser
             },
         };
 
-        paramDefCollection.Add( p );
+        AddParamDefinition( p );
     }
 
 
