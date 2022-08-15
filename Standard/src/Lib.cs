@@ -449,6 +449,10 @@ namespace Morpheus
 
         public static string RemoveAllWhitespace( this string _string ) =>
             new( _string.Where( ch => !char.IsWhiteSpace( ch ) ).ToArray() );
+        public static string ToComparisonToken( this string _string ) =>
+            new( _string.Where( ch => !char.IsWhiteSpace( ch ) ).Select( ch => char.ToLower( ch ) ).ToArray() );
+        public static bool TokenEquals( this string _string, string other ) =>
+            _string.ToComparisonToken() == other.ToComparisonToken();
 
 
         /// <summary>

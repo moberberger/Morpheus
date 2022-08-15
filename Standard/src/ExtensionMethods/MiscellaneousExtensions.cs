@@ -127,6 +127,9 @@ namespace Morpheus
         }
 
 
-
+        public static bool IsIn<T>( this T _this, params T[] array ) =>
+            array.Contains( _this );
+        public static bool IsIn<T>( this T _this, IEnumerable<T> collection ) =>
+            collection.Contains( _this );
     }
 }
