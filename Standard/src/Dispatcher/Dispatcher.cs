@@ -1,10 +1,4 @@
 ﻿using Morpheus.EventDispatcher;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading;
 
 namespace Morpheus
 {
@@ -432,6 +426,9 @@ namespace Morpheus
                 list.Add( _handler );
             }
         }
+
+        public void Post<MessageType>( EDispatchMode _dispatchMode = EDispatchMode.NotAssigned ) =>
+            Post( DI.Default.Get<MessageType>(), _dispatchMode );
 
         /// <summary>
         /// Post a specific event.

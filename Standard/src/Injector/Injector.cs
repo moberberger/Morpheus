@@ -11,7 +11,7 @@
 
         internal void Inject()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
 }
