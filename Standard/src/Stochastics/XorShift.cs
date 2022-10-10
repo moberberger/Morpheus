@@ -1,5 +1,18 @@
 ﻿namespace Morpheus;
 
+
+/***
+ *    ___  ___                           _ _       
+ *    |  \/  |                          | (_)      
+ *    | .  . | __ _ _ __ ___  __ _  __ _| |_  __ _ 
+ *    | |\/| |/ _` | '__/ __|/ _` |/ _` | | |/ _` |
+ *    | |  | | (_| | |  \__ \ (_| | (_| | | | (_| |
+ *    \_|  |_/\__,_|_|  |___/\__,_|\__, |_|_|\__,_|
+ *                                  __/ |          
+ *                                 |___/           
+ */
+
+
 /// <summary>
 /// Abstract base, needing only "a" and "c" a/c (multiplier and increment)
 /// 
@@ -7,7 +20,7 @@
 /// mismatch to expectations. So for now I'm forcing a level of purpose when setting a/c
 /// </summary>
 /// <remarks>Technically should be called "ACPRNG". there's the acknowledgement.</remarks>
-public abstract class XorShift : Rng
+public class XorShift : Rng
 {
     private uint _state32;
     private ulong _state64;
@@ -15,12 +28,12 @@ public abstract class XorShift : Rng
     /// <summary>
     /// Construct using default seed generator
     /// </summary>
-    protected XorShift() => _state32 = (uint)(_state64 = RandomSeed.FastULong());
+    public XorShift() => _state32 = (uint)(_state64 = RandomSeed.FastULong());
 
     /// <summary>
     /// Construct using specific seed
     /// </summary>
-    protected XorShift( ulong initialState ) => _state32 = (uint)(_state64 = initialState);
+    public XorShift( ulong initialState ) => _state32 = (uint)(_state64 = initialState);
 
     /// <summary>
     /// No bias- This is the core generation function for this <see cref="Random"/>
@@ -81,19 +94,19 @@ public abstract class XorShift : Rng
 /// mismatch to expectations. So for now I'm forcing a level of purpose when setting a/c
 /// </summary>
 /// <remarks>Technically should be called "ACPRNG". there's the acknowledgement.</remarks>
-public abstract class XorShiftStar : Rng
+public class XorShiftStar : Rng
 {
     private ulong _state64;
 
     /// <summary>
     /// Construct using default seed generator
     /// </summary>
-    protected XorShiftStar() => _state64 = RandomSeed.FastULong();
+    public XorShiftStar() => _state64 = RandomSeed.FastULong();
 
     /// <summary>
     /// Construct using specific seed
     /// </summary>
-    protected XorShiftStar( uint initialState ) => _state64 = initialState;
+    public XorShiftStar( uint initialState ) => _state64 = initialState;
 
     /// <summary>
     /// No bias- This is the core generation function for this <see cref="Random"/>
