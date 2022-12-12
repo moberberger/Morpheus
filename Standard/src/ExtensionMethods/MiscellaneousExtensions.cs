@@ -131,5 +131,14 @@ namespace Morpheus
             array.Contains( _this );
         public static bool IsIn<T>( this T _this, IEnumerable<T> collection ) =>
             collection.Contains( _this );
+
+
+        public static IEnumerable<string> SplitRegex( this string s, string regex ) => Split( s, new Regex( regex ) );
+
+        public static IEnumerable<string> Split( this string s, Regex regex )
+        {
+            foreach (Match m in regex.Matches( s ))
+                yield return m.Value;
+        }
     }
 }
