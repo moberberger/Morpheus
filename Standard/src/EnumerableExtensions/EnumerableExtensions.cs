@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -481,27 +482,18 @@ namespace Morpheus
         }
 
 
-
-
-        #region Really Specific Enumerations
-#if _KERNEL32_OK_
         /// <summary>
-        /// Turn an enumeration into a <see cref="CSortableBindingList&lt;T> "/>
+        /// For each string in the input, apply a Regex that MUST HAVE A GROUP specified. The value of the group
+        /// is returned for each match- an empty string is returned when a match didn't occur for an element.
         /// </summary>
-        /// <typeparam name="T">The Type of items in the enumeration</typeparam>
-        /// <param name="_items">
-        /// The items to put into a <see cref="CSortableBindingList&lt;T> "/>
-        /// </param>
-        /// <returns>
-        /// A new <see cref="CSortableBindingList&lt;T> "/> containing the elements of this
-        /// enumeration
-        /// </returns>
-        public static CSortableBindingList<T> ToSortableBindingList<T>( this IEnumerable<T> _items )
+        /// <param name="list"></param>
+        /// <param name="regex"></param>
+        /// <returns></returns>
+        public static IEnumerable<string> SelectWithRegex( this IEnumerable<string> list, string regex )
         {
-            return new CSortableBindingList<T>( _items );
+            var r = new Regex( regex );
+            foreach (string s in list)
+                yield return r.Match( s ).Groups[1].Value;
         }
-#endif
-
-        #endregion
     }
 }
