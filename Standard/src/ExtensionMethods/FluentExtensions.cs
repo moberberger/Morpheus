@@ -50,6 +50,15 @@ namespace Morpheus
             return obj;
         }
 
+        public static IEnumerable<T> With<T>( this IEnumerable<T> list, Action<T> action )
+        {
+            foreach (var x in list)
+            {
+                action( x );
+                yield return x;
+            }
+        }
+
         /// <summary>
         /// <see cref="Enumerable.Select{}"/> but for objects instead of enumerations
         /// </summary>

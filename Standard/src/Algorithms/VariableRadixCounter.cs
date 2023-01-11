@@ -28,7 +28,13 @@ public class VariableRadixCounter
         Counters = new int[Radixes.Length];
     }
 
-    public void Next( int index = int.MaxValue )
+    public void Next()
+    {
+        if (NotDone)
+            Next( int.MaxValue );
+    }
+
+    private void Next( int index )
     {
         index = Math.Min( index, Radixes.Length - 1 );
         Done = index < 0;
