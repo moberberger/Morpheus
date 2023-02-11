@@ -41,6 +41,16 @@ public static class ForEachExtensions
             action( item );
     }
 
+    /// <summary>
+    /// This is an Executor- it "executes" the elements of an enumeration by actually
+    /// enumerating them. In this overload, each element of the enumeration is passed to an
+    /// <see cref="Action{T1}"/> for processing.
+    /// 
+    /// This is an important step in the way LINQ handles enumerations- if they are never
+    /// enumerated, then they are never executed.
+    /// </summary>
+    /// <remarks>Rather than "ForEach", both "Run" and "Execute" were considered.</remarks>
+    /// <param name="stuff">The enumeration to enumerate</param>
     public static void ForEach<T>( this IEnumerable<T> stuff, Action<T> action )
     {
         foreach (var item in stuff)

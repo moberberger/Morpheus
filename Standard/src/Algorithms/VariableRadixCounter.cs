@@ -1,10 +1,12 @@
-﻿namespace Morpheus;
+﻿using System.Collections;
+
+namespace Morpheus;
 
 /// <summary>
 /// Usage Model:
 /// 
 /// <code>
-/// for( VariableRadixCounter c = new( 3,4,3,2 ); c.NotDone; c.Next() )
+/// for( VariableRadixCounter c = new( 3,4,3,2 ); c.NotDone; c++ )
 /// {
 ///     int x = c[2];
 ///     string s = c.Digits.JoinAsString( ", " );
@@ -12,7 +14,7 @@
 /// }
 /// </code>
 /// </summary>
-public class VariableRadixCounter
+public class VariableRadixCounter : IEnumerable<int[]>
 {
     private readonly int[] Radixes;
     private readonly int[] Counters;
@@ -22,21 +24,22 @@ public class VariableRadixCounter
     public int this[int index] => Counters[index];
     public int[] Digits => Counters;
 
-    public VariableRadixCounter( params int[] radixes )
+    public VariableRadixCounter( IEnumerable<int> radixes )
     {
         Radixes = radixes.ToArray();
         Counters = new int[Radixes.Length];
     }
 
-    public void Next()
+    public VariableRadixCounter Next()
     {
         if (NotDone)
-            Next( int.MaxValue );
+            NextInternal( Radixes.Length - 1 );
+
+        return this;
     }
 
-    private void Next( int index )
+    private void NextInternal( int index )
     {
-        index = Math.Min( index, Radixes.Length - 1 );
         Done = index < 0;
         if (NotDone)
         {
@@ -44,10 +47,22 @@ public class VariableRadixCounter
             if (Counters[index] >= Radixes[index])
             {
                 Counters[index] = 0;
-                Next( index - 1 );
+                NextInternal( index - 1 );
             }
         }
     }
 
+    public static VariableRadixCounter operator ++( VariableRadixCounter c ) => c.Next();
     public override string ToString() => "{ " + Counters.JoinAsString( " " ) + " }";
+
+    public IEnumerator<int[]> GetEnumerator()
+    {
+        while (NotDone)
+        {
+            Next();
+            yield return (int[])Digits.Clone();
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
