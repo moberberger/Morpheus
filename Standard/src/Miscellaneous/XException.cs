@@ -5,8 +5,12 @@
 
 public class WhyIsThisNullException : Exception
 {
+    public WhyIsThisNullException()
+        : this( "<no message" )
+    {
+    }
     public WhyIsThisNullException( string message  )
-        : base( "[[[ Why Null? " + message ?? "<no message>" + "]]]" )
+        : base( $"Why Null?  [[ {message} ]]" )
     {
     }
 }
