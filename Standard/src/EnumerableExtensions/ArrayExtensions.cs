@@ -44,9 +44,7 @@ public static class ArrayExtensions
     /// <exception cref="ArgumentNullException">
     /// If used as a static function with a null collection
     /// </exception>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown if the List is empty
-    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if the List is empty</exception>
     /// <remarks>
     /// <code>
     /// var arr = new List&lt;int> { 1, 2, 3 };
@@ -67,9 +65,7 @@ public static class ArrayExtensions
     /// </summary>
     /// <typeparam name="T">The type of elements in the list</typeparam>
     /// <param name="_list">The list to remove the last element of</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown if the List is empty
-    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if the List is empty</exception>
     /// <exception cref="ArgumentNullException">
     /// If used as a static function with a null collection
     /// </exception>
@@ -99,9 +95,7 @@ public static class ArrayExtensions
     /// </summary>
     /// <typeparam name="T">The type of elements in the list</typeparam>
     /// <param name="_list">The list to remove the first element of</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown if the List is empty
-    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if the List is empty</exception>
     /// <exception cref="ArgumentNullException">
     /// If used as a static function with a null collection
     /// </exception>
@@ -127,8 +121,25 @@ public static class ArrayExtensions
 
 
     /// <summary>
-    /// List helper to Set the value at any index in the list to something. Will "grow" the
-    /// list if its currently too small to handle the index specified.
+    /// Remove all elements of an enumeration from a list. Doesn't care if the elements are in the list or not.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="_list"></param>
+    /// <param name="toRemove"></param>
+    public static void RemoveRange<T>( this IList<T> _list, IEnumerable<T> toRemove )
+    {
+        for (int i = 0; i < _list.Count;)
+        {
+            if (toRemove.Contains( _list[i] ))
+                _list.RemoveAt( i );
+            else
+                i++;
+        }
+    }
+
+    /// <summary>
+    /// List helper to Set the value at any index in the list to something. Will "grow" the list
+    /// if its currently too small to handle the index specified.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the list</typeparam>
     /// <param name="_list">The list to set a value in</param>
@@ -139,9 +150,7 @@ public static class ArrayExtensions
     /// <exception cref="ArgumentNullException">
     /// If used as a static function with a null collection
     /// </exception>
-    /// <exception cref="IndexOutOfRangeException">
-    /// Thrown if the index is negative.
-    /// </exception>
+    /// <exception cref="IndexOutOfRangeException">Thrown if the index is negative.</exception>
     /// <returns>The item that was passed in</returns>
     /// <remarks>
     /// <code>
@@ -202,21 +211,21 @@ public static class ArrayExtensions
 
 
     /// <summary>
-    /// Check to see if a Dictionary contains an item for a given key. If it does, simply
-    /// return that item. If it doesn't, create a new item and add it to the dictionary,
-    /// returning the new item.
+    /// Check to see if a Dictionary contains an item for a given key. If it does, simply return
+    /// that item. If it doesn't, create a new item and add it to the dictionary, returning the
+    /// new item.
     /// </summary>
     /// <typeparam name="Tkey">The Type of the Keys in the Dictionary</typeparam>
     /// <typeparam name="Tval">The Type of the Values in the Dictionary</typeparam>
     /// <param name="_dictionary">The Dictionary</param>
     /// <param name="_key">The Key to look for</param>
     /// <param name="_generator">
-    /// If this is not NULL, this method will use this function to generate a new item when
-    /// one does not already exist.
+    /// If this is not NULL, this method will use this function to generate a new item when one
+    /// does not already exist.
     /// </param>
     /// <returns>
-    /// A new Item for the Key- Either the one present in the Dictionary prior to calling
-    /// this method, or a new Value if one didn't exist prior to calling this method.
+    /// A new Item for the Key- Either the one present in the Dictionary prior to calling this
+    /// method, or a new Value if one didn't exist prior to calling this method.
     /// </returns>
     /// <remarks>
     /// <code>
@@ -265,7 +274,7 @@ public static class ArrayExtensions
         return contains;
     }
 
-    public static IEnumerable<T> Backwards<T>(this IList<T> list )
+    public static IEnumerable<T> Backwards<T>( this IList<T> list )
     {
         for (int i = list.Count - 1; i >= 0; i--)
             yield return list[i];
