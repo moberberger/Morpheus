@@ -265,7 +265,7 @@ public static class RandomSeed
 
             writer.Write( RDTSC8() );
 
-            using (var hasher = HashAlgorithm.Create( "SHA512" ))
+            using (var hasher = SHA512.Create())
             {
                 var hash = hasher.ComputeHash( buffer.ToArray() );
 
