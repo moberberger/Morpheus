@@ -127,6 +127,12 @@ namespace Morpheus
             Items.InsertionSort( new CBindingListComparer<T>( this ) );
             RaiseListChangedEvents = true;
         }
+
+        public void AddRange( IEnumerable<T> _items )
+        {
+            foreach (var item in _items)
+                Add( item );
+        }
     }
 
 }
