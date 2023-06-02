@@ -179,6 +179,19 @@ public static class EnumerableExtensions
 
 
     /// <summary>
+    /// Simply returns TRUE if the collection is empty, FALSE if it has anything in it.
+    /// </summary>
+    /// <typeparam name="T">Some arbitrary type for the elements of the collection</typeparam>
+    /// <param name="_items">The collection of elements</param>
+    /// <returns>TRUE if the collection is empty, FALSE if it has anything in it</returns>
+    public static bool IsNotEmpty<T>( this IEnumerable<T> _items )
+    {
+        using (var enumerator = _items.GetEnumerator())
+            return enumerator.MoveNext();
+    }
+
+
+    /// <summary>
     /// If the enumeration has exactly one element in it, then return that one element.
     /// Otherwise return NULL. This is similar to SingleOrDefault except that this will NOT
     /// throw an exception if there are more than one element in the enumeration.
