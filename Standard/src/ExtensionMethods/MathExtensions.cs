@@ -741,7 +741,11 @@ public static class CMath
         return x;
     }
 
-    public static ulong Combinations( int n, int r )
+
+    public static ulong Combinations( int n, int r ) =>
+        Combinations( (uint)n, (uint)r );
+
+    public static ulong Combinations( uint n, uint r )
     {
         ulong f_n = 1, f_r = 1, f_nr = 1;
         for (int i = 2; i <= n; i++)
@@ -753,5 +757,19 @@ public static class CMath
                 f_nr = f_n;
         }
         return f_n / (f_r * f_nr);
+    }
+
+    public static double IntegerExponent( double x, uint exponent )
+    {
+        double result = 1;
+        while (true)
+        {
+            if ((exponent & 1) == 1)
+                result *= x;
+            exponent >>= 1;
+            if (exponent == 0)
+                return result;
+            x *= x;
+        }
     }
 }
