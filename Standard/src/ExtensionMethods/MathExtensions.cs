@@ -743,21 +743,25 @@ public static class CMath
 
 
     public static ulong Combinations( int n, int r ) =>
-        Combinations( (uint)n, (uint)r );
+        Combinations( (ulong)n, (ulong)r );
 
-    public static ulong Combinations( uint n, uint r )
+    public static ulong Combinations( ulong n, ulong r )
     {
-        ulong f_n = 1, f_r = 1, f_nr = 1;
-        for (int i = 2; i <= n; i++)
+        if (r > n - r)
+            r = n - r; // because C(n, r) == C(n, n - r)
+
+        ulong numerator = 1;
+        ulong denominator = 1;
+        for (ulong i = 1; i <= r; i++)
         {
-            f_n *= (ulong)i;
-            if (i == r)
-                f_r = f_n;
-            if (i == n - r)
-                f_nr = f_n;
+            numerator *= (n + 1 - i);
+            denominator *= i;
         }
-        return f_n / (f_r * f_nr);
+        return numerator / denominator;
     }
+
+    public static double IntegerExponent( double x, int exponent ) =>
+        IntegerExponent( x, (uint)exponent );
 
     public static double IntegerExponent( double x, uint exponent )
     {
