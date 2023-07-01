@@ -57,7 +57,7 @@ public class GoalSeek
         // Now proceed with a loop now that we know -direction-
         double dTarget = target * direction;
         double lastX = double.NaN;
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < 10000; i++)
         {
             x = (high + low) / 2;
             if (x == lastX) // ran out of precision- this is as 
