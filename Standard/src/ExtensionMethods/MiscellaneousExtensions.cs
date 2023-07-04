@@ -133,7 +133,8 @@ namespace Morpheus
             collection.Contains( _this );
 
 
-        public static IEnumerable<string> SplitRegex( this string s, string regex ) => Split( s, new Regex( regex ) );
+        public static IEnumerable<string> SplitRegex( this string s, string regex ) => 
+            Split( s, new Regex( regex ) );
 
         public static IEnumerable<string> Split( this string s, Regex regex )
         {
