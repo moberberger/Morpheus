@@ -174,7 +174,7 @@ namespace Morpheus
                                 HorizontalAlign )
                     ).NowUse( outstr )
                         .Append( Borders.Vertical )
-                        .AppendLine()
+                        .AppendLine("\r")
             ).NowUse( this );
 
         private string LineFromCell( int row, int col, int line ) =>

@@ -19,7 +19,7 @@
         public virtual string BottomRight => orderedBorderChars[8].ToString();
         public virtual string Horizontal => orderedBorderChars[9].ToString();
         public virtual string Vertical => orderedBorderChars[10].ToString();
-        public virtual string NewLine => "\n";
+        public virtual string NewLine => Environment.NewLine;
         public virtual int BorderWidth => 1;
 
         public virtual string this[int rowType, int colType]
