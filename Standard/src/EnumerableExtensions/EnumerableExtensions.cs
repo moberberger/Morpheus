@@ -130,6 +130,18 @@ public static class EnumerableExtensions
         return -1;
     }
 
+    public static int FirstIndexOf<T>( this IEnumerable<T> _collection, T compareTo )
+    {
+        var idx = 0;
+        foreach (var elem in _collection)
+        {
+            if (elem.Equals( compareTo ))
+                return idx;
+            idx++;
+        }
+        return -1;
+    }
+
 
     /// <summary>
     /// Return all elements after a specified element in an enumeration
