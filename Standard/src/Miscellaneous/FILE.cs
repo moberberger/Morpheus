@@ -110,8 +110,11 @@ public static class FILE
     /// <returns>The resulting filename</returns>
     public static string AddSomethingToFilename( string _filename, string _whatToAdd )
     {
+        if (string.IsNullOrWhiteSpace( _whatToAdd )) return _filename;
+
         var s = Path.GetFileNameWithoutExtension( _filename );
-        s += "." + _whatToAdd;
+        if (_whatToAdd[0] != '.') s += ".";
+        s += _whatToAdd;
         s += Path.GetExtension( _filename );
         s = Path.Combine( Path.GetDirectoryName( _filename ), s );
         s = Path.Combine( Path.GetPathRoot( _filename ), s );
