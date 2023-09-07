@@ -32,7 +32,7 @@ namespace Morpheus
         /// <summary>
         /// How many of the top chromosomes will always make it into the next generation as-is
         /// </summary>
-        public int ElitismCount = 2;
+        public int ElitismCount = 1;
 
 
 
