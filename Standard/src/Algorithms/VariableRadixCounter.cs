@@ -65,4 +65,17 @@ public class VariableRadixCounter : IEnumerable<int[]>
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public static IEnumerable<T[]> Enumerate<T>( IEnumerable<IEnumerable<T>> values )
+    {
+        var vals = values.Select( v => v.ToList() ).ToList();
+        var results = new T[vals.Count()];
+        foreach (var indices in new VariableRadixCounter( vals.Select( s => s.Count ) ))
+        {
+            for (int i = 0; i < results.Length; i++)
+                results[i] = vals[i][indices[i]];
+            yield return results;
+        }
+    }
+
 }
