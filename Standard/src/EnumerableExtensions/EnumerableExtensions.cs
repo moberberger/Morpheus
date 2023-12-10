@@ -432,7 +432,7 @@ public static class EnumerableExtensions
     /// <param name="_operation">
     /// The operation that should be performed on each pair of elements from the collections
     /// </param>
-    public static void Collate<T1, T2>( this IEnumerable<T1> _collection, IEnumerable<T2> _otherCollection, Action<T1, T2> _operation )
+    public static void Zip<T1, T2>( this IEnumerable<T1> _collection, IEnumerable<T2> _otherCollection, Action<T1, T2> _operation )
     {
         var otherIter = _otherCollection.GetEnumerator();
         foreach (var item in _collection)
@@ -464,7 +464,7 @@ public static class EnumerableExtensions
     /// returned <see cref="Tuple"/> s
     /// </param>
     /// <returns>Tuples containing the collated items from each collection</returns>
-    public static IEnumerable<Tuple<T1, T2>> Collate<T1, T2>( this IEnumerable<T1> _collection, IEnumerable<T2> _otherCollection )
+    public static IEnumerable<Tuple<T1, T2>> Interleave<T1, T2>( this IEnumerable<T1> _collection, IEnumerable<T2> _otherCollection )
     {
         var otherIter = _otherCollection.GetEnumerator();
         foreach (var item in _collection)
