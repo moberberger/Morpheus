@@ -5,32 +5,36 @@ namespace Morpheus;
 
 
 /// <summary>
-/// It is the application writer's responsibility to decide whether to use one of these
-/// extension methods or to write the loop herself. There is a chance that using these
-/// extensions on enumerations can impact performance over writing these loops yourself.
+/// It is the application writer's responsibility to decide whether to use one
+/// of these extension methods or to write the loop herself. There is a chance
+/// that using these extensions on enumerations can impact performance over
+/// writing these loops yourself.
 /// 
-/// In summary- If you're really worried about performance on LARGE, tight loops that are not
-/// IO-or-UI-bound in any way, these extensions MAY not be right for you. However, if I/O and/or
-/// User Input is involved, any performance penalty for using these extensions will almost
-/// always be negligible in comparison.
+/// In summary- If you're really worried about performance on LARGE, tight loops
+/// that are not IO-or-UI-bound in any way, these extensions MAY not be right
+/// for you. However, if I/O and/or User Input is involved, any performance
+/// penalty for using these extensions will almost always be negligible in
+/// comparison.
 /// </summary>
 public static class EnumerableExtensions
 {
     /// <summary>
-    /// Like <see cref="string.Join(string, object[])"/> , but uses an enumeration instead of an
-    /// array
+    /// Like <see cref="string.Join(string, object[])"/> , but uses an
+    /// enumeration instead of an array
     /// </summary>
-    /// <param name="_collection">The collection of objects that you wish to join</param>
+    /// <param name="_collection">
+    /// The collection of objects that you wish to join
+    /// </param>
     /// <param name="_joinString">
     /// The character(s) placed between elements from _collection
     /// </param>
     /// <param name="_stringizer">
-    /// A function that will turn each individual object into a string. Leave NULL to use the
-    /// <see cref="object.ToString"/> method.
+    /// A function that will turn each individual object into a string. Leave
+    /// NULL to use the <see cref="object.ToString"/> method.
     /// </param>
     /// <returns>
-    /// A string consisting of each of the elements in the collection joined together using a
-    /// joining string.
+    /// A string consisting of each of the elements in the collection joined
+    /// together using a joining string.
     /// </returns>
     /// <remarks>
     /// <para> This class is used for these examples: </para>
@@ -47,13 +51,14 @@ public static class EnumerableExtensions
     ///     new ToJoin{ Integer = 23 },
     /// };
     /// </code>
-    /// <para> This is a straight-forward example using default ToString and Space as a
-    /// separator </para>
+    /// <para> This is a straight-forward example using default ToString and
+    /// Space as a separator </para>
     /// <code>
     /// var joined = list.JoinAsString( " " );
     /// Assert.AreEqual( "[42] [23]", joined );
     /// </code>
-    /// <para> In this example, a custom string-izer is used with a comma separator </para>
+    /// <para> In this example, a custom string-izer is used with a comma
+    /// separator </para>
     /// <code>
     /// var joined = list.JoinAsString( ",", _obj => $"({_obj.Integer * 2})" );
     /// Assert.AreEqual( "(84),(46)", joined );
@@ -77,17 +82,20 @@ public static class EnumerableExtensions
     }
 
     /// <summary>
-    /// Return the index of the first element in the collection for which the _selector returns
-    /// TRUE.
+    /// Return the index of the first element in the collection for which the
+    /// _selector returns TRUE.
     /// </summary>
-    /// <typeparam name="T">The Type of each element in the population</typeparam>
+    /// <typeparam name="T">
+    /// The Type of each element in the population
+    /// </typeparam>
     /// <param name="_collection">The population of data</param>
     /// <param name="predicate">
     /// Application returns TRUE for an element that should be returned.
     /// </param>
     /// <returns>
-    /// The index (ordinal position) of the first element in the collection for which the
-    /// selector returned TRUE, or -1 if no element caused the selector to return TRUE
+    /// The index (ordinal position) of the first element in the collection for
+    /// which the selector returned TRUE, or -1 if no element caused the
+    /// selector to return TRUE
     /// </returns>
     /// <remarks>
     /// <para> This data is used for these two examples: </para>
@@ -146,11 +154,17 @@ public static class EnumerableExtensions
     /// <summary>
     /// Return all elements after a specified element in an enumeration
     /// </summary>
-    /// <typeparam name="T">The type of the elements in the enumeration</typeparam>
+    /// <typeparam name="T">
+    /// The type of the elements in the enumeration
+    /// </typeparam>
     /// <param name="_collection">The elements to enumerate over</param>
-    /// <param name="_item">The item to find, then return all items after</param>
+    /// <param name="_item">
+    /// The item to find, then return all items after
+    /// </param>
     /// <returns>All items after the specified item in the enumeration</returns>
-    /// <remarks>If the item is not found, then this is simply an empty enumeration.</remarks>
+    /// <remarks>
+    /// If the item is not found, then this is simply an empty enumeration.
+    /// </remarks>
     public static IEnumerable<T> AllAfter<T>( this IEnumerable<T> _collection, T _item )
     {
         var found = false;
@@ -165,24 +179,32 @@ public static class EnumerableExtensions
 
 
     /// <summary>
-    /// Determine if a condition is met for ANY item in the enumeration. This is literally an
-    /// alias for the
-    /// <see cref="Enumerable.Any{TSource}(IEnumerable{TSource}, Func{TSource, bool})"/> method.
+    /// Determine if a condition is met for ANY item in the enumeration. This is
+    /// literally an alias for the
+    /// <see cref="Enumerable.Any{TSource}(IEnumerable{TSource}, Func{TSource, bool})"/>
+    /// method.
     /// </summary>
     /// <typeparam name="T">The Type of items in the enumeration</typeparam>
     /// <param name="_items">The items to test for the condition</param>
     /// <param name="_condition">The boolean condition to be tested</param>
-    /// <returns>TRUE if the condition is true for any item in the enumeration</returns>
+    /// <returns>
+    /// TRUE if the condition is true for any item in the enumeration
+    /// </returns>
     public static bool Contains<T>( this IEnumerable<T> _items, Func<T, bool> _condition )
         => _items.Any( _condition );
 
 
     /// <summary>
-    /// Simply returns TRUE if the collection is empty, FALSE if it has anything in it.
+    /// Simply returns TRUE if the collection is empty, FALSE if it has anything
+    /// in it.
     /// </summary>
-    /// <typeparam name="T">Some arbitrary type for the elements of the collection</typeparam>
+    /// <typeparam name="T">
+    /// Some arbitrary type for the elements of the collection
+    /// </typeparam>
     /// <param name="_items">The collection of elements</param>
-    /// <returns>TRUE if the collection is empty, FALSE if it has anything in it</returns>
+    /// <returns>
+    /// TRUE if the collection is empty, FALSE if it has anything in it
+    /// </returns>
     public static bool IsEmpty<T>( this IEnumerable<T> _items )
     {
         using (var enumerator = _items.GetEnumerator())
@@ -191,11 +213,16 @@ public static class EnumerableExtensions
 
 
     /// <summary>
-    /// Simply returns TRUE if the collection is empty, FALSE if it has anything in it.
+    /// Simply returns TRUE if the collection is empty, FALSE if it has anything
+    /// in it.
     /// </summary>
-    /// <typeparam name="T">Some arbitrary type for the elements of the collection</typeparam>
+    /// <typeparam name="T">
+    /// Some arbitrary type for the elements of the collection
+    /// </typeparam>
     /// <param name="_items">The collection of elements</param>
-    /// <returns>TRUE if the collection is empty, FALSE if it has anything in it</returns>
+    /// <returns>
+    /// TRUE if the collection is empty, FALSE if it has anything in it
+    /// </returns>
     public static bool IsNotEmpty<T>( this IEnumerable<T> _items )
     {
         using (var enumerator = _items.GetEnumerator())
@@ -204,15 +231,18 @@ public static class EnumerableExtensions
 
 
     /// <summary>
-    /// If the enumeration has exactly one element in it, then return that one element.
-    /// Otherwise return NULL. This is similar to SingleOrDefault except that this will NOT
-    /// throw an exception if there are more than one element in the enumeration.
+    /// If the enumeration has exactly one element in it, then return that one
+    /// element. Otherwise return NULL. This is similar to SingleOrDefault
+    /// except that this will NOT throw an exception if there are more than one
+    /// element in the enumeration.
     /// </summary>
-    /// <typeparam name="T">The Type of the elements of the enumeration</typeparam>
+    /// <typeparam name="T">
+    /// The Type of the elements of the enumeration
+    /// </typeparam>
     /// <param name="_items">The enumeration</param>
     /// <returns>
-    /// NULL unless there is exactly one element in the enumeration, in which case it will
-    /// return that singular element
+    /// NULL unless there is exactly one element in the enumeration, in which
+    /// case it will return that singular element
     /// </returns>
     public static T OneOrDefault<T>( this IEnumerable<T> _items )
     {
@@ -238,12 +268,14 @@ public static class EnumerableExtensions
 
 
     /// <summary>
-    /// Return the smallest element of the enumeration based on the selector function given
+    /// Return the smallest element of the enumeration based on the selector
+    /// function given
     /// </summary>
     /// <typeparam name="T">The Type of items in the enumeration</typeparam>
     /// <param name="_items">The items in the list to search</param>
     /// <param name="_selector">
-    /// The function that determines which "field" of an element is checked for smallness
+    /// The function that determines which "field" of an element is checked for
+    /// smallness
     /// </param>
     /// <returns>The smallest element in the enumeration</returns>
     public static T Smallest<T>( this IEnumerable<T> _items, Func<T, double> _selector )
@@ -265,12 +297,14 @@ public static class EnumerableExtensions
     }
 
     /// <summary>
-    /// Return the smallest element of the enumeration based on the selector function given
+    /// Return the smallest element of the enumeration based on the selector
+    /// function given
     /// </summary>
     /// <typeparam name="T">The Type of items in the enumeration</typeparam>
     /// <param name="_items">The items in the list to search</param>
     /// <param name="_selector">
-    /// The function that determines which "field" of an element is checked for smallness
+    /// The function that determines which "field" of an element is checked for
+    /// smallness
     /// </param>
     /// <returns>The smallest element in the enumeration</returns>
     public static T Smallest<T>( this IEnumerable<T> _items, Func<T, IComparable> _selector )
@@ -302,12 +336,14 @@ public static class EnumerableExtensions
     }
 
     /// <summary>
-    /// Return the largest element of the enumeration based on the selector function given
+    /// Return the largest element of the enumeration based on the selector
+    /// function given
     /// </summary>
     /// <typeparam name="T">The Type of items in the enumeration</typeparam>
     /// <param name="_items">The items in the list to search</param>
     /// <param name="_selector">
-    /// The function that determines which "field" of an element is checked for largeness
+    /// The function that determines which "field" of an element is checked for
+    /// largeness
     /// </param>
     /// <returns>The largest element in the enumeration</returns>
     public static T Largest<T>( this IEnumerable<T> _items, Func<T, double> _selector )
@@ -330,12 +366,14 @@ public static class EnumerableExtensions
 
 
     /// <summary>
-    /// Return the largest element of the enumeration based on the selector function given
+    /// Return the largest element of the enumeration based on the selector
+    /// function given
     /// </summary>
     /// <typeparam name="T">The Type of items in the enumeration</typeparam>
     /// <param name="_items">The items in the list to search</param>
     /// <param name="_selector">
-    /// The function that determines which "field" of an element is checked for largeness
+    /// The function that determines which "field" of an element is checked for
+    /// largeness
     /// </param>
     /// <returns>The largest element in the enumeration</returns>
     public static T Largest<T>( this IEnumerable<T> _items, Func<T, IComparable> _selector )
@@ -369,18 +407,25 @@ public static class EnumerableExtensions
 
 
     /// <summary>
-    /// Like "Select", but if the selector throws an exception, that particular input element is
-    /// simply ignored (nothing returned in the output enumeration). This is used when you
-    /// expect that some of the transformations performed on the input elements may throw
-    /// exceptions and checking for those potential exceptions is difficult or unwieldy.
+    /// Like "Select", but if the selector throws an exception, that particular
+    /// input element is simply ignored (nothing returned in the output
+    /// enumeration). This is used when you expect that some of the
+    /// transformations performed on the input elements may throw exceptions and
+    /// checking for those potential exceptions is difficult or unwieldy.
     /// </summary>
-    /// <typeparam name="T">The Type of the objects in the input collection.</typeparam>
-    /// <typeparam name="U">The Type of the transformed objects/items</typeparam>
+    /// <typeparam name="T">
+    /// The Type of the objects in the input collection.
+    /// </typeparam>
+    /// <typeparam name="U">
+    /// The Type of the transformed objects/items
+    /// </typeparam>
     /// <param name="_collection">The collection to enumerate</param>
-    /// <param name="_selector">The transformation of input elements to output elements</param>
+    /// <param name="_selector">
+    /// The transformation of input elements to output elements
+    /// </param>
     /// <returns>
-    /// An enumeration of the transformed values when that transformation didn't cause an
-    /// exception to be thrown
+    /// An enumeration of the transformed values when that transformation didn't
+    /// cause an exception to be thrown
     /// </returns>
     public static IEnumerable<U> SelectIgnoreExceptions<T, U>( this IEnumerable<T> _collection, Func<T, U> _selector )
     {
@@ -403,9 +448,9 @@ public static class EnumerableExtensions
 
 
     /// <summary>
-    /// Iterate through two collections in parallel, returning the element from each collection
-    /// at the same ordinal position within the collection. This is called Collating when
-    /// applied to the print (paper) industry
+    /// Iterate through two collections in parallel, returning the element from
+    /// each collection at the same ordinal position within the collection. This
+    /// is called Collating when applied to the print (paper) industry
     /// </summary>
     /// <remarks>
     /// For sets A and B, this operation produces the following:
@@ -422,15 +467,16 @@ public static class EnumerableExtensions
     /// The <see cref="Type"/> of the elemnets in the second collection
     /// </typeparam>
     /// <param name="_collection">
-    /// The first collection, the elements of which shall appear in the first parameter to the
-    /// <see cref="Action"/>
+    /// The first collection, the elements of which shall appear in the first
+    /// parameter to the <see cref="Action"/>
     /// </param>
     /// <param name="_otherCollection">
-    /// The second collection, the elements of which shall appear in the second parameter to the
-    /// <see cref="Action"/>
+    /// The second collection, the elements of which shall appear in the second
+    /// parameter to the <see cref="Action"/>
     /// </param>
     /// <param name="_operation">
-    /// The operation that should be performed on each pair of elements from the collections
+    /// The operation that should be performed on each pair of elements from the
+    /// collections
     /// </param>
     public static void Zip<T1, T2>( this IEnumerable<T1> _collection, IEnumerable<T2> _otherCollection, Action<T1, T2> _operation )
     {
@@ -445,9 +491,9 @@ public static class EnumerableExtensions
     }
 
     /// <summary>
-    /// Iterate through two collections in parallel, returning the element from each collection
-    /// at the same ordinal position within the collection. This is called Collating when
-    /// applied to the print (paper) industry
+    /// Iterate through two collections in parallel, returning the element from
+    /// each collection at the same ordinal position within the collection. This
+    /// is called Collating when applied to the print (paper) industry
     /// </summary>
     /// <typeparam name="T1">
     /// The <see cref="Type"/> of the elements of the first collection
@@ -456,14 +502,16 @@ public static class EnumerableExtensions
     /// The <see cref="Type"/> of the elements in the second collection
     /// </typeparam>
     /// <param name="_collection">
-    /// The first collection, the elements of which shall appear in the first item in the
-    /// returned <see cref="Tuple"/> s
+    /// The first collection, the elements of which shall appear in the first
+    /// item in the returned <see cref="Tuple"/> s
     /// </param>
     /// <param name="_otherCollection">
-    /// The second collection, the elements of which shall appear in the second item in the
-    /// returned <see cref="Tuple"/> s
+    /// The second collection, the elements of which shall appear in the second
+    /// item in the returned <see cref="Tuple"/> s
     /// </param>
-    /// <returns>Tuples containing the collated items from each collection</returns>
+    /// <returns>
+    /// Tuples containing the collated items from each collection
+    /// </returns>
     public static IEnumerable<Tuple<T1, T2>> Interleave<T1, T2>( this IEnumerable<T1> _collection, IEnumerable<T2> _otherCollection )
     {
         var otherIter = _otherCollection.GetEnumerator();
@@ -478,8 +526,8 @@ public static class EnumerableExtensions
 
 
     /// <summary>
-    /// Use indicies to look up elements in an <see cref="IList"/> and return those elements in
-    /// order
+    /// Use indicies to look up elements in an <see cref="IList"/> and return
+    /// those elements in order
     /// </summary>
     public static IEnumerable<T> Lookup<T>( this IList<T> theArray, IEnumerable<int> indicies )
         => indicies.Select( i => theArray[i] );
@@ -495,9 +543,9 @@ public static class EnumerableExtensions
 
 
     /// <summary>
-    /// For each string in the input, apply a Regex that MUST HAVE A GROUP specified. The value
-    /// of the group is returned for each match- an empty string is returned when a match didn't
-    /// occur for an element.
+    /// For each string in the input, apply a Regex that MUST HAVE A GROUP
+    /// specified. The value of the group is returned for each match- an empty
+    /// string is returned when a match didn't occur for an element.
     /// </summary>
     /// <param name="list"></param>
     /// <param name="regex"></param>
@@ -510,14 +558,29 @@ public static class EnumerableExtensions
     }
 
     /// <summary>
-    /// Turn any collection into a circular list. A Circular list is fixed size and indexing
-    /// operations adjust the index to fit inside the list. For example, for a collection of 5
-    /// elements, index 6 would reference the element at location 1 (5 % 6) in the list.
-    /// Similarly, Index -1 would reference the last element of the list.
+    /// Turn any collection into a circular list. A Circular list is fixed size
+    /// and indexing operations adjust the index to fit inside the list. For
+    /// example, for a collection of 5 elements, index 6 would reference the
+    /// element at location 1 (5 % 6) in the list. Similarly, Index -1 would
+    /// reference the last element of the list.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list"></param>
     /// <returns></returns>
     public static CircularList<T> ToCircularList<T>( this IEnumerable<T> list )
         => new CircularList<T>( list );
+
+    /// <summary>
+    /// Take items from an IList based on an enumeration of indicies. This is
+    /// useful when you want to grab a set of indexed items from a list.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
+    /// <param name="indicies"></param>
+    /// <returns></returns>
+    public static IEnumerable<T> Gather<T>( this IList<T> list, IEnumerable<int> indicies )
+    {
+        foreach (var ix in indicies)
+            yield return list[ix];
+    }
 }
