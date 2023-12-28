@@ -592,4 +592,36 @@ public static class EnumerableExtensions
         foreach (var item in items)
             collection.Add( item );
     }
+
+    /// <summary>
+    /// Remove every element of the IList that matches the given element.
+    /// </summary>
+    /// <returns>The count of elements removed.</returns>
+    public static void RemoveAll<T>( this IList<T> list, T toRemove )
+    {
+        int destIdx = 0;
+        for (int i = 0; i < list.Count; i++)
+        {
+            if (!list[i].Equals( toRemove ))
+                list[destIdx++] = list[i];
+        }
+        while (list.Count > destIdx)
+            list.RemoveAt( list.Count - 1 );
+    }
+
+    /// <summary>
+    /// Remove every element of the IList that matches the given element.
+    /// </summary>
+    /// <returns>The count of elements removed.</returns>
+    public static void RemoveAll<T>( this IList<T> list, Func<T, bool> predicate )
+    {
+        int destIdx = 0;
+        for (int i = 0; i < list.Count; i++)
+        {
+            if (!predicate( list[i] ))
+                list[destIdx++] = list[i];
+        }
+        while (list.Count > destIdx)
+            list.RemoveAt( list.Count - 1 );
+    }
 }
