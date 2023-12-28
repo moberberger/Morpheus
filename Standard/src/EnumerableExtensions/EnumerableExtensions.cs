@@ -583,4 +583,13 @@ public static class EnumerableExtensions
         foreach (var ix in indicies)
             yield return list[ix];
     }
+
+    /// <summary>
+    /// AddRange for any ICollection- seems like this should be part of LINQ
+    /// </summary>
+    public static void AddRange<T>( this ICollection<T> collection, IEnumerable<T> items )
+    {
+        foreach (var item in items)
+            collection.Add( item );
+    }
 }
