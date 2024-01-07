@@ -53,6 +53,8 @@ public static class FILE
         var fullName = Path.Combine( _directoryName, _filename );
         if (File.Exists( fullName ))
             return fullName;
+        if (Directory.Exists( fullName ))
+            return _directoryName;
 
         var dname = Path.GetDirectoryName( _directoryName );
         if (string.IsNullOrEmpty( dname ))
