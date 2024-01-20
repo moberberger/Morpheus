@@ -19,7 +19,9 @@
 
         public WindowDragger( System.Windows.Forms.Form form )
         {
+#pragma warning disable CA1416 // Validate platform compatibility
             _handle = form.Handle;
+#pragma warning restore CA1416 // Validate platform compatibility
         }
 
         public bool IsDragging
