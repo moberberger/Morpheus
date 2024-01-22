@@ -632,8 +632,14 @@ public static class EnumerableExtensions
             if (!iterator.MoveNext())
                 yield break;
 
-            for (var previous = iterator.Current; iterator.MoveNext(); previous = iterator.Current)
+            var previous = iterator.Current;
+            yield return (default( T ), previous);
+
+            while (iterator.MoveNext())
+            {
                 yield return (previous, iterator.Current);
+                previous = iterator.Current;
+            }
         }
     }
 
