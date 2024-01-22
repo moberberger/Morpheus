@@ -624,4 +624,18 @@ public static class EnumerableExtensions
         while (list.Count > destIdx)
             list.RemoveAt( list.Count - 1 );
     }
+
+    public static IEnumerable<(T, T)> Pairwise<T>( this IEnumerable<T> source )
+    {
+        using (var iterator = source.GetEnumerator())
+        {
+            if (!iterator.MoveNext())
+                yield break;
+
+            for (var previous = iterator.Current; iterator.MoveNext(); previous = iterator.Current)
+                yield return (previous, iterator.Current);
+        }
+    }
+
+
 }
