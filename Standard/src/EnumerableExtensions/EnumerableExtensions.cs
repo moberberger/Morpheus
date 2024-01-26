@@ -653,19 +653,63 @@ public static class EnumerableExtensions
         }
     }
 
+    /// <summary>
+    /// Similar to Python "enumerate" function. Equivalent to source.Select( (
+    /// x, i ) => (x, i) ) Returns a tuple of the element and its index.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="source"></param>
+    /// <returns></returns>
+    public static IEnumerable<(T, int)> WithIndex<T>( this IEnumerable<T> source )
+    {
+        int idx = 0;
+        foreach (var item in source)
+            yield return (item, idx++);
+    }
 
+
+    /// <summary>
+    /// Return the index of the smallest element in the collection using
+    /// IComparable
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="source"></param>
+    /// <returns>the index of the smallest element</returns>
     public static int ArgMin<T>( this IEnumerable<T> source )
         where T : IComparable<T> => source.ArgBest( x => x, true );
 
+    /// <summary>
+    /// Return the index of the largest element in the collection using
+    /// IComparable
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="source"></param>
+    /// <returns>the index of the largest element</returns>
     public static int ArgMax<T>( this IEnumerable<T> source )
         where T : IComparable<T> => source.ArgBest( x => x, false );
 
+    /// <summary>
+    /// Return the index of the smallest element in the collection according to
+    /// a selector function
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="source"></param>
+    /// <returns>the index of the smallest element</returns>
     public static int ArgMin<T, Tselected>( this IEnumerable<T> source, Func<T, Tselected> selector )
         where Tselected : IComparable<Tselected> => source.ArgBest( selector, true );
+
+    /// <summary>
+    /// Return the index of the largest element in the collection according to a
+    /// selector function
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="source"></param>
+    /// <returns>the index of the largest element</returns>
     public static int ArgMax<T, Tselected>( this IEnumerable<T> source, Func<T, Tselected> selector )
         where Tselected : IComparable<Tselected> => source.ArgBest( selector, false );
 
-    public static int ArgBest<T, Tselected>(
+
+    private static int ArgBest<T, Tselected>(
         this IEnumerable<T> source,
         Func<T, Tselected> selector,
         bool argMin )
@@ -675,7 +719,7 @@ public static class EnumerableExtensions
         int bestIdx = -1;
         int factor = argMin ? 1 : -1;
 
-        foreach (var (x, i) in source.Select( ( x, i ) => (x, i) ))
+        foreach (var (x, i) in source.WithIndex())
         {
             var selected = selector( x );
             if (bestIdx == -1 || selected.CompareTo( bestVal ) * factor < 0)
