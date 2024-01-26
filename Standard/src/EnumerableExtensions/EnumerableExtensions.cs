@@ -526,11 +526,18 @@ public static class EnumerableExtensions
 
 
     /// <summary>
-    /// Use indicies to look up elements in an <see cref="IList"/> and return
-    /// those elements in order
+    /// Take items from an IList based on an enumeration of indicies. This is
+    /// useful when you want to grab a set of indexed items from a list.
     /// </summary>
-    public static IEnumerable<T> Lookup<T>( this IList<T> theArray, IEnumerable<int> indicies )
-        => indicies.Select( i => theArray[i] );
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
+    /// <param name="indicies"></param>
+    /// <returns></returns>
+    public static IEnumerable<T> Gather<T>( this IList<T> list, IEnumerable<int> indicies )
+    {
+        foreach (var ix in indicies)
+            yield return list[ix];
+    }
 
 
 
@@ -569,20 +576,6 @@ public static class EnumerableExtensions
     /// <returns></returns>
     public static CircularList<T> ToCircularList<T>( this IEnumerable<T> list )
         => new CircularList<T>( list );
-
-    /// <summary>
-    /// Take items from an IList based on an enumeration of indicies. This is
-    /// useful when you want to grab a set of indexed items from a list.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="list"></param>
-    /// <param name="indicies"></param>
-    /// <returns></returns>
-    public static IEnumerable<T> Gather<T>( this IList<T> list, IEnumerable<int> indicies )
-    {
-        foreach (var ix in indicies)
-            yield return list[ix];
-    }
 
     /// <summary>
     /// AddRange for any ICollection- seems like this should be part of LINQ
