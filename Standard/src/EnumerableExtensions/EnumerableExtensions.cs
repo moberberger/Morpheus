@@ -625,6 +625,16 @@ public static class EnumerableExtensions
             list.RemoveAt( list.Count - 1 );
     }
 
+    /// <summary>
+    /// Return elements of the collection that are next to each other. The first
+    /// tuple returned has .Item1 == default(T) and .Item2 == the first element
+    /// of the collection. The next tuple returned has .Item1 == the first
+    /// element of the collection and .Item2 == the second element of the
+    /// collection.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="source"></param>
+    /// <returns>A sequence of pairs of elements from the enumeration</returns>
     public static IEnumerable<(T, T)> Pairwise<T>( this IEnumerable<T> source )
     {
         using (var iterator = source.GetEnumerator())
@@ -644,4 +654,37 @@ public static class EnumerableExtensions
     }
 
 
+    public static int ArgMin<T>( this IEnumerable<T> source )
+        where T : IComparable<T> => source.ArgBest( x => x, true );
+
+    public static int ArgMax<T>( this IEnumerable<T> source )
+        where T : IComparable<T> => source.ArgBest( x => x, false );
+
+    public static int ArgMin<T, Tselected>( this IEnumerable<T> source, Func<T, Tselected> selector )
+        where Tselected : IComparable<Tselected> => source.ArgBest( selector, true );
+    public static int ArgMax<T, Tselected>( this IEnumerable<T> source, Func<T, Tselected> selector )
+        where Tselected : IComparable<Tselected> => source.ArgBest( selector, false );
+
+    public static int ArgBest<T, Tselected>(
+        this IEnumerable<T> source,
+        Func<T, Tselected> selector,
+        bool argMin )
+        where Tselected : IComparable<Tselected>
+    {
+        Tselected bestVal = default;
+        int bestIdx = -1;
+        int factor = argMin ? 1 : -1;
+
+        foreach (var (x, i) in source.Select( ( x, i ) => (x, i) ))
+        {
+            var selected = selector( x );
+            if (bestIdx == -1 || selected.CompareTo( bestVal ) * factor < 0)
+            {
+                bestVal = selected;
+                bestIdx = i;
+            }
+        }
+
+        return bestIdx;
+    }
 }
