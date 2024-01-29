@@ -98,5 +98,12 @@ namespace Morpheus
                 }
             }
         }
+
+        public static T Copy<T>( T source ) where T : new()
+        {
+            var retval = new T();
+            CopyValues( retval, source );
+            return retval;
+        }
     }
 }
