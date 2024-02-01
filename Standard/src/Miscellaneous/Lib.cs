@@ -1070,6 +1070,32 @@ public static class Lib
             return _value;
     }
 
+    public static void Order<T>( ref T left, ref T right ) where T : IComparable
+    {
+        if (left.CompareTo( right ) > 0)
+        {
+            var tmp = left;
+            left = right;
+            right = tmp;
+        }
+    }
+
+    public static T Max<T>( T left, T right ) where T : IComparable
+    {
+        if (left.CompareTo( right ) > 0)
+            return left;
+        else
+            return right;
+    }
+
+    public static T Min<T>( T left, T right ) where T : IComparable
+    {
+        if (left.CompareTo( right ) < 0)
+            return left;
+        else
+            return right;
+    }
+
 
     /// <summary>
     /// Given a <see cref="ulong"/> , assumed to contain 64 valid bits, turn this into the
