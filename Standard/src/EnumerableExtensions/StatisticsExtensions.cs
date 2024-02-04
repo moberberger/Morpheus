@@ -205,14 +205,16 @@ public static class StatisticsExtensions
     /// <returns>The standard deviation of the population</returns>
     public static double StandardDeviation<T>( this IEnumerable<T> population, Func<T, double> selector, double preComputedAverage )
     {
+        if (population.IsEmpty()) return 0;
+
         double sum = 0;
         var count = 0;
 
         foreach (var x in population)
         {
-            count++;
             var xx = selector( x ) - preComputedAverage;
             sum += xx * xx;
+            count++;
         }
 
         return Math.Sqrt( sum / count );
