@@ -37,6 +37,6 @@ public class OverrideCreator : IResolver
         if (m_owner?.Contains( m_type ) ?? false)
             return m_owner.Get( m_type, @params );
         else
-            return Activator.CreateInstance( m_type, @params );
+            return Activator.CreateInstance( m_type, @params )!;
     }
 }

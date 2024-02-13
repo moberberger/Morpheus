@@ -123,8 +123,8 @@ public class DI_Tests
         Assert.AreEqual( typeof( CryptoRandomNumbers ), rng4.GetType() );
         Assert.AreNotEqual( rng1, rng4 );
 
-        var rng5 = di2.Get<IEnumerable<int>>();
-        Assert.AreEqual( basis, rng5 );
+        var list2 = di2.Get<IEnumerable<int>>();
+        Assert.AreEqual( basis, list2 );
     }
 
     [TestMethod]
@@ -245,5 +245,16 @@ public class DI_Tests
         Assert.ThrowsException<InvalidCastException>(
             () => di.Get<string>( 1 )
         );
+    }
+
+    [TestMethod]
+    public void ParentContainsTest()
+    {
+        var di = DI.Default.New();
+        di.For<string>().UseSingleton( "homer" );
+
+        var di2 = di.New();
+        Assert.IsTrue( di2.Contains<string>() );
+        Assert.IsFalse( di2.Contains<List<Exception>>() );
     }
 }

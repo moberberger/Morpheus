@@ -55,7 +55,9 @@ public class DI
     /// </summary>
     /// <param name="m_type"></param>
     /// <returns></returns>
-    public bool Contains( Type m_type ) => m_typeLookup.ContainsKey( m_type );
+    public bool Contains( Type m_type ) =>
+        m_typeLookup.ContainsKey( m_type ) || (Parent?.Contains( m_type ) ?? false);
+    public bool Contains<T>() => Contains( typeof( T ) );
 
 
     /// <summary>
@@ -63,7 +65,7 @@ public class DI
     /// </summary>
     /// <typeparam name="T">The <see cref="Type"/> the caller is interested in</typeparam>
     /// <returns></returns>
-    public TypeConfig For<T>() => GetTypeConfig( typeof( T ) );
+    public TypeConfig For<T>() => GetTypeConfig( typeof( T ), false );
 
 
     /// <summary>
@@ -71,8 +73,23 @@ public class DI
     /// </summary>
     /// <param name="_type"></param>
     /// <returns></returns>
-    public TypeConfig GetTypeConfig( Type _type ) =>
-        m_typeLookup.GetOrAdd( _type, _t => new TypeConfig( _type, this ) );
+    public TypeConfig GetTypeConfig( Type _type, bool referenceOk )
+    {
+        if (m_typeLookup.ContainsKey( _type ))
+            return m_typeLookup[_type];
+
+        if (Parent?.Contains( _type ) ?? false)
+        {
+            var parentRef = Parent.GetTypeConfig( _type, referenceOk );
+            if (referenceOk)
+                return parentRef;
+            m_typeLookup[_type] = new TypeConfig( parentRef );
+        }
+        else
+            m_typeLookup[_type] = new TypeConfig( _type, this );
+
+        return m_typeLookup[_type];
+    }
 
     /// <summary>
     /// Get an object for a Type
@@ -90,7 +107,7 @@ public class DI
     /// <returns></returns>
     public object Get( Type type, params object[] @params )
     {
-        var cfg = GetTypeConfig( type );
+        var cfg = GetTypeConfig( type, true );
         var obj = cfg.Get( @params );
         Inject( obj );
         return obj;
@@ -103,7 +120,7 @@ public class DI
     /// <returns></returns>
     public void Inject( object obj )
     {
-        var injector = new Injector( obj );
+        var injector = new Injector( obj, this );
         injector.Inject();
     }
 }

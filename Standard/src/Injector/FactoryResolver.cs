@@ -3,28 +3,28 @@
 
 public class FactoryResolver0<T> : IResolver
 {
-    Func<T> factory;
+    readonly Func<T> factory;
     internal FactoryResolver0( Func<T> factory ) => this.factory = factory;
     public object Get( object[] @params ) => factory();
 }
 
 public class FactoryResolver1<T, P1> : IResolver
 {
-    Func<P1, T> factory;
+    readonly Func<P1, T> factory;
     internal FactoryResolver1( Func<P1, T> factory ) => this.factory = factory;
     public object Get( object[] @params ) => factory( (P1)@params[0] );
 }
 
 public class FactoryResolver2<T, P1, P2> : IResolver
 {
-    Func<P1, P2, T> factory;
+    readonly Func<P1, P2, T> factory;
     internal FactoryResolver2( Func<P1, P2, T> factory ) => this.factory = factory;
     public object Get( object[] @params ) => factory( (P1)@params[0], (P2)@params[1] );
 }
 
 public class FactoryResolver3<T, P1, P2, P3> : IResolver
 {
-    Func<P1, P2, P3, T> factory;
+    readonly Func<P1, P2, P3, T> factory;
     internal FactoryResolver3( Func<P1, P2, P3, T> factory ) => this.factory = factory;
     public object Get( object[] @params ) => factory( (P1)@params[0], (P2)@params[1], (P3)@params[2] );
 }

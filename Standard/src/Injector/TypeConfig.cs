@@ -34,11 +34,18 @@ public class TypeConfig : IResolver
     /// <exception cref="ArgumentNullException">
     /// the specified <see cref="Type"/> cannot be NULL
     /// </exception>
-    public TypeConfig( Type type, DI owner )
+    internal TypeConfig( Type type, DI owner )
     {
         m_type = type ?? throw new ArgumentNullException( "type" );
         m_owner = owner ?? throw new ArgumentNullException( "owner" );
         resolver = new OverrideCreator( m_type, owner.Parent );
+    }
+
+    internal TypeConfig( TypeConfig other )
+    {
+        m_type = other.m_type;
+        m_owner = other.m_owner;
+        resolver = other.resolver;
     }
 
     private void AssertAssignable( Type type )
@@ -63,7 +70,7 @@ public class TypeConfig : IResolver
 
     public TypeConfig UseSingleton( object singleton )
     {
-        AssertAssignable( singleton?.GetType() );
+        AssertAssignable( singleton.GetType() );
         resolver = new SingletonResolver( singleton );
         return this;
     }

@@ -26,5 +26,5 @@ public class ActivatorResolver : IResolver
     /// </param>
     /// <returns></returns>
     public object Get( object[] @params ) =>
-        Activator.CreateInstance( activationType, @params );
+        Activator.CreateInstance( activationType, @params )!;
 }
