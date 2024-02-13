@@ -18,7 +18,7 @@ public class WhyIsThisNullException : Exception
 
 public class LogicException : Exception
 {
-    public LogicException( string message = null )
+    public LogicException( string? message = null )
         : base( "[[[ Bad Logic: " + message ?? "<no message>" + "]]]" )
     {
     }
@@ -38,7 +38,7 @@ internal class XException : Exception
     /// Just contains a simple string as a message
     /// </summary>
     /// <param name="_message">The message. May be null.</param>
-    public XException( string _message = null )
+    public XException( string? _message = null )
         : base( _message )
     {
     }

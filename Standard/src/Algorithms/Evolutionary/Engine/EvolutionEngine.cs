@@ -1,5 +1,6 @@
-﻿namespace Morpheus.Evolution;
+﻿#nullable disable
 
+namespace Morpheus.Evolution;
 
 public class EvolutionEngine<TChromosome>
     where TChromosome : class

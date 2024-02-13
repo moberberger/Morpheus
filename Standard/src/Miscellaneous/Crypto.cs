@@ -108,7 +108,7 @@ namespace Morpheus
         /// </summary>
         /// <param name="_string">The string to encrypt</param>
         /// <returns>The encrypted string.</returns>
-        public string Encrypt( string _string )
+        public string? Encrypt( string _string )
         {
             try
             {
@@ -143,7 +143,7 @@ namespace Morpheus
         /// </summary>
         /// <param name="_string">The string that had been encrypted with this class</param>
         /// <returns>The string that was originally encrypted.</returns>
-        public string Decrypt( string _string )
+        public string? Decrypt( string _string )
         {
             try
             {

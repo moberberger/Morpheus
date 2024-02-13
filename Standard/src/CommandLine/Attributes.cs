@@ -1,4 +1,6 @@
-﻿namespace Morpheus.CommandLine;
+﻿#nullable disable
+
+namespace Morpheus.CommandLine;
 
 
 

@@ -35,13 +35,13 @@ namespace Morpheus
 
             m_width = p_width;
             m_height = p_height;
+            m_cells = new CCell[m_width, m_height];
 
             BuildGrid();
         }
 
         protected void BuildGrid()
         {
-            m_cells = new CCell[m_width, m_height];
             for (int x = 0; x < m_width; x++)
             {
                 for (int y = 0; y < m_height; y++)

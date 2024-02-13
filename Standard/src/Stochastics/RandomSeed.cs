@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 
 namespace Morpheus;
 
+
 /// <summary>
 /// This class contains a variety of seed generators for the RandomAspect library. The
 /// generators typically trade performance for "goodness", giving the caller a choice
@@ -235,7 +236,7 @@ public static class RandomSeed
     ///  random_excursion_variant_test            0.055131784641997125  PASS
     ///  </code>
     /// </remarks>
-    public static int Robust( byte[] _userSeedData = null )
+    public static int Robust( byte[]? _userSeedData = null )
     {
         var buffer = new MemoryStream();
         using (var writer = new BinaryWriter( buffer ))

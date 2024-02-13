@@ -1,5 +1,7 @@
 ﻿using System.Reflection;
 
+#nullable disable
+
 namespace Morpheus.CommandLine;
 
 public class Param

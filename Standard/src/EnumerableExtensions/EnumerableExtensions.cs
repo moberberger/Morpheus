@@ -64,7 +64,7 @@ public static class EnumerableExtensions
     /// Assert.AreEqual( "(84),(46)", joined );
     /// </code>
     /// </remarks>
-    public static string JoinAsString<T>( this IEnumerable<T> _collection, string _joinString = "", Func<T, string> _stringizer = null )
+    public static string JoinAsString<T>( this IEnumerable<T> _collection, string _joinString = "", Func<T, string>? _stringizer = null )
     {
         if (_collection is null)
             throw new ArgumentNullException( nameof( _collection ) );
@@ -143,7 +143,7 @@ public static class EnumerableExtensions
         var idx = 0;
         foreach (var elem in _collection)
         {
-            if (elem.Equals( compareTo ))
+            if (elem is not null && elem.Equals( compareTo ))
                 return idx;
             idx++;
         }
@@ -172,7 +172,7 @@ public static class EnumerableExtensions
         {
             if (found)
                 yield return item;
-            else if (item.Equals( _item ))
+            else if (item is not null && item.Equals( _item ))
                 found = true;
         }
     }
@@ -244,7 +244,7 @@ public static class EnumerableExtensions
     /// NULL unless there is exactly one element in the enumeration, in which
     /// case it will return that singular element
     /// </returns>
-    public static T OneOrDefault<T>( this IEnumerable<T> _items )
+    public static T? OneOrDefault<T>( this IEnumerable<T> _items )
     {
         if (_items == null)
             return default;
@@ -278,7 +278,7 @@ public static class EnumerableExtensions
     /// smallness
     /// </param>
     /// <returns>The smallest element in the enumeration</returns>
-    public static T Smallest<T>( this IEnumerable<T> _items, Func<T, double> _selector )
+    public static T? Smallest<T>( this IEnumerable<T> _items, Func<T, double> _selector )
     {
         var best = double.MaxValue;
         var bestItem = default( T );
@@ -307,10 +307,10 @@ public static class EnumerableExtensions
     /// smallness
     /// </param>
     /// <returns>The smallest element in the enumeration</returns>
-    public static T Smallest<T>( this IEnumerable<T> _items, Func<T, IComparable> _selector )
+    public static T? Smallest<T>( this IEnumerable<T> _items, Func<T, IComparable> _selector )
     {
         var bestItem = default( T );
-        IComparable bestItemValue = null;
+        IComparable? bestItemValue = null;
         var notSet = true;
 
         foreach (var item in _items)
@@ -346,7 +346,7 @@ public static class EnumerableExtensions
     /// largeness
     /// </param>
     /// <returns>The largest element in the enumeration</returns>
-    public static T Largest<T>( this IEnumerable<T> _items, Func<T, double> _selector )
+    public static T? Largest<T>( this IEnumerable<T> _items, Func<T, double> _selector )
     {
         var best = double.MinValue;
         var bestItem = default( T );
@@ -376,10 +376,10 @@ public static class EnumerableExtensions
     /// largeness
     /// </param>
     /// <returns>The largest element in the enumeration</returns>
-    public static T Largest<T>( this IEnumerable<T> _items, Func<T, IComparable> _selector )
+    public static T? Largest<T>( this IEnumerable<T> _items, Func<T, IComparable> _selector )
     {
         var bestItem = default( T );
-        IComparable bestItemValue = null;
+        IComparable? bestItemValue = null;
         var notSet = true;
 
         foreach (var item in _items)
@@ -427,7 +427,7 @@ public static class EnumerableExtensions
     /// An enumeration of the transformed values when that transformation didn't
     /// cause an exception to be thrown
     /// </returns>
-    public static IEnumerable<U> SelectIgnoreExceptions<T, U>( this IEnumerable<T> _collection, Func<T, U> _selector )
+    public static IEnumerable<U?> SelectIgnoreExceptions<T, U>( this IEnumerable<T> _collection, Func<T, U> _selector )
     {
         foreach (var obj in _collection)
         {
@@ -589,13 +589,14 @@ public static class EnumerableExtensions
     /// <summary>
     /// Remove every element of the IList that matches the given element.
     /// </summary>
-    /// <returns>The count of elements removed.</returns>
     public static void RemoveAll<T>( this IList<T> list, T toRemove )
     {
+        if (toRemove is null) throw new ArgumentNullException( "toRemove" );
+
         int destIdx = 0;
         for (int i = 0; i < list.Count; i++)
         {
-            if (!list[i].Equals( toRemove ))
+            if (!toRemove.Equals( list[i] ))
                 list[destIdx++] = list[i];
         }
         while (list.Count > destIdx)
@@ -628,7 +629,7 @@ public static class EnumerableExtensions
     /// <typeparam name="T"></typeparam>
     /// <param name="source"></param>
     /// <returns>A sequence of pairs of elements from the enumeration</returns>
-    public static IEnumerable<(T, T)> Pairwise<T>( this IEnumerable<T> source )
+    public static IEnumerable<(T?, T)> Pairwise<T>( this IEnumerable<T> source )
     {
         using (var iterator = source.GetEnumerator())
         {
@@ -708,7 +709,7 @@ public static class EnumerableExtensions
         bool argMin )
         where Tselected : IComparable<Tselected>
     {
-        Tselected bestVal = default;
+        Tselected? bestVal = default;
         int bestIdx = -1;
         int factor = argMin ? 1 : -1;
 

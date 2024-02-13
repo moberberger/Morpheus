@@ -29,9 +29,9 @@
 /// Count       1
 /// Enumerate   N*lg(N)
 /// </code></remarks>
-public class PriorityQueueExtended<T> : PriorityQueue<T>
+public class PriorityQueueExtended<T> : PriorityQueue<T> where T : notnull
 {
-    private Dictionary<T, int> m_lookup;
+    private Dictionary<T, int> m_lookup = new();
 
     /// <summary>
     /// Construct a new priority queue, using the default comparator for objects
@@ -64,7 +64,7 @@ public class PriorityQueueExtended<T> : PriorityQueue<T>
     /// <param name="_comparer">
     /// The comparer to use for collation/ordering
     /// </param>
-    public PriorityQueueExtended( int _initialCapacity, IComparer<T> _comparer = null )
+    public PriorityQueueExtended( int _initialCapacity, IComparer<T>? _comparer = null )
         : base( _initialCapacity, _comparer )
     {
     }
@@ -81,7 +81,7 @@ public class PriorityQueueExtended<T> : PriorityQueue<T>
     /// "ConstructFromEnumerable" to determine an optimal method of constructing
     /// a queue from a collection.
     /// </remarks>
-    public PriorityQueueExtended( IEnumerable<T> _collection, IComparer<T> _comparer = null )
+    public PriorityQueueExtended( IEnumerable<T> _collection, IComparer<T>? _comparer = null )
     {
         if (_comparer != null)
             m_comparer = _comparer;
@@ -105,9 +105,9 @@ public class PriorityQueueExtended<T> : PriorityQueue<T>
         base.Allocate( _capacity );
 
         if (_capacity > 0)
-            m_lookup = new Dictionary<T, int>( _capacity );
+            m_lookup = new( _capacity );
         else
-            m_lookup = new Dictionary<T, int>();
+            m_lookup = new();
     }
 
     /// <summary>
@@ -155,7 +155,7 @@ public class PriorityQueueExtended<T> : PriorityQueue<T>
     /// Remove the "lowest" node from the heap, adjusting it appropriately
     /// </summary>
     /// <returns>The "lowest" node.</returns>
-    public override T RemoveLowest()
+    public override T? RemoveLowest()
     {
         var node = base.RemoveLowest();
         if (node != null)

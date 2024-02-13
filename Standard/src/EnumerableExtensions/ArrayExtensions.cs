@@ -1,4 +1,6 @@
-﻿namespace Morpheus;
+﻿#nullable disable
+
+namespace Morpheus;
 
 
 

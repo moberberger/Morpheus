@@ -59,7 +59,7 @@ public class TypeConfig : IResolver
 
     public TypeConfig UseNewInstance<T>() => UseNewInstance( typeof( T ) );
 
-    public TypeConfig UseNewInstance( Type type = null )
+    public TypeConfig UseNewInstance( Type? type = null )
     {
         type ??= m_type;
 
@@ -70,6 +70,8 @@ public class TypeConfig : IResolver
 
     public TypeConfig UseSingleton( object singleton )
     {
+        if (singleton is null) throw new ArgumentNullException( "singleton" );
+
         AssertAssignable( singleton.GetType() );
         resolver = new SingletonResolver( singleton );
         return this;

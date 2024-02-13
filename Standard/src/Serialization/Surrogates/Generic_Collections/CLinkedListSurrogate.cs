@@ -25,7 +25,7 @@ namespace Morpheus.Serialization
             var o = _deserializer.FrameworkDeserialize( _xmlData, _expectedTypes[0] );
 
             var ct = _collection.GetType();
-            var mi = ct.GetMethod( "AddLast", _expectedTypes );
+            var mi = ct.GetMethod( "AddLast", _expectedTypes ) ?? throw new MissingMemberException( "AddLast" );
 
             mi.Invoke( _collection, new object[] { o } );
         }

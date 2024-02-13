@@ -12,7 +12,7 @@ public class DI
     /// <summary>
     /// AppDomain Default DI scope. All DI scopes will eventually link down to this scope.
     /// </summary>
-    public static DI Default { get; } = new DI( null );
+    public static DI Default { get; } = new DI( null! );
 
     /// <summary>
     /// Load Morpheus Defaults into the Default scope.

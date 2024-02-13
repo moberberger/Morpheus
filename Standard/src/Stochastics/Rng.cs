@@ -42,7 +42,7 @@
 /// </remarks>
 public abstract class Rng : Random, IDisposable
 {
-    public static readonly Rng Default = new LCPRNG_MMIX();
+    public static readonly Rng Default = new Xoshiro();
 
     /// <summary>
     /// When set to TRUE, a biased scaled value will be returned for

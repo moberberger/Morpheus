@@ -12,7 +12,7 @@
     <PropertyGroup>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-        <Nullable>disable</Nullable>
+        <Nullable>enable</Nullable>
         <IsPublishable>False</IsPublishable>
     </PropertyGroup>
 

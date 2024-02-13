@@ -1,7 +1,8 @@
 ﻿using System.Reflection;
 
-namespace Morpheus.CommandLine;
+#nullable disable
 
+namespace Morpheus.CommandLine;
 
 
 public class Parser

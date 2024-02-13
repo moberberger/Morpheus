@@ -1,4 +1,7 @@
-﻿namespace Morpheus;
+﻿#nullable disable
+
+namespace Morpheus;
+
 
 /// <summary>
 /// This class helps an application find a file that is either in the application's current

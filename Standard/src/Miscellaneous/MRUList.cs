@@ -3,8 +3,6 @@
 namespace Morpheus;
 
 
-
-
 public class MRUList : IEnumerable<string>
 {
     private string MRUFileName => Path.Combine(
@@ -20,8 +18,8 @@ public class MRUList : IEnumerable<string>
         List<string> list = new();
         if (MRUFileExists)
         {
-            using var fp = File.OpenText( MRUFileName );
-            string line;
+            using var fp = File.OpenText( MRUFileName )!;
+            string? line;
 
             while ((line = fp.ReadLine()) != null)
                 if (File.Exists( line ))

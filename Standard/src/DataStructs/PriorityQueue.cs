@@ -34,7 +34,7 @@ public class PriorityQueue<T> : ICollection<T>, IEnumerable<T>
     /// <summary>
     /// The binary heap used to store all the data in the tree
     /// </summary>
-    protected List<T> m_heap;
+    protected List<T> m_heap = new();
 
     /// <summary>
     /// The comparer to use when determining collation order
@@ -67,7 +67,7 @@ public class PriorityQueue<T> : ICollection<T>, IEnumerable<T>
     /// The initial capacity of the heap, used to help reduce memory re-allocation
     /// </param>
     /// <param name="_comparer">The comparer to use for collation/ordering</param>
-    public PriorityQueue( int _initialCapacity, IComparer<T> _comparer = null )
+    public PriorityQueue( int _initialCapacity, IComparer<T>? _comparer = null )
     {
         if (_comparer != null)
             m_comparer = _comparer;
@@ -84,7 +84,7 @@ public class PriorityQueue<T> : ICollection<T>, IEnumerable<T>
     /// capacity of the List. If the collection is an Array of T, the capacity of the queue
     /// will be set to be 10% greater than the Length of the array.
     /// </remarks>
-    public PriorityQueue( IEnumerable<T> _collection, IComparer<T> _comparer = null )
+    public PriorityQueue( IEnumerable<T> _collection, IComparer<T>? _comparer = null )
     {
         if (_comparer != null)
             m_comparer = _comparer;
@@ -108,9 +108,8 @@ public class PriorityQueue<T> : ICollection<T>, IEnumerable<T>
     /// </returns>
     protected bool ConstructFromEnumerable( IEnumerable<T> _collection )
     {
-        if (_collection is PriorityQueue<T>) // we know the internal array is already in good heap order- simply copy it
+        if (_collection is PriorityQueue<T> otherPQ) // we know the internal array is already in good heap order- simply copy it
         {
-            var otherPQ = _collection as PriorityQueue<T>;
             if (otherPQ.m_comparer == m_comparer)
             {
                 Allocate( otherPQ.m_heap.Capacity );
@@ -120,18 +119,16 @@ public class PriorityQueue<T> : ICollection<T>, IEnumerable<T>
             }
             _collection = otherPQ.m_heap; // should trigger "List-of-T" condition below
         }
-        if (_collection is List<T>) // The other array is a List, so it has a capacity which we will use
+        if (_collection is List<T> otherList) // The other array is a List, so it has a capacity which we will use
         {
-            var otherList = _collection as List<T>;
             Allocate( otherList.Capacity );
             for (var i = 0; i < otherList.Count; i++)
                 m_heap.Add( otherList[i] );
             m_heap.Sort( m_comparer ); // The internal Sort method is likely much faster than our "Heapify"
             return false;
         }
-        if (_collection is T[])
+        if (_collection is T[] otherArray)
         {
-            var otherArray = _collection as T[];
             Allocate( -1 ); // allow deriving classes to allocate, but we'll explicitly allocate here
             m_heap = new List<T>( otherArray ); // This does the copy- We don't know about "extra" capacity
             m_heap.Sort( m_comparer ); // The internal Sort method is likely much faster than our "Heapify"
@@ -327,7 +324,7 @@ public class PriorityQueue<T> : ICollection<T>, IEnumerable<T>
     /// <summary>
     /// A reference to the lowest node. Sort of a "peek" function.
     /// </summary>
-    public T LowestNode => (Count > 0) ? m_heap[0] : default;
+    public T? LowestNode => (Count > 0) ? m_heap[0] : default;
 
     /// <summary>
     /// Remove all elements from this collection
@@ -357,7 +354,7 @@ public class PriorityQueue<T> : ICollection<T>, IEnumerable<T>
     /// Remove the "lowest" node from the heap, adjusting it appropriately
     /// </summary>
     /// <returns>The "lowest" node.</returns>
-    public virtual T RemoveLowest()
+    public virtual T? RemoveLowest()
     {
         if (m_heap.Count == 0)
             return default;
@@ -458,7 +455,7 @@ public class PriorityQueue<T> : ICollection<T>, IEnumerable<T>
     {
         var useQueue = new PriorityQueue<T>( this, Comparer );
         while (useQueue.Count > 0)
-            yield return useQueue.RemoveLowest();
+            yield return useQueue.RemoveLowest() ?? throw new NullReferenceException( "Elements cannot be null" );
     }
 
     /// <summary>

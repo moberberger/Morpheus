@@ -6,7 +6,7 @@ public class ConsoleRedirect : IDisposable
     StringBuilder Output;
     TextWriter Saved;
 
-    public ConsoleRedirect( StringBuilder output = null )
+    public ConsoleRedirect( StringBuilder? output = null )
     {
         Output = output ?? new();
         Saved = Console.Out;
