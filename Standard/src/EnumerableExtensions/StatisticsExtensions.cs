@@ -22,6 +22,7 @@ public static class StatisticsExtensions
         /// The average of all values (not an integer)
         /// </summary>
         public double Average = double.NaN;
+        public double Mean => Average;
     }
 
     /// <summary>

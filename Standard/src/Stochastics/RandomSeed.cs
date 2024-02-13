@@ -38,15 +38,15 @@ public static class RandomSeed
     /// Simply calls the RDTSC assembly language instruction
     /// </summary>
     /// <returns>RDTSC assembly language instruction</returns>
-    [DllImport( "RDTSC.dll" )]
+    [DllImport( "RDTSC.dll", CallingConvention = CallingConvention.StdCall )]
     private static extern ulong RDTSC_Wrapper();
-    [DllImport( "RDTSC.dll" )]
+    [DllImport( "RDTSC.dll", CallingConvention = CallingConvention.StdCall )]
     private static extern uint RDSEED32_Wrapper();
-    [DllImport( "RDTSC.dll" )]
+    [DllImport( "RDTSC.dll", CallingConvention = CallingConvention.StdCall )]
     private static extern ulong RDSEED64_Wrapper();
-    [DllImport( "RDTSC.dll" )]
+    [DllImport( "RDTSC.dll", CallingConvention = CallingConvention.StdCall )]
     private static extern uint RDRAND32_Wrapper();
-    [DllImport( "RDTSC.dll" )]
+    [DllImport( "RDTSC.dll", CallingConvention = CallingConvention.StdCall )]
     private static extern ulong RDRAND64_Wrapper();
 
 
@@ -54,9 +54,9 @@ public static class RandomSeed
 
     private static readonly RandomNumberGenerator sm_masterRng = RandomNumberGenerator.Create();
     private static readonly object sm_lock = new object();
-    private static readonly long sm_rdtscAtStaticInitialization = 0;
-    private static long sm_rdtscAtFirstCall = 0;
-    private static long sm_instantiationSeed = 0;
+    private static readonly ulong sm_rdtscAtStaticInitialization = 0;
+    private static ulong sm_rdtscAtFirstCall = 0;
+    private static ulong sm_instantiationSeed = 0;
 
 
     /// <summary>
@@ -72,9 +72,11 @@ public static class RandomSeed
             // NOW this routine will work
             sm_rdtscAtStaticInitialization = RDTSC8();
         }
-        catch
+        catch (Exception e)
         {
             sm_rdtscExists = false;
+            Console.WriteLine( $"RDTSC_Wrapper not found: {e.Message}" );
+            Console.WriteLine( Directory.GetCurrentDirectory() );
         }
 
         Initialize();
@@ -127,17 +129,17 @@ public static class RandomSeed
     ///  random_excursion_variant_test            0.10218040549352575   PASS
     /// </code>
     /// </remarks>
-    public static long RDTSC8()
+    public static ulong RDTSC8()
     {
-        long x = (long)RDTSC(); // All the extra bits [b8..b63] will be shifted off
-        x <<= 8; x |= (long)RDTSC() & 0xff;
-        x <<= 8; x |= (long)RDTSC() & 0xff;
-        x <<= 8; x |= (long)RDTSC() & 0xff;
+        ulong x = RDTSC(); // All the extra bits [b8..b63] will be shifted off
+        x <<= 8; x |= RDTSC() & 0xff;
+        x <<= 8; x |= RDTSC() & 0xff;
+        x <<= 8; x |= RDTSC() & 0xff;
         Thread.Sleep( 0 );
-        x <<= 8; x |= (long)RDTSC() & 0xff;
-        x <<= 8; x |= (long)RDTSC() & 0xff;
-        x <<= 8; x |= (long)RDTSC() & 0xff;
-        x <<= 8; x |= (long)RDTSC() & 0xff;
+        x <<= 8; x |= RDTSC() & 0xff;
+        x <<= 8; x |= RDTSC() & 0xff;
+        x <<= 8; x |= RDTSC() & 0xff;
+        x <<= 8; x |= RDTSC() & 0xff;
 
         return x;
     }
@@ -151,27 +153,23 @@ public static class RandomSeed
 
         // Temporal: Related to when in time this initialization occurred. Not super
         // accurate ( around 100ns i believe).
-        var medium = (long)DateTime.Now.Ticks;
+        ulong medium = (ulong)DateTime.Now.Ticks;
 
         // Temporal: Related to when(-ish) this object was loaded by .NET. This is
         // affected by what other objects in the program have already been instantiated.
         // Since this is Framework, we assume a varied instantiation order, yet
         // admittedly (potentially?) constant for each specific program. Please review
         // GetHashCode for more info on how this value is determined.
-        // 
-        // This is a boxing operation:
-        var course1 = LCPRNG_MMIX.Next( sm_instantiationSeed.GetHashCode() );
-
-        // This is not a boxing operation:
-        var course2 = LCPRNG_MMIX.Next( sm_lock.GetHashCode() );
+        ulong course1 = LCPRNG_MMIX.Next( (ulong)sm_instantiationSeed.GetHashCode() );
+        ulong course2 = LCPRNG_MMIX.Next( (ulong)sm_lock.GetHashCode() );
 
         // These bytes are generated in part based on the crypto seeding algorithm,
         // thereby adding significant randomness
         var buf = new byte[8];
         sm_masterRng.GetBytes( buf );
-        var crypto = BitConverter.ToInt64( buf, 0 );
+        ulong crypto = BitConverter.ToUInt64( buf, 0 );
 
-        // So merge the two, guessing that we needed the swapped version
+        // So merge these with lossless XOR
         sm_instantiationSeed = LCPRNG_MMIX.Next( medium ^ course1 ^ course2 ^ crypto );
     }
 
@@ -198,7 +196,7 @@ public static class RandomSeed
         Interlocked.Increment( ref sm_instantiationSeed );
         sm_instantiationSeed = LCPRNG_MMIX.Next( sm_instantiationSeed );
 
-        return (ulong)(sm_instantiationSeed ^ sm_rdtscAtFirstCall ^ sm_rdtscAtStaticInitialization);
+        return sm_instantiationSeed ^ sm_rdtscAtFirstCall ^ sm_rdtscAtStaticInitialization;
     }
 
     /// <summary>

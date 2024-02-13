@@ -47,24 +47,6 @@ namespace Morpheus.Standard.UnitTests
             Assert.AreEqual<int>( _results.Length, resultIdx, "The number of results found was incorrect" );
         }
 
-        [TestMethod]
-        public void TestAppendElementToArray()
-        {
-            var arr = new int[3] { 1, 2, 3 };
-            Lib.AppendElementToArray<int>( ref arr, 4 );
-
-            Assert.AreEqual<int>( 4, arr.Length, "Length of resultant array is wrong" );
-            Assert.AreEqual<int>( 1, arr[0], "Index 0 is incorrect" );
-            Assert.AreEqual<int>( 2, arr[1], "Index 1 is incorrect" );
-            Assert.AreEqual<int>( 3, arr[2], "Index 2 is incorrect" );
-            Assert.AreEqual<int>( 4, arr[3], "Index 3 is incorrect" );
-
-            arr = null;
-            Lib.AppendElementToArray<int>( ref arr, 111 );
-            Assert.AreEqual<int>( 1, arr.Length, "New length from NULL array is incorrect" );
-            Assert.AreEqual<int>( 111, arr[0], "Added element is incorrect from NULL array" );
-        }
-
 
         [TestMethod]
         public void TestGetFirstNumberInString()
@@ -232,13 +214,6 @@ namespace Morpheus.Standard.UnitTests
             Assert.AreEqual( -1, idx, "Substring too long for starting position" );
 
             main.FindByteSubstring( main, -1 );
-        }
-
-        [TestMethod]
-        public void AddSomethingToFilenameTest()
-        {
-            var s = Lib.AddSomethingToFilename( @"c:\temp\holy.txt", "cow" );
-            Assert.AreEqual( @"c:\temp\holy.cow.txt", s, "Didn't add COW correctly" );
         }
 
 

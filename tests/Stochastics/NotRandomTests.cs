@@ -48,7 +48,7 @@ namespace Morpheus.Standard.UnitTests.Stochastics
                 writer.Write( (ulong)0xc000_0000_0000_0000 );
                 writer.Write( (ulong)0xffff_ffff_ffff_ffff );
 
-                var notRandom = new NotRandomFromBytes( mem.ToArray() );
+                var notRandom = new ByteArrayRng( mem.ToArray(), false );
 
                 var x = notRandom.NextDouble();
                 Assert.AreEqual( 0.0, x );

@@ -14,16 +14,12 @@
 
 
 /// <summary>
-/// Abstract base, needing only "a" and "c" a/c (multiplier and increment)
-/// 
-/// Maybe refactor to make non-abstract with a constructor- but bad a/c means really bad
-/// mismatch to expectations. So for now I'm forcing a level of purpose when setting a/c
+/// The Marsaglia XorShift PRNG for both 32 and 64 bit values.
 /// </summary>
-/// <remarks>Technically should be called "ACPRNG". there's the acknowledgement.</remarks>
 public class XorShift : Rng
 {
-    private uint _state32;
-    private ulong _state64;
+    protected uint _state32;
+    protected ulong _state64;
 
     /// <summary>
     /// Construct using default seed generator
@@ -87,26 +83,17 @@ public class XorShift : Rng
 }
 
 
-/// <summary>
-/// Abstract base, needing only "a" and "c" a/c (multiplier and increment)
-/// 
-/// Maybe refactor to make non-abstract with a constructor- but bad a/c means really bad
-/// mismatch to expectations. So for now I'm forcing a level of purpose when setting a/c
-/// </summary>
-/// <remarks>Technically should be called "ACPRNG". there's the acknowledgement.</remarks>
-public class XorShiftStar : Rng
+public class XorShiftStar : XorShift
 {
-    private ulong _state64;
-
     /// <summary>
-    /// Construct using default seed generator
+    /// Construct using default seeding
     /// </summary>
-    public XorShiftStar() => _state64 = RandomSeed.FastULong();
+    public XorShiftStar() : base() { }
 
     /// <summary>
     /// Construct using specific seed
     /// </summary>
-    public XorShiftStar( uint initialState ) => _state64 = initialState;
+    public XorShiftStar( ulong initialState ) : base( initialState ) { }
 
     /// <summary>
     /// No bias- This is the core generation function for this <see cref="Random"/>
@@ -120,21 +107,5 @@ public class XorShiftStar : Rng
     /// implementation
     /// </summary>
     /// <returns>An unbiased PRNG value</returns>
-    public override ulong Next64()
-    {
-        // Race Condition- Don't use this class in a re-entrant manner if you need stable
-        // (repeatable) results
-
-        ulong rngState = _state64;
-
-        rngState ^= rngState << 13;
-        rngState ^= rngState >> 7;
-        rngState ^= rngState << 17;
-
-        _state64 = rngState;
-
-        // End Race Condition
-
-        return rngState * 0x2545f4914f6cdd1dUL;
-    }
+    public override ulong Next64() => Next64Star();
 }

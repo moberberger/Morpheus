@@ -2,23 +2,18 @@
 
 
 /// <summary>
-/// Abstract base, needing only "a" and "c" a/c (multiplier and increment)
-/// 
-/// Maybe refactor to make non-abstract with a constructor- but bad a/c means really bad
-/// mismatch to expectations. So for now I'm forcing a level of purpose when setting a/c
+/// Abstract base requiring multiplier and increment values along with optional
+/// seed.
 /// </summary>
-/// <remarks>
-/// Technically should be called "ACPRNG". there's the acknowledgement.
-/// </remarks>
 public abstract class LCPRNG : Rng
 {
     /// <summary>
-    /// The "a" coefficient
+    /// The "a" coefficient in state = a * state + c
     /// </summary>
     private readonly ulong _multiplier;
 
     /// <summary>
-    /// The "c" coefficient
+    /// The "c" coefficient in state = a * state + c
     /// </summary>
     private readonly ulong _increment;
 
@@ -26,35 +21,40 @@ public abstract class LCPRNG : Rng
     /// The current state of the LCPRNG- also the last value returned by
     /// <see cref="Next64"/>
     /// </summary>
-    private ulong _state;
+    public ulong State { get; private set; }
+
 
     /// <summary>
-    /// Maybe consider removing the "abstract" and making this public
+    /// Called by inheriting class to set multiplier and increment using an
+    /// internally generated really good, fast, but not crypto-secure random
+    /// seed
     /// </summary>
-    /// <param name="multiplier"></param>
-    /// <param name="increment"></param>
     protected LCPRNG( ulong multiplier, ulong increment )
+        : this( multiplier, increment, RandomSeed.FastULong() ) { }
+
+    /// <summary>
+    /// Called by inheriting class to set multiplier and increment and initial
+    /// seed value
+    /// </summary>
+    protected LCPRNG( ulong multiplier, ulong increment, ulong seed )
     {
         _multiplier = multiplier;
         _increment = increment;
-        _state = RandomSeed.FastULong();
+        State = seed;
     }
 
     /// <summary>
-    /// No bias- This is the core generation function for this <see cref="Random"/>
-    /// implementation
+    /// No bias- This is the core generation function for any Linear
+    /// Congruential PRNG implementation. This is not re-entrant- wrap your
+    /// <see cref="Rng"/> in a <see cref="SynchronizedRng"/> or call
+    /// rng.AsSynchronized()
     /// </summary>
     /// <returns>An unbiased PRNG value</returns>
     public override ulong Next64()
     {
-        // Race Condition- Don't use this class in a re-entrant manner if you need stable
-        // (repeatable) results
-
-        var x = _state;
+        var x = State;
         x *= _multiplier;
         x += _increment;
-        return _state = x;
-
-        // End Race Condition
+        return State = x;
     }
 }

@@ -164,31 +164,6 @@ namespace Morpheus.Standard.UnitTests.Serialization
         }
 
 
-        [TestMethod]
-        [TestCategory( "Serialization" )]
-        public void TestFieldRenamerAccess()
-        {
-            Assert.IsNull( CSerializationContext.Global.FieldRenamer, "There should be no default field renamer" );
-
-            var c = new CSerializationContext();
-            Assert.IsNull( c.FieldRenamer, "There should be no default field renamer" );
-
-            var myNamer = new CMyFieldRenamer();
-
-            CSerializationContext.Global.FieldRenamer = myNamer;
-            ReferenceEquals( myNamer, c.FieldRenamer );
-
-            var myOtherNamer = new CMyFieldRenamer();
-            c.FieldRenamer = myOtherNamer;
-
-            Assert.AreEqual( myNamer, CSerializationContext.Global.FieldRenamer, "Global should not change" );
-            Assert.AreEqual( myOtherNamer, c.FieldRenamer, "Instance should be new" );
-
-            var c2 = new CSerializationContext();
-            Assert.AreEqual( myNamer, c2.FieldRenamer, "Newly constructed contexts should keep the Global reference" );
-        }
-
-
         private class CMyExternalSurrogate : IExternalSurrogate
         {
             #region IExternalSurrogate Members

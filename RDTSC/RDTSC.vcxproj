@@ -64,6 +64,9 @@
       <EnableUAC>false</EnableUAC>
       <IgnoreEmbeddedIDL>true</IgnoreEmbeddedIDL>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(TargetPath)" "$(SolutionDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="RDTSC.cpp" />

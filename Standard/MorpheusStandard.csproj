@@ -15,4 +15,11 @@
         <Nullable>disable</Nullable>
     </PropertyGroup>
 
+
+    <ItemGroup>
+      <None Include="..\RDTSC.dll" Link="RDTSC.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

@@ -11,7 +11,11 @@
 /// </summary>
 public class RDRAND : Rng
 {
-    public RDRAND() => RandomSeed.RDSEED64();
+    public RDRAND()
+    {
+        if (RandomSeed.RDSEED64() == 0)
+            throw new InvalidOperationException( "RDRAND not available" );
+    }
 
     public override ulong Next64() => RandomSeed.RDRAND64();
     public override uint Next32() => RandomSeed.RDRAND32();

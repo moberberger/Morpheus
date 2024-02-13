@@ -1107,7 +1107,7 @@ public static class Lib
     /// <remarks></remarks>
     public static double AsDoubleZeroToOne( this ulong _number )
     {
-        const int bitsPrecision = 52;
+        const int bitsPrecision = 53;
         const double denominator = 1L << bitsPrecision;
         const int shift = (64 - bitsPrecision);
 

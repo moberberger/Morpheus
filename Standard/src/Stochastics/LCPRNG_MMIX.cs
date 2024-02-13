@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace Morpheus;
+﻿namespace Morpheus;
 
 
 /// <summary>
@@ -8,19 +6,12 @@ namespace Morpheus;
 /// 
 /// No representation to its spectral characteristics.
 /// </summary>
-public class LCPRNG_MMIX : Rng
+public class LCPRNG_MMIX : LCPRNG
 {
     public const ulong Multiplier = 6364136223846793005UL;
     public const ulong Increment = 1442695040888963407UL;
-    public ulong State;
 
-    public LCPRNG_MMIX() => State = RandomSeed.FastULong();
-    public LCPRNG_MMIX( ulong seed ) => State = seed;
-
-    public override ulong Next64() => State = State * Multiplier + Increment;
-
-    [MethodImpl( MethodImplOptions.AggressiveInlining )]
-    public static ulong Next( ulong state ) => state * Multiplier + Increment;
-    [MethodImpl( MethodImplOptions.AggressiveInlining )]
-    public static long Next( long state ) => (long)((ulong)state * Multiplier + Increment);
+    public LCPRNG_MMIX() : base( Multiplier, Increment ) { }
+    public LCPRNG_MMIX( ulong seed ) : base( Multiplier, Increment, seed ) { }
+    public static ulong Next( ulong state ) => (Multiplier * state) + Increment;
 }
