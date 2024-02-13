@@ -1,17 +1,17 @@
-﻿namespace Morpheus
+﻿namespace Morpheus.DependencyInjection;
+
+
+public class Injector
 {
-    public class Injector
+    private object obj;
+
+    public Injector( object obj )
     {
-        private object obj;
+        this.obj = obj;
+    }
 
-        public Injector( object obj )
-        {
-            this.obj = obj;
-        }
-
-        internal void Inject()
-        {
-            //throw new NotImplementedException();
-        }
+    internal void Inject()
+    {
+        //throw new NotImplementedException();
     }
 }

@@ -1,7 +1,7 @@
-﻿namespace Morpheus.DependencyInjection
+﻿namespace Morpheus.DependencyInjection;
+
+
+public interface IResolver
 {
-    public interface IResolver
-    {
-        object Get( object[] @params );
-    }
+    object Get( object[] @params );
 }

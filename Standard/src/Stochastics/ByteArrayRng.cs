@@ -50,4 +50,28 @@ public class ByteArrayRng : Rng
         for (int i = 0; i < destination.Length; i++)
             destination[i] = _buffer[Index++];
     }
+
+    /// <summary>
+    /// Use <see cref="BitConverter.ToUInt32(byte[], int)"/> to convert the next 4 bytes"/>
+    /// </summary>
+    /// <returns></returns>
+    public override uint Next32()
+    {
+        CheckForWraparound( 4 );
+        var retval = BitConverter.ToUInt32( _buffer, Index );
+        Index += 4;
+        return retval;
+    }
+
+    /// <summary>
+    /// Use <see cref="BitConverter.ToUInt64(byte[], int)"/> to convert the next 8 bytes"/>
+    /// </summary>
+    /// <returns></returns>
+    public override ulong Next64()
+    {
+        CheckForWraparound( 8 );
+        var retval = BitConverter.ToUInt64( _buffer, Index );
+        Index += 8;
+        return retval;
+    }
 }

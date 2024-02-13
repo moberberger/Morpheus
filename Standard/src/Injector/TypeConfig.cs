@@ -17,57 +17,86 @@ public class TypeConfig : IResolver
     Type m_type;
 
     /// <summary>
-    /// This is the <see cref="DI"/> that created this config. If this is null, then this
-    /// <see cref="TypeConfig"/> cannot forward any request to an encapsulating
-    /// <see cref="DI"/> and therefore must handle the resolution without forwarding.
+    /// This is the <see cref="DI"/> that created this config. If this is null,
+    /// then this <see cref="TypeConfig"/> cannot forward any request to an
+    /// encapsulating <see cref="DI"/> and therefore must handle the resolution
+    /// without forwarding.
     /// </summary>
     DI m_owner;
 
     /// <summary>
     /// For a given type and parent DI, create a new DI config object
     /// </summary>
-    /// <param name="type">The <see cref="Type"/> being configured by this object</param>
+    /// <param name="type">
+    /// The <see cref="Type"/> being configured by this object
+    /// </param>
     /// <param name="owner">The owner <see cref="DI"/> for this object</param>
     /// <exception cref="ArgumentNullException">
     /// the specified <see cref="Type"/> cannot be NULL
     /// </exception>
     public TypeConfig( Type type, DI owner )
     {
+        m_type = type ?? throw new ArgumentNullException( "type" );
+        m_owner = owner ?? throw new ArgumentNullException( "owner" );
+        resolver = new OverrideCreator( m_type, owner.Parent );
+    }
+
+    private void AssertAssignable( Type type )
+    {
         if (type == null)
             throw new ArgumentNullException( "type" );
 
-        m_type = type;
-        m_owner = owner;
-        resolver = new OverrideCreator( m_type, owner.Parent );
+        if (!m_type.IsAssignableFrom( type ))
+            throw new InvalidCastException( $"The specified activatorType '{type.GetType()}' must be a subclass of '{m_type}'" );
     }
 
     public TypeConfig UseNewInstance<T>() => UseNewInstance( typeof( T ) );
 
-    public TypeConfig UseNewInstance( Type activatorType = null )
+    public TypeConfig UseNewInstance( Type type = null )
     {
-        resolver = new ActivatorCreator( activatorType ?? m_type );
+        type ??= m_type;
+
+        AssertAssignable( type );
+        resolver = new ActivatorResolver( type );
         return this;
     }
 
     public TypeConfig UseSingleton( object singleton )
     {
-        resolver = new SingletonCreator( singleton );
+        AssertAssignable( singleton?.GetType() );
+        resolver = new SingletonResolver( singleton );
         return this;
     }
 
-    public TypeConfig UseFactoryLambda( Func<object> factory )
+    public TypeConfig UseFactory<T>( Func<T> factory )
     {
-        resolver = new FactoryLambdaCreator( factory );
+        AssertAssignable( typeof( T ) );
+        resolver = new FactoryResolver0<T>( factory );
         return this;
     }
 
-    public TypeConfig UseFactoryLambda( Func<object, object[]> factory )
+    public TypeConfig UseFactory<T, P1>( Func<P1, T> factory )
     {
-        resolver = new FactoryLambdaCreator( factory );
+        AssertAssignable( typeof( T ) );
+        resolver = new FactoryResolver1<T, P1>( factory );
         return this;
     }
 
-    public TypeConfig UseIResolver( IResolver creator )
+    public TypeConfig UseFactory<T, P1, P2>( Func<P1, P2, T> factory )
+    {
+        AssertAssignable( typeof( T ) );
+        resolver = new FactoryResolver2<T, P1, P2>( factory );
+        return this;
+    }
+
+    public TypeConfig UseFactory<T, P1, P2, P3>( Func<P1, P2, P3, T> factory )
+    {
+        AssertAssignable( typeof( T ) );
+        resolver = new FactoryResolver3<T, P1, P2, P3>( factory );
+        return this;
+    }
+
+    public TypeConfig UseFactory( IResolver creator )
     {
         resolver = creator;
         return this;

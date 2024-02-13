@@ -188,10 +188,9 @@ namespace Morpheus
         }
 
         /// <summary>
-        /// Provide the implementation of this because its more natural than
-        /// <see cref="System.Random.NextBytes(byte[])"/> .
+        /// Return an unsigned long integer with all bits randomized.
         /// </summary>
-        /// <returns>64 randomized bits of data</returns>
+        /// <returns>An unsigned long integer with all bits randomized</returns>
         public override ulong Next64() => (ulong)Next32() << 32 | Next32();
     }
 }
