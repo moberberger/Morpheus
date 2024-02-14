@@ -49,7 +49,9 @@ public class DI_Tests
         var rng2 = di.Get<Random>();
         Assert.AreEqual( rng, rng2 );
 
-        Assert.ThrowsException<ArgumentNullException>( () =>
+        // Passing null is only possible because the unit test is an a #nullable
+        // disabled project
+        Assert.ThrowsException<NullReferenceException>( () =>
             di.For<Rng>().UseSingleton( null )
         );
     }
@@ -125,6 +127,19 @@ public class DI_Tests
 
         var list2 = di2.Get<IEnumerable<int>>();
         Assert.AreEqual( basis, list2 );
+    }
+
+    class OverrideTestClass() { }
+    [TestMethod]
+    public void OverrideToParentTest()
+    {
+        var di = DI.Default.New();
+
+        var di2 = di.New();
+        di2.For<OverrideTestClass>();
+
+        var obj = di2.Get<OverrideTestClass>();
+        Assert.AreEqual( typeof( OverrideTestClass ), obj.GetType() );
     }
 
     [TestMethod]
@@ -254,7 +269,7 @@ public class DI_Tests
         di.For<string>().UseSingleton( "homer" );
 
         var di2 = di.New();
-        Assert.IsTrue( di2.Contains<string>() );
-        Assert.IsFalse( di2.Contains<List<Exception>>() );
+        Assert.IsTrue( di2.KnowsAbout<string>() );
+        Assert.IsFalse( di2.KnowsAbout<List<Exception>>() );
     }
 }

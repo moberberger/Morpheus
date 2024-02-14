@@ -12,15 +12,12 @@ public class TypeConfig : IResolver
     IResolver resolver;
 
     /// <summary>
-    /// This config describes this type.
+    /// This config object describes how to handle this type.
     /// </summary>
     Type m_type;
 
     /// <summary>
-    /// This is the <see cref="DI"/> that created this config. If this is null,
-    /// then this <see cref="TypeConfig"/> cannot forward any request to an
-    /// encapsulating <see cref="DI"/> and therefore must handle the resolution
-    /// without forwarding.
+    /// This is the <see cref="DI"/> that created this config.
     /// </summary>
     DI m_owner;
 
@@ -31,16 +28,18 @@ public class TypeConfig : IResolver
     /// The <see cref="Type"/> being configured by this object
     /// </param>
     /// <param name="owner">The owner <see cref="DI"/> for this object</param>
-    /// <exception cref="ArgumentNullException">
-    /// the specified <see cref="Type"/> cannot be NULL
-    /// </exception>
     internal TypeConfig( Type type, DI owner )
     {
-        m_type = type ?? throw new ArgumentNullException( "type" );
-        m_owner = owner ?? throw new ArgumentNullException( "owner" );
+        m_type = type;
+        m_owner = owner;
         resolver = new OverrideCreator( m_type, owner.Parent );
     }
 
+    /// <summary>
+    /// Copy constructor for this type. Used when a parent's config needs to be
+    /// initialized for a child DI.
+    /// </summary>
+    /// <param name="other">The TypeConfig to copy</param>
     internal TypeConfig( TypeConfig other )
     {
         m_type = other.m_type;
@@ -48,18 +47,44 @@ public class TypeConfig : IResolver
         resolver = other.resolver;
     }
 
+    /// <summary>
+    /// Makes sure that a Type is assignable to the type being configured by
+    /// this object.
+    /// </summary>
+    /// <exception cref="InvalidCastException">
+    /// Cannot assign an object of the specified <see cref="Type"/> to a
+    /// variable of type <see cref="m_type"/>
+    /// </exception>
     private void AssertAssignable( Type type )
     {
-        if (type == null)
-            throw new ArgumentNullException( "type" );
-
         if (!m_type.IsAssignableFrom( type ))
             throw new InvalidCastException( $"The specified activatorType '{type.GetType()}' must be a subclass of '{m_type}'" );
     }
 
+    /// <summary>
+    /// Generic version of <see cref="UseNewInstance(Type?)"/> with a
+    /// compile-time known <see cref="Type"/> .
+    /// 
+    /// This usage model will use <see cref="Activator.CreateInstance"/> to
+    /// create a new instance of the specified type.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="TypeConfig"/> for the specified <see cref="Type"/> .
+    /// </returns>
     public TypeConfig UseNewInstance<T>() where T : notnull =>
         UseNewInstance( typeof( T ) );
 
+    /// <summary>
+    /// This usage model will use <see cref="Activator.CreateInstance"/> to
+    /// create a new instance of the specified type.
+    /// </summary>
+    /// <param name="type">
+    /// The <see cref="Type"/> of the objects returned for the
+    /// <see cref="Type"/> specified by this config object.
+    /// </param>
+    /// <returns>
+    /// A <see cref="TypeConfig"/> for the specified <see cref="Type"/> .
+    /// </returns>
     public TypeConfig UseNewInstance( Type? type = null )
     {
         type ??= m_type;
@@ -69,15 +94,34 @@ public class TypeConfig : IResolver
         return this;
     }
 
+    /// <summary>
+    /// This usage model will use the specified object as the singleton for the
+    /// configured Type.
+    /// </summary>
+    /// <param name="singleton">
+    /// The singleton object returned when the configured Type is requested
+    /// </param>
+    /// <returns>
+    /// A <see cref="TypeConfig"/> for the specified <see cref="Type"/> .
+    /// </returns>
     public TypeConfig UseSingleton( object singleton )
     {
-        if (singleton is null) throw new ArgumentNullException( "singleton" );
-
         AssertAssignable( singleton.GetType() );
         resolver = new SingletonResolver( singleton );
         return this;
     }
 
+    /// <summary>
+    /// Use a factory to create objects for this Type.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The Return Type from the Factory method. Must be assignable to the
+    /// configured Type.
+    /// </typeparam>
+    /// <param name="factory"></param>
+    /// <returns>
+    /// A <see cref="TypeConfig"/> for the specified <see cref="Type"/> .
+    /// </returns>
     public TypeConfig UseFactory<T>( Func<T> factory ) where T : notnull
     {
         AssertAssignable( typeof( T ) );
@@ -106,6 +150,14 @@ public class TypeConfig : IResolver
         return this;
     }
 
+    /// <summary>
+    /// Use a factory to create objects for this Type.
+    /// </summary>
+    /// <param name="creator">
+    /// An <see cref="IResolver"/> which returns objects for the configured
+    /// Type.
+    /// </param>
+    /// <returns></returns>
     public TypeConfig UseFactory( IResolver creator )
     {
         resolver = creator;
@@ -114,8 +166,10 @@ public class TypeConfig : IResolver
 
 
     /// <summary>
-    /// Return an object for this Type based on this configuration.
+    /// Return an object for this configured Type based on the <see cref="IResolver"/> which was 
+    /// configured for this type. If none has been configured, then the default operation is to
+    /// use <see cref="Activator.CreateInstance(Type)"/>
     /// </summary>
-    /// <returns>an object for this Type based on this configuration.</returns>
+    /// <returns>An object for this Type based on this configuration.</returns>
     public object Get( params object[] @params ) => resolver.Get( @params );
 }

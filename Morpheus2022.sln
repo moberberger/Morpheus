@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.2.32505.173
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MorpheusStandard", "Standard\MorpheusStandard.csproj", "{6835D6C4-2017-4E6B-A8A0-AE77F0306306}"
+	ProjectSection(ProjectDependencies) = postProject
+		{04B88EC8-CAC3-4A0D-9E2E-80078F39DBE2} = {04B88EC8-CAC3-4A0D-9E2E-80078F39DBE2}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MSUnitTests", "tests\MSUnitTests.csproj", "{E04647A7-982D-469B-99A3-EF900E79DC63}"
 EndProject
