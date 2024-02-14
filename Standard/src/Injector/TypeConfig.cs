@@ -57,7 +57,8 @@ public class TypeConfig : IResolver
             throw new InvalidCastException( $"The specified activatorType '{type.GetType()}' must be a subclass of '{m_type}'" );
     }
 
-    public TypeConfig UseNewInstance<T>() => UseNewInstance( typeof( T ) );
+    public TypeConfig UseNewInstance<T>() where T : notnull =>
+        UseNewInstance( typeof( T ) );
 
     public TypeConfig UseNewInstance( Type? type = null )
     {
@@ -77,28 +78,28 @@ public class TypeConfig : IResolver
         return this;
     }
 
-    public TypeConfig UseFactory<T>( Func<T> factory )
+    public TypeConfig UseFactory<T>( Func<T> factory ) where T : notnull
     {
         AssertAssignable( typeof( T ) );
         resolver = new FactoryResolver0<T>( factory );
         return this;
     }
 
-    public TypeConfig UseFactory<T, P1>( Func<P1, T> factory )
+    public TypeConfig UseFactory<T, P1>( Func<P1, T> factory ) where T : notnull
     {
         AssertAssignable( typeof( T ) );
         resolver = new FactoryResolver1<T, P1>( factory );
         return this;
     }
 
-    public TypeConfig UseFactory<T, P1, P2>( Func<P1, P2, T> factory )
+    public TypeConfig UseFactory<T, P1, P2>( Func<P1, P2, T> factory ) where T : notnull
     {
         AssertAssignable( typeof( T ) );
         resolver = new FactoryResolver2<T, P1, P2>( factory );
         return this;
     }
 
-    public TypeConfig UseFactory<T, P1, P2, P3>( Func<P1, P2, P3, T> factory )
+    public TypeConfig UseFactory<T, P1, P2, P3>( Func<P1, P2, P3, T> factory ) where T : notnull
     {
         AssertAssignable( typeof( T ) );
         resolver = new FactoryResolver3<T, P1, P2, P3>( factory );

@@ -65,7 +65,7 @@ public class DI
     /// </summary>
     /// <typeparam name="T">The <see cref="Type"/> the caller is interested in</typeparam>
     /// <returns></returns>
-    public TypeConfig For<T>() => GetTypeConfig( typeof( T ), false );
+    public TypeConfig For<T>() where T : notnull => GetTypeConfig( typeof( T ), false );
 
 
     /// <summary>
@@ -96,7 +96,7 @@ public class DI
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public T Get<T>( params object[] @params ) =>
+    public T Get<T>( params object[] @params ) where T : notnull =>
         (T)Get( typeof( T ), @params );
 
     /// <summary>
