@@ -4,7 +4,7 @@
 public class ProgressTimer
 {
     public long Length { get; }
-    public long Interval { get; }
+    public long Interval { get; set; }
     public long CurrentIteration { get; private set; } = 0;
     public DateTime StartTime { get; } = DateTime.Now;
 
