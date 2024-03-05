@@ -28,7 +28,7 @@ public class ProgressTimer
         if ((CurrentIteration % Interval == 0) || (CurrentIteration == Length - 1))
         {
             var now = DateTime.Now;
-            PercentComplete = (double)CurrentIteration / Length;
+            PercentComplete = (double)CurrentIteration / (Length - 1);
             IntervalDuration = now - LastIntervalStart;
             LastIntervalStart = now;
             SinceStart = now - StartTime;
