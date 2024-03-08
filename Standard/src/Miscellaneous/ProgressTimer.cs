@@ -24,11 +24,10 @@ public class ProgressTimer
     public bool UpdateProgress()
     {
         CurrentIteration++;
-
-        if ((CurrentIteration % Interval == 0) || (CurrentIteration == Length - 1))
+        if ((CurrentIteration % Interval == 0) || (CurrentIteration == Length))
         {
             var now = DateTime.Now;
-            PercentComplete = (double)CurrentIteration / (Length - 1);
+            PercentComplete = (double)CurrentIteration / Length;
             IntervalDuration = now - LastIntervalStart;
             LastIntervalStart = now;
             SinceStart = now - StartTime;
