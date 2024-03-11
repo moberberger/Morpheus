@@ -12,7 +12,7 @@ public class TextGrid
     public readonly static TextGridBorders Single = new( "Single", @"┌┬┐├┼┤└┴┘─│" );
     public readonly static TextGridBorders Double = new( "Double", @"╔╦╗╠╬╣╚╩╝═║" );
     public readonly static TextGridBorders Ascii = new( "Ascii", @"+++++++++-|" );
-    public readonly static TextGridBorders Ascii2 = new( "Ascii2", @"/v\>+<\+/-|" );
+    public readonly static TextGridBorders Ascii2 = new( "Ascii2", @"/v\>+<\^/-|" );
 
     private string[,] strings;
     private int[] RowHeights;
