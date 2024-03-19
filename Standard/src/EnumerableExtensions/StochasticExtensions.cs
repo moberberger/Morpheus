@@ -131,7 +131,8 @@ public static class StochasticExtensions
 
 
     /// <summary>
-    /// Shuffle all elements in an IList to a random ordering
+    /// Shuffle all elements in an IList to a random ordering. Implements
+    /// the Fisher-Yates algorithm.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the list</typeparam>
     /// <param name="_list">The list of things to shuffle</param>
@@ -147,9 +148,9 @@ public static class StochasticExtensions
         _rng ??= Rng.Default;
 
         var count = _list.Count;
-        for (var i = 0; i < count - 1; i++)
+        for (var i = count - 1; i > 0; i--)
         {
-            var range = count - i;
+            var range = i + 1;
             var idx = _rng.Next( range );
             _list.SwapElements( i, idx );
         }
