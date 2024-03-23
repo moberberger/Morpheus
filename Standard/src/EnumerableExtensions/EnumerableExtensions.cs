@@ -565,6 +565,16 @@ public static class EnumerableExtensions
     }
 
     /// <summary>
+    /// For each string in the input, apply a Regex to determine if the string
+    /// matches the pattern. If it does, return the string. If not, skip it.
+    /// </summary>
+    public static IEnumerable<string> WhereWithRegex( this IEnumerable<string> list, string regex, RegexOptions regexOptions = RegexOptions.None )
+    {
+        var r = new Regex( regex, regexOptions );
+        return list.Where( s => r.IsMatch( s ) );
+    }
+
+    /// <summary>
     /// Turn any collection into a circular list. A Circular list is fixed size
     /// and indexing operations adjust the index to fit inside the list. For
     /// example, for a collection of 5 elements, index 6 would reference the
