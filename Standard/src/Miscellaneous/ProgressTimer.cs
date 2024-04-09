@@ -47,6 +47,7 @@ public class ProgressTimer
         StringBuilder sb = new();
         sb.Append( $"[{CurrentIteration:N0}]  {IntervalDuration:mm\\:ss}  {PercentComplete:P2}  " );
         sb.Append( $"{CountSinceLastCheckpoint / IntervalDuration.TotalSeconds:N3}/s  " );
+        sb.Append( $"{CurrentIteration / SinceStart.TotalSeconds:N3}/s  " );
         sb.Append( $"SoFar:{SinceStart:hh\\:mm\\:ss}  " );
         sb.Append( $"Left:{RemainingEstimate:hh\\:mm\\:ss}  " );
         sb.Append( $"End:{ProjectedCompletion:hh\\:mm\\:ss}" );
