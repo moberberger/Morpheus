@@ -3,7 +3,6 @@
 namespace Morpheus;
 
 
-
 /// <summary>
 /// It is the application writer's responsibility to decide whether to use one
 /// of these extension methods or to write the loop herself. There is a chance
@@ -66,11 +65,6 @@ public static class EnumerableExtensions
     /// </remarks>
     public static string JoinAsString<T>( this IEnumerable<T> _collection, string _joinString = "", Func<T, string>? _stringizer = null )
     {
-        if (_collection is null)
-            throw new ArgumentNullException( nameof( _collection ) );
-        if (_joinString is null)
-            throw new ArgumentNullException( nameof( _joinString ) );
-
         var str = new StringBuilder();
         foreach (var o in _collection)
         {
@@ -573,19 +567,6 @@ public static class EnumerableExtensions
         var r = new Regex( regex, regexOptions );
         return list.Where( s => r.IsMatch( s ) );
     }
-
-    /// <summary>
-    /// Turn any collection into a circular list. A Circular list is fixed size
-    /// and indexing operations adjust the index to fit inside the list. For
-    /// example, for a collection of 5 elements, index 6 would reference the
-    /// element at location 1 (5 % 6) in the list. Similarly, Index -1 would
-    /// reference the last element of the list.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="list"></param>
-    /// <returns></returns>
-    public static CircularList<T> ToCircularList<T>( this IEnumerable<T> list )
-        => new CircularList<T>( list );
 
     /// <summary>
     /// AddRange for any ICollection- seems like this should be part of LINQ

@@ -5,27 +5,30 @@ namespace Morpheus;
 
 
 /// <summary>
-/// A Circular list is fixed size and indexing operations adjust the index to fit inside the
-/// list. For example, for a collection of 5 elements, index 6 would reference the element at
-/// location 1 (5 % 6) in the list. Similarly, Index -1 would reference the last element of the
-/// list, representing a "wrap-around" semantic.
+/// A Circular list is fixed size and indexing operations adjust the index to
+/// fit inside the list. For example, for a collection of 5 elements, index 6
+/// would reference the element at location 1 (5 % 6) in the list. Similarly,
+/// Index -1 would reference the last element of the list, representing a
+/// "wrap-around" semantic.
 /// </summary>
 public class CircularList<T> : IList<T>
 {
     private IList<T> _list;
 
     /// <summary>
-    /// Constructing with an IList passes the IList behavior to this class's implementation
+    /// Constructing with an IList passes the IList behavior to this class's
+    /// implementation
     /// </summary>
     /// <param name="list"></param>
     public CircularList( IList<T> list ) => _list = list;
 
     /// <summary>
-    /// Constructing with an enumeration creates a fixed-size implementation which will throw an
-    /// exception if a list size modifying action (i.e. Add, Remove) is attempted.
+    /// Constructing with an enumeration creates a fixed-size implementation
+    /// which will throw an exception if a list size modifying action (i.e. Add,
+    /// Remove) is attempted.
     /// </summary>
     /// <param name="collection"></param>
-    public CircularList( IEnumerable<T> collection ) => _list = collection.ToArray();
+    public CircularList( IEnumerable<T> collection ) => _list = collection.ToList();
 
     public T this[int index]
     {
@@ -36,7 +39,7 @@ public class CircularList<T> : IList<T>
     public int SafeIndex( int index )
     {
         var x = index % Count;
-        if (x < 0) x += Count;
+        if (x < 0) x += Count; // range of % is [-Count, Count-1]
         return x;
     }
 
@@ -56,13 +59,25 @@ public class CircularList<T> : IList<T>
 
 
 
-    public void Add( T item ) => _list.Add( item );
+    public void Add( T item ) => throw new NotImplementedException( "Circular List Size cannot be modified" );
 
-    public void Clear() => _list.Clear();
+    public void Clear() => throw new NotImplementedException( "Circular List Size cannot be modified" );
 
-    public void Insert( int index, T item ) => _list.Insert( index, item );
+    public void Insert( int index, T item ) => throw new NotImplementedException( "Circular List Size cannot be modified" );
 
-    public bool Remove( T item ) => _list.Remove( item );
+    public bool Remove( T item ) => throw new NotImplementedException( "Circular List Size cannot be modified" );
 
-    public void RemoveAt( int index ) => _list.RemoveAt( index );
+    public void RemoveAt( int index ) => throw new NotImplementedException( "Circular List Size cannot be modified" );
+}
+
+public static class CircularListExtensions
+{
+    /// <summary>
+    /// Turn any collection into a circular list. A Circular list has fixed size
+    /// and indexing operations adjust the index to fit inside the list. For
+    /// example, for a collection of 5 elements, index 6 would reference the
+    /// element at location 1 (5 % 6) in the list. Similarly, Index -1 would
+    /// reference the last element of the list.
+    /// </summary>
+    public static CircularList<T> ToCircularList<T>( this IEnumerable<T> collection ) => new CircularList<T>( collection );
 }
