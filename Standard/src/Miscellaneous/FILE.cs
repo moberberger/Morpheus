@@ -4,31 +4,34 @@ namespace Morpheus;
 
 
 /// <summary>
-/// This class helps an application find a file that is either in the application's current
-/// running directory OR its somewhere "up" the directory structure of the Current Directory.
+/// This class helps an application find a file that is either in the
+/// application's current running directory OR its somewhere "up" the directory
+/// structure of the Current Directory.
 /// </summary>
 /// <remarks>
-/// Usually, when a program is "run" from within Visual Studio, it is run from the
-/// "[appName]/bin/debug" subdirectory. Many times you would like to place a data file in the
-/// "[appName]" directory and not have to worry about messing around trying to find it. This
-/// class helps make finding that file a painless process.
+/// Usually, when a program is "run" from within Visual Studio, it is run from
+/// the "[appName]/bin/debug" subdirectory. Many times you would like to place a
+/// data file in the "[appName]" directory and not have to worry about messing
+/// around trying to find it. This class helps make finding that file a painless
+/// process.
 /// </remarks>
 public static class FILE
 {
     /// <summary>
-    /// Find a file somewhere in the current directory -OR- in any one of the parent directories
-    /// of the current directory
+    /// Find a file somewhere in the current directory -OR- in any one of the
+    /// parent directories of the current directory
     /// </summary>
     /// <param name="_filename">
-    /// The filename to look for. All directory information is STRIPPED from the filename.
+    /// The filename to look for. All directory information is STRIPPED from the
+    /// filename.
     /// </param>
     /// <param name="_useExecutableDirectory">
-    /// Tells the routine to make sure the directory containing this program's executable is
-    /// used to find files.
+    /// Tells the routine to make sure the directory containing this program's
+    /// executable is used to find files.
     /// </param>
     /// <returns>
-    /// The full pathname for the file if it is found, or NULL if no file with that name was
-    /// found anywhere in the hierarchy.
+    /// The full pathname for the file if it is found, or NULL if no file with
+    /// that name was found anywhere in the hierarchy.
     /// </returns>
     public static string FindFileUpHierarchy( string _filename, bool _useExecutableDirectory = false )
     {
@@ -42,14 +45,18 @@ public static class FILE
     /// <summary>
     /// Internal function used to recursively find the file in this hierarchy
     /// </summary>
-    /// <param name="_directoryName">The current directory that we're looking at</param>
+    /// <param name="_directoryName">
+    /// The current directory that we're looking at
+    /// </param>
     /// <param name="_filename">
-    /// The filename of the file, with all directory information stripped already.
+    /// The filename of the file, with all directory information stripped
+    /// already.
     /// </param>
     /// <returns>
-    /// NULL if we're looking at the "top" directory already and the file wasn't found there, or
-    /// the full filename including path if the file WAS found in this directory, OR the
-    /// recursive result of calling this function for the directory "above" this directory.
+    /// NULL if we're looking at the "top" directory already and the file wasn't
+    /// found there, or the full filename including path if the file WAS found
+    /// in this directory, OR the recursive result of calling this function for
+    /// the directory "above" this directory.
     /// </returns>
     private static string FindFileUpHierarchyRecursive( string _directoryName, string _filename )
     {
@@ -68,18 +75,21 @@ public static class FILE
 
 
     /// <summary>
-    /// Create a new Version of a file if it exists. Allows CreateNew without replacing existing
-    /// file. Versioned filenames inject a semi-colon + numeric string immediately before the
-    /// extension. E.g.
+    /// Create a new Version of a file if it exists. Allows CreateNew without
+    /// replacing existing file. Versioned filenames inject a semi-colon +
+    /// numeric string immediately before the extension. E.g.
     /// 
     /// D:\TMP\SomeFile;5.TXT
     /// 
-    /// This is version 5 of the file. The highest version is the most recently created version.
+    /// This is version 5 of the file. The highest version is the most recently
+    /// created version.
     /// </summary>
-    /// <param name="filename">The filename to create a version of, if it exists</param>
+    /// <param name="filename">
+    /// The filename to create a version of, if it exists
+    /// </param>
     /// <returns>
-    /// The Version Number assigned to the file if it existed, 0 if the file didn't exist (not
-    /// an error!)
+    /// The Version Number assigned to the file if it existed, 0 if the file
+    /// didn't exist (not an error!)
     /// </returns>
     public static int VersionFile( string filename )
     {
@@ -107,11 +117,13 @@ public static class FILE
     }
 
     /// <summary>
-    /// Add some token to a filename between the extension and the name. For example, adding
-    /// "BACKUP" to "T.TXT" yields "T.BACKUP.TXT"
+    /// Add some token to a filename between the extension and the name. For
+    /// example, adding "BACKUP" to "T.TXT" yields "T.BACKUP.TXT"
     /// </summary>
     /// <param name="_filename">The filename</param>
-    /// <param name="_whatToAdd">The token to add to the filename (before the extension)</param>
+    /// <param name="_whatToAdd">
+    /// The token to add to the filename (before the extension)
+    /// </param>
     /// <returns>The resulting filename</returns>
     public static string AddSomethingToFilename( string _filename, string _whatToAdd )
     {
@@ -126,4 +138,23 @@ public static class FILE
         return s;
     }
 
+    /// <summary>
+    /// Check to see if a file exists and if so, rename it to "filename.bak".
+    /// Delete any existing "filename.bak" file first. See
+    /// <see cref="VersionFile"/> for more robust versioning.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// If the filename's extension is already ".bak"
+    /// </exception>
+    public static void MakeBackup( string filename )
+    {
+        if (!File.Exists( filename )) return;
+        if (Path.GetExtension( filename ).ToLower() == ".bak")
+            throw new InvalidOperationException( "Filename is the same as the backup filename" );
+
+        var backup = Path.ChangeExtension( filename, ".bak" );
+        if (File.Exists( backup ))
+            File.Delete( backup );
+        File.Move( filename, backup );
+    }
 }
