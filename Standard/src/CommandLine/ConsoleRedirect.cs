@@ -1,6 +1,9 @@
 ﻿namespace Morpheus;
 
 
+/// <summary>
+/// Using IDisposable, this class redirects Console output to a StringBuilder
+/// </summary>
 public class ConsoleRedirect : IDisposable
 {
     StringBuilder Output;
