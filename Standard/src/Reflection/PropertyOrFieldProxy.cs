@@ -220,31 +220,34 @@ public class PropertyOrFieldProxy
         var exObjParam = Expression.Parameter( typeof( object ), "theObject" );
         var exTypedThisParam = Expression.Convert( exObjParam, _member.DeclaringType! );
 
-        (var memberType, var exMember) = GetPropertyOrFieldInfo( _member, exTypedThisParam );
+        (var memberType, var exMember, var canWrite) = GetPropertyOrFieldInfo( _member, exTypedThisParam );
 
         var exNewValueParam = Expression.Parameter( typeof( object ), "newValue" );
         var exNewValueConverted = Expression.Convert( exNewValueParam, memberType );
 
-        var exAssignment = Expression.Assign( exMember, exNewValueConverted );
-
-        var exSetter = Expression.Lambda<_Setter>( exAssignment, exObjParam, exNewValueParam );
+        _Setter setter = null;
+        if (canWrite)
+        {
+            var exAssignment = Expression.Assign( exMember, exNewValueConverted );
+            var exSetter = Expression.Lambda<_Setter>( exAssignment, exObjParam, exNewValueParam );
+            setter = exSetter?.Compile();
+        }
 
         var exReturnValueAsObject = Expression.Convert( exMember, typeof( object ) );
         var exGetter = Expression.Lambda<_Getter>( exReturnValueAsObject, exObjParam );
-
-        var setter = exSetter.Compile();
         var getter = exGetter.Compile();
+
         return (getter, setter);
     }
 
-    private static (Type, Expression) GetPropertyOrFieldInfo( MemberInfo _member, UnaryExpression _exTypedThisParam )
+    private static (Type, Expression, bool) GetPropertyOrFieldInfo( MemberInfo _member, UnaryExpression _exTypedThisParam )
     {
         switch (_member)
         {
             case FieldInfo fi:
-                return (fi.FieldType, Expression.Field( _exTypedThisParam, fi ));
+                return (fi.FieldType, Expression.Field( _exTypedThisParam, fi ), true);
             case PropertyInfo pi:
-                return (pi.PropertyType, Expression.Property( _exTypedThisParam, pi ));
+                return (pi.PropertyType, Expression.Property( _exTypedThisParam, pi ), pi.CanWrite);
             default:
                 throw new ArgumentException( $"{_member.Name} is a {_member.MemberType}, but it must be a field or property" );
         }
