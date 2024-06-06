@@ -15,6 +15,7 @@ public class MRUList : IEnumerable<string>
 
     public IList<string> GetMRUList()
     {
+        Console.WriteLine( $"MRU File: {MRUFileName}" );
         List<string> list = new();
         if (MRUFileExists)
         {
@@ -32,7 +33,7 @@ public class MRUList : IEnumerable<string>
     public void AddFileName( string fileName )
     {
         List<string> mru = new() { fileName };
-        mru.AddRange( 
+        mru.AddRange(
             GetMRUList()
                 .Where( fname => fname != fileName ) );
 

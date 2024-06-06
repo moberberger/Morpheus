@@ -23,4 +23,9 @@
       </None>
     </ItemGroup>
 
+
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+      <Exec Command="copy &quot;$(TargetPath)&quot; &quot;%25MY_LIB%25&quot;" />
+    </Target>
+
 </Project>
