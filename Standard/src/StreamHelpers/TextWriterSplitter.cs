@@ -7,7 +7,7 @@
 /// </summary>
 /// <remarks>
 /// 
-/// var outFile = File.CreateText( @"c:\t.txt" );
+/// var outFile = File.CreateText( @"\t.txt" );
 /// 
 /// Console.SetOut( new CTextWriterSplitter( Console.Out, outFile ) );
 ///

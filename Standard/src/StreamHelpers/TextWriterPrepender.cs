@@ -11,7 +11,7 @@
 /// This code snippet shows both how to create a timestamp prepender and how to use the
 /// <see cref="TextWriterSplitter"/> .
 /// <code>
-/// var outFile = File.CreateText( @"c:\t.txt" );
+/// var outFile = File.CreateText( @"\t.txt" );
 /// 
 /// // Prepends the date/time of when the prepender was created to every line (not very useful)
 /// var timestamper = new CTextWriterPrepender( outFile, DateTime.Now.ToString() + " ---->   " );

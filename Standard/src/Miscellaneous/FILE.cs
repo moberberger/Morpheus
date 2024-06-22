@@ -79,7 +79,7 @@ public static class FILE
     /// replacing existing file. Versioned filenames inject a semi-colon +
     /// numeric string immediately before the extension. E.g.
     /// 
-    /// D:\TMP\SomeFile;5.TXT
+    /// \TMP\SomeFile;5.TXT
     /// 
     /// This is version 5 of the file. The highest version is the most recently
     /// created version.
