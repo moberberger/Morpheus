@@ -46,4 +46,7 @@ public class ObjectPropertyList : CSortableBindingList<ObjectPropertyList.Access
             .Select( pi => new Accessor( pi, obj ) )
             .OrderBy( acc => acc.Order )
         );
+
+    public IEnumerable<IEnumerable<object>> ForGrid() =>
+        this.Select( acc => new object[] { acc.Name, acc.Value } );
 }
