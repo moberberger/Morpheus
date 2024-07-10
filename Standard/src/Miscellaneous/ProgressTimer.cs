@@ -50,9 +50,9 @@ public class ProgressTimer
         sb.Append( AppendRatio( CountSinceLastCheckpoint / IntervalDuration.TotalSeconds ) );
         sb.Append( AppendRatio( CurrentIteration / SinceStart.TotalSeconds ) );
 
-        sb.Append( $"SoFar:{SinceStart:HH\\:mm\\:ss}  " );
-        sb.Append( $"Left:{RemainingEstimate:HH\\:mm\\:ss}  " );
-        sb.Append( $"End:{ProjectedCompletion:HH\\:mm\\:ss}" );
+        sb.Append( $"SoFar:{SinceStart:hh\\:mm\\:ss}  " );
+        sb.Append( $"Left:{RemainingEstimate:hh\\:mm\\:ss}  " );
+        sb.Append( $"End:{ProjectedCompletion:hh\\:mm\\:ss}" );
         return sb.ToString();
 
         string AppendRatio( double ratio ) =>
