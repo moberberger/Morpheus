@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿#nullable enable
+
+using System.Collections;
 
 namespace Morpheus;
 
@@ -240,9 +242,6 @@ public static class EnumerableExtensions
     /// </returns>
     public static T? OneOrDefault<T>( this IEnumerable<T> _items )
     {
-        if (_items == null)
-            return default;
-
         if (_items is IList<T> list)
             return list.Count == 1 ? list[0] : default;
 
@@ -484,40 +483,6 @@ public static class EnumerableExtensions
         }
     }
 
-    /// <summary>
-    /// Iterate through two collections in parallel, returning the element from
-    /// each collection at the same ordinal position within the collection. This
-    /// is called Collating when applied to the print (paper) industry
-    /// </summary>
-    /// <typeparam name="T1">
-    /// The <see cref="Type"/> of the elements of the first collection
-    /// </typeparam>
-    /// <typeparam name="T2">
-    /// The <see cref="Type"/> of the elements in the second collection
-    /// </typeparam>
-    /// <param name="_collection">
-    /// The first collection, the elements of which shall appear in the first
-    /// item in the returned <see cref="Tuple"/> s
-    /// </param>
-    /// <param name="_otherCollection">
-    /// The second collection, the elements of which shall appear in the second
-    /// item in the returned <see cref="Tuple"/> s
-    /// </param>
-    /// <returns>
-    /// Tuples containing the collated items from each collection
-    /// </returns>
-    public static IEnumerable<Tuple<T1, T2>> Interleave<T1, T2>( this IEnumerable<T1> _collection, IEnumerable<T2> _otherCollection )
-    {
-        var otherIter = _otherCollection.GetEnumerator();
-        foreach (var item in _collection)
-        {
-            if (!otherIter.MoveNext())
-                break;
-
-            yield return new Tuple<T1, T2>( item, otherIter.Current );
-        }
-    }
-
 
     /// <summary>
     /// Take items from an IList based on an enumeration of indicies. This is
@@ -580,10 +545,8 @@ public static class EnumerableExtensions
     /// <summary>
     /// Remove every element of the IList that matches the given element.
     /// </summary>
-    public static void RemoveAll<T>( this IList<T> list, T toRemove )
+    public static void RemoveAll<T>( this IList<T> list, T toRemove ) where T : notnull
     {
-        if (toRemove is null) throw new ArgumentNullException( "toRemove" );
-
         int destIdx = 0;
         for (int i = 0; i < list.Count; i++)
         {

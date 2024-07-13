@@ -1,5 +1,5 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿#nullable enable
+
 using Morpheus.PerformanceTests;
 
 namespace Morpheus;
@@ -50,11 +50,7 @@ public class Program
     public static void Main( string[] args )
     {
         //RunTests(); return;
-        TestShuffle();
-
-        double sum = 0;
-        long state = DateTime.Now.Ticks;
-
+        //TestShuffle();
     }
 
 
